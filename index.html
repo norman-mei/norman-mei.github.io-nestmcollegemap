@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Senior College Destinations Map</title>
+    <title>NEST+m Senior College Destinations Map 🦅</title>
     <style>
 
         .grad-class-separator {
@@ -60,7 +60,9 @@ body.dark-mode .grad-class-separator {
     cursor: default;
     overflow: hidden;
     padding: 10px 15px;
-    text-align: center; /* Add this line */
+    text-align: center; /* This line should already be there or confirm its presence */
+    background-color: purple; /* ADD THIS LINE */
+    color: white;             /* ADD THIS LINE */
 }
 #description-control span { display: inline-block; line-height: 28px; vertical-align: middle; }
         
@@ -230,10 +232,10 @@ body.dark-mode .grad-class-separator {
             text-align: center;
             pointer-events: auto; /* Ensure clickable if it ever had links */
         }
-        /* Styles for caption when image is zoomed */
+                        /* Styles for caption when image is zoomed */
         #senior-photo-popup img.zoomed + p#senior-photo-caption {
             position: fixed;
-            bottom: 60px; /* Above the zoom-exit-note */
+            bottom: 65px; /* Adjusted: Places caption above the zoom-exit-note */
             left: 50%;
             transform: translateX(-50%);
              background-color: #222222; /* Opaque dark background for light mode */
@@ -265,7 +267,7 @@ body.dark-mode .grad-class-separator {
 
         #zoom-exit-note {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2001; /* Above photo-zoom-overlay and zoomed image */
@@ -276,6 +278,11 @@ body.dark-mode .grad-class-separator {
 
 
         body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        body.dark-mode #description-control {
+    background-color: purple; /* Or a specific dark purple like #5A005A if you prefer */
+    color: white;
+    /* border-color will be inherited from body.dark-mode .map-control if not specified here */
+}
         body.dark-mode #controls-and-list-container { background-color: #1a1a1a; border-right-color: #444; }
         body.dark-mode #panel-resizer { background-color: #333; }
         body.dark-mode #panel-resizer:hover { background-color: #555; }
@@ -342,8 +349,8 @@ body.dark-mode .grad-class-separator {
     <div id="map-container">
         <div id="controls-and-list-container">
             <div id="description-control" class="map-control">
-                 <span>Senior College Destinations Map</span>
-            </div>
+     <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
+</div>
             <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
@@ -1402,6 +1409,12 @@ function parseRawData(rawData) {
             const listItems = listContentDiv.querySelectorAll('ul li');
 
             listItems.forEach(item => {
+                if (item.classList.contains('grad-class-separator')) {
+                    item.style.display = 'block'; // Ensure separator lines are always block-displayed
+                    return; // Skip further processing for separator lines
+                }
+
+                // Existing logic for student list items
                 const nameSpan = item.querySelector('span.school-name');
                 const markerIndex = parseInt(item.getAttribute('data-marker-index'), 10);
                 let isVisibleAccordingToFilters = false;
@@ -1412,7 +1425,7 @@ function parseRawData(rawData) {
                 if (nameSpan && isVisibleAccordingToFilters) {
                     const itemText = nameSpan.textContent.toLowerCase();
                     const matchesSearch = searchTerm === '' || itemText.includes(searchTerm);
-                    item.style.display = matchesSearch ? 'flex' : 'none';
+                    item.style.display = matchesSearch ? 'flex' : 'none'; // Student items use 'flex'
                 } else {
                     item.style.display = 'none';
                 }
@@ -1803,7 +1816,7 @@ function parseRawData(rawData) {
             if (listHeaderContainer && !document.getElementById('schoolListTip')) {
                  const tipDiv = document.createElement('div'); tipDiv.id = 'schoolListTip'; tipDiv.className = 'tip-message';
                  const tipText = document.createElement('span');
-                 tipText.innerHTML = 'Tips: <br>• Filters/checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom.';
+                tipText.innerHTML = 'Tips: <br>• Filters/checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom.<br>• The left panel is resizable - drag the vertical bar.';
                  const dismissBtn = document.createElement('span'); dismissBtn.className = 'dismiss-button'; dismissBtn.textContent = 'x'; dismissBtn.title = 'Dismiss this tip'; dismissBtn.onclick = () => { tipDiv.style.display = 'none'; };
                  tipDiv.appendChild(tipText); tipDiv.appendChild(dismissBtn);
                  listHeaderContainer.insertAdjacentElement('afterend', tipDiv);
