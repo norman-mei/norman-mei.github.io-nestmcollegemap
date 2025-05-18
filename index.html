@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior College Destinations Map</title>
+    <style>
+
+        .grad-class-separator {
+    height: 1px;
+    background-color: #ccc; /* Separator color for light mode */
+    margin: 10px 5px;    /* Vertical and a little horizontal margin */
+    list-style-type: none; /* Ensure no bullet points if it's an <li> */
+    padding: 0;
+}
+
+body.dark-mode .grad-class-separator {
+    background-color: #444; /* Separator color for dark mode */
+}
+
+
+        .honorary-suffix {
+            font-weight: bold;
+            font-style: italic;
+            text-decoration: underline;
+            padding: 1px 3px;
+            border-radius: 3px;
+            background-color: black;
+            color: white;
+            margin-left: 4px; /* Optional: adds a little space */
+        }
+
+        body.dark-mode .honorary-suffix {
+            background-color: white;
+            color: black;
+        }
+
+        html, body { height: 100%; margin: 0; padding: 0; font-family: sans-serif; background-color: #f8f9fa; color: #212529; transition: background-color 0.3s, color 0.3s; overflow: hidden; }
+        #map-container { display: flex; height: 100%; width: 100%; } /* Changed for resizer */
+        #controls-and-list-container { /* float: left; */ width: 30%; min-width: 250px; max-width: 60%; /* Adjusted for resizer */ height: 100%; overflow-y: auto; background-color: #f8f9fa; border-right: 1px solid #ccc; padding: 10px; box-sizing: border-box; transition: background-color 0.3s, border-color 0.3s; display: flex; flex-direction: column; position: relative; }
+        #panel-resizer { width: 8px; height: 100%; background-color: #ddd; cursor: col-resize; /* float: left; */ z-index: 10; transition: background-color 0.3s; }
+        #panel-resizer:hover { background-color: #bbb; }
+        #map { /* float: left; */ flex-grow: 1; /* width: calc(70% - 1px - 8px); */ height: 100%; background-color: grey; } /* Adjusted for resizer */
+
+        .info-window-content { line-height: 1.4; max-width: 250px; }
+        .info-window-content b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+        .info-window-content img { max-width: 100%; height: auto; display: block; margin-bottom: 8px; border-radius: 4px; border: none; }
+        .info-window-content a { color: inherit; text-decoration: none; }
+        .info-window-content a:hover { text-decoration: underline; cursor: pointer; }
+        .info-window-type { color: #555; font-style: italic; }
+        .info-window-grad-class { font-weight: bold; }
+
+        .map-control { background-color: rgba(255, 255, 255, 0.9); padding: 10px 15px; margin-bottom: 10px; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); color: #222; box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s; flex-shrink: 0;  }
+        .map-control h4 { margin-top: 0; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; font-size: 1.1em; font-weight: bold; transition: border-color 0.3s; display: inline-block; margin-right: 10px; }
+        .tip-message { background-color: #eef5ff; border: 1px solid #b8d4ff; color: #31708f; padding: 8px 10px; margin-top: 8px; margin-bottom: 12px; border-radius: 4px; font-size: 0.85em; line-height: 1.4; position: relative; overflow: hidden; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        .dismiss-button { float: right; cursor: pointer; font-weight: bold; margin-left: 10px; padding: 0 5px; color: #a1a1a1; border-radius: 3px; line-height: 1.4; user-select: none; transition: color 0.2s, background-color 0.2s; }
+        .dismiss-button:hover { color: #333; background-color: #e0e0e0; }
+        #description-control {
+    font-size: 1.0em;
+    cursor: default;
+    overflow: hidden;
+    padding: 10px 15px;
+    text-align: center; /* Add this line */
+}
+#description-control span { display: inline-block; line-height: 28px; vertical-align: middle; }
+        
+        #map-options-control {
+            /* padding: 5px 15px; Combined with .map-control padding */
+            margin-bottom:10px;
+            display: flex;
+            justify-content: space-evenly; /* Evenly space buttons */
+            align-items: center;
+        }
+        .dark-mode-toggle-control, #toggleTransitBtn {
+            /* float: right; Removed */
+            font-size: 0.85em;
+            padding: 5px 10px;
+            /* margin-left: 10px; Removed, flex handles spacing */
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            background-color: rgba(245, 245, 245, 0.9);
+            color: #222;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            line-height: 1.5;
+            flex-basis: auto; /* Allow buttons to size based on content or set a basis */
+            text-align: center;
+        }
+        .dark-mode-toggle-control:hover, #toggleTransitBtn:hover { background-color: rgba(230, 230, 230, 0.95); }
+
+
+        #filter-control { font-size: 0.9em; }
+        #filter-control .grad-class-filter-header { margin-top: 0; margin-bottom: 6px; font-size: 1em; font-weight: bold; padding-bottom: 2px; border-bottom: 1px solid #ddd; }
+        .filter-item { display: block; margin-bottom: 5px; cursor: pointer; }
+        .filter-item label { margin-left: 5px; vertical-align: middle; cursor: pointer; }
+        .filter-item input[type="checkbox"] { vertical-align: middle; cursor: pointer; }
+        .filter-color-box { width: 12px; height: 12px; border: 1px solid #ccc; margin-right: 5px; display: inline-block; vertical-align: middle; transition: border-color 0.3s; }
+        .filter-control-buttons { display: inline-block; vertical-align: middle; margin-bottom: 8px; margin-left: 5px; }
+        .filter-control-buttons button { font-size: 0.8em; padding: 2px 6px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; }
+        .filter-control-buttons button:hover { background-color: #e0e0e0; }
+
+        #instagram-links-control {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-top: 10px; /* Space from filter buttons */
+            margin-bottom: 8px;
+        }
+        .instagram-link-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.8em;
+        }
+        .instagram-link-button svg.instagram-logo {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 3px;
+            fill: #C13584; /* Instagram-like color */
+        }
+        body.dark-mode .instagram-link-button svg.instagram-logo {
+            fill: #E1306C; /* Slightly different for dark mode if needed */
+        }
+        .instagram-link-button span {
+            font-weight: bold;
+        }
+
+
+        #stats-table-control { font-size: 0.9em; margin-top: 10px; }
+        #stats-table-control h4 { margin-bottom: 8px; }
+        #stats-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        #stats-table th, #stats-table td { border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-size: 0.9em; }
+        #stats-table th { background-color: #f0f0f0; font-weight: bold; }
+        #stats-table td.row-header { text-align: left; font-weight: bold; background-color: #f9f9f9;}
+
+
+        #school-list-control { font-size: 0.9em; flex-grow: 1;  display: flex; flex-direction: column; overflow: hidden;  }
+        .list-header-container { overflow: visible;  margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; transition: border-color 0.3s; flex-shrink: 0;  }
+        .list-header-container h4 { float: left; margin-bottom: 0; border-bottom: none; padding-bottom: 0; line-height: 26px; }
+        #toggleSchoolListBtn { float: right; font-size: 0.8em; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; line-height: normal; vertical-align: middle; }
+        #toggleSchoolListBtn:hover { background-color: #e0e0e0; }
+
+
+        #schoolSearchContainer { float: right; width: 45%; position: relative;  }
+        #schoolSearchInput { width: 100%; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.9em; box-sizing: border-box; }
+
+        #searchSuggestions { position: absolute; top: 100%;  left: 0; right: 0; background-color: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 3px 3px; max-height: 150px;  overflow-y: auto; z-index: 1000;  box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none;  }
+        #searchSuggestions div { padding: 5px 8px; font-size: 0.9em; cursor: pointer; }
+        #searchSuggestions div:hover { background-color: #eee; }
+        .school-list-collapsible-content { /* New wrapper for the list itself */ overflow-y: auto; flex-grow: 1; }
+        .school-list-collapsible-content.hidden { display: none; }
+        .list-content { overflow-y: auto; flex-grow: 1;  } /* This will now be the parent of school-list-collapsible-content */
+        .list-content ul { list-style: none; padding: 0; margin: 0 0 10px 0; }
+        .list-content li { padding: 3px 0; word-wrap: break-word; cursor: pointer; display: flex; align-items: center; transition: background-color 0.2s; position: relative; /* For senior photo pop-up */ }
+        .list-content li.list-item-highlight { background-color: #d6eaff;  }
+        .list-content li input[type="checkbox"] { margin-right: 6px; flex-shrink: 0; cursor: pointer; vertical-align: middle; }
+        .list-content li span.school-name { flex-grow: 1; vertical-align: middle; line-height: 1.4;  }
+        .list-content a { color: #007bff; text-decoration: none; }
+        .list-content a:hover { text-decoration: underline; }
+
+        #senior-photo-popup {
+            position: fixed; /* Changed to fixed for viewport positioning */
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 2000; /* Above suggestions */
+            display: none;
+            width: 200px; /* Adjust as needed */
+            transition: opacity 0.2s, transform 0.2s;
+            opacity: 0;
+            transform: scale(0.95);
+            /* pointer-events: auto; default */
+        }
+        #senior-photo-popup.visible {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+        #close-senior-photo-popup {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            font-size: 18px;
+            line-height: 1;
+            padding: 2px 5px;
+            /* Inherits .dismiss-button styles for cursor, hover */
+            z-index: 2001; /* Above image */
+            pointer-events: auto; /* Ensure clickable */
+        }
+
+        #senior-photo-popup img { /* This is for the small preview in the popup */
+            max-width: 100%;
+            height: auto;
+            border-radius: 3px;
+            cursor: zoom-in; /* Indicates it can be clicked to zoom */
+            display: block; /* Ensure img is block for consistent layout */
+            pointer-events: auto; /* Ensure clickable */
+        }
+       /* For the regular zoomed image */
+        #senior-photo-popup img.zoomed {
+            position: fixed;
+            cursor: zoom-in;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80vw;
+            max-height: 80vh;
+            object-fit: contain;
+            z-index: 2000; /* Sits inside parent with z-index 2000 */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            cursor: zoom-in; /* Explicitly set to zoom-in as requested for zoomed state */
+            border: 2px solid white;
+            background-color: white; /* Added for consistency with dark mode border */
+            pointer-events: auto; /* Ensure clickable for browser's native image interactions */
+        }
+
+        /* For the dark mode zoomed image (ensure background matches for letterboxing) */
+        body.dark-mode #senior-photo-popup img.zoomed {
+            border-color: #333;
+            background-color: #282828; /* Match dark mode popup bg for consistency */
+        }
+        #senior-photo-popup p {
+            margin: 5px 0 0 0;
+            font-size: 0.9em;
+            text-align: center;
+            pointer-events: auto; /* Ensure clickable if it ever had links */
+        }
+        /* Styles for caption when image is zoomed */
+        #senior-photo-popup img.zoomed + p#senior-photo-caption {
+            position: fixed;
+            bottom: 60px; /* Above the zoom-exit-note */
+            left: 50%;
+            transform: translateX(-50%);
+             background-color: #222222; /* Opaque dark background for light mode */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            z-index: 2001; /* Above overlay and on par with close button */
+            pointer-events: auto; /* Just in case, though usually not interactive */
+        }
+        body.dark-mode #senior-photo-popup img.zoomed + p#senior-photo-caption {
+            background-color: #e0e0e0; /* Opaque light background for dark mode */
+            color: #121212;
+        }
+
+
+        #photo-zoom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.3); /* Optional: slight tint for better blur visibility */
+            backdrop-filter: blur(5px);
+           -webkit-backdrop-filter: blur(5px);
+            z-index: 1999; /* Below zoomed image's content but above normal page content */
+            display: none;
+        }
+
+        #zoom-exit-note {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2001; /* Above photo-zoom-overlay and zoomed image */
+            padding: 8px 12px;
+            border-radius: 4px;
+            /* Reuse tip-message styles for consistency */
+        }
+
+
+        body.dark-mode { background-color: #121212; color: #e0e0e0; }
+        body.dark-mode #controls-and-list-container { background-color: #1a1a1a; border-right-color: #444; }
+        body.dark-mode #panel-resizer { background-color: #333; }
+        body.dark-mode #panel-resizer:hover { background-color: #555; }
+        body.dark-mode .map-control { background-color: rgba(40, 40, 40, 0.9); color: #e0e0e0; border-color: #555; }
+        body.dark-mode .map-control h4 { border-bottom-color: #444; }
+        body.dark-mode #filter-control .grad-class-filter-header { border-bottom-color: #555; }
+        body.dark-mode .list-header-container { border-bottom-color: #444; }
+
+        body.dark-mode #stats-table th, body.dark-mode #stats-table td { border-color: #555; }
+        body.dark-mode #stats-table th { background-color: #2a2a2a; }
+        body.dark-mode #stats-table td.row-header { background-color: #222; }
+
+        body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
+        body.dark-mode #toggleSchoolListBtn:hover { background-color: #555; }
+
+        body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
+        /* body.dark-mode #senior-photo-popup img.zoomed { border-color: #333; } */ /* Handled by main .zoomed style */
+
+
+        body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
+        body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
+        body.dark-mode #searchSuggestions div:hover { background-color: #444; }
+        body.dark-mode .filter-color-box { border-color: #666; }
+        body.dark-mode .dark-mode-toggle-control, body.dark-mode #toggleTransitBtn { background-color: rgba(50, 50, 50, 0.9); color: #e0e0e0; border-color: #555; }
+        body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover { background-color: rgba(70, 70, 70, 0.95); }
+        body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
+        body.dark-mode .gm-style-iw-d { color: #e0e0e0 !important; overflow: visible !important; }
+        body.dark-mode .info-window-content { color: #e0e0e0; }
+        body.dark-mode .info-window-content b { color: #ffffff; }
+        body.dark-mode .info-window-content a { color: #90caf9 !important; }
+        body.dark-mode .info-window-content a:hover { color: #bbdefb !important; }
+        body.dark-mode .info-window-type { color: #aaa; }
+        body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] , body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
+        body.dark-mode .gm-style .gm-style-iw-c button[title="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
+        body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] img { display: block !important; width: 14px !important; height: 14px !important; filter: contrast(0) sepia(1) hue-rotate(0deg) saturate(0) brightness(1.5) invert(1) !important; opacity: 1 !important; transform: scale(1) !important; }
+        body.dark-mode .gm-style .gm-style-mtc , body.dark-mode .gmnoprint .gm-style-mtc { background-color: #303030 !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); border: 1px solid #444 !important; border-radius: 2px; }
+        body.dark-mode .gm-style .gm-style-mtc button, body.dark-mode .gm-style .gm-style-mtc div { color: #ffffff !important; font-weight: 500 !important; background-color: transparent !important; text-shadow: none !important; }
+        body.dark-mode .gm-style .gm-style-mtc button:hover, body.dark-mode .gm-style .gm-style-mtc div:hover { background-color: #444 !important; }
+        body.dark-mode .gm-style .gm-style-mtc .gm-active { background-color: #555 !important; color: #fff !important; border-left: none !important; border-right: none !important; }
+        body.dark-mode .gm-style .gm-style-mtc .gm-active div, body.dark-mode .gm-style .gm-style-mtc .gm-active button { color: #fff !important; background-color: #555 !important; }
+        body.dark-mode .gmnoprint .gm-control-active, body.dark-mode .gm-svpc, body.dark-mode .gm-fullscreen-control { background-color: #303030 !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important; border: 1px solid #444 !important; border-radius: 2px !important; }
+        body.dark-mode .gmnoprint .gm-control-active:hover, body.dark-mode .gm-svpc:hover, body.dark-mode .gm-fullscreen-control:hover { background-color: #444 !important; }
+        body.dark-mode .gm-fullscreen-control img, body.dark-mode .gm-svpc img, body.dark-mode .gm-style-mtc button img, body.dark-mode button[aria-label*="Zoom in"] img, body.dark-mode button[aria-label*="Zoom out"] img { filter: brightness(0) invert(1) !important; opacity: 1 !important; }
+        body.dark-mode .gm-style > .gmnoprint > div { background: transparent !important; box-shadow: none !important; border: none !important; border-radius: 2px; }
+        body.dark-mode .gm-style > .gmnoprint > div > div + div { background-color: #555 !important; }
+        body.dark-mode .gm-style .gm-style-cc, body.dark-mode .gm-style .gm-style-cc a, body.dark-mode .gm-style .gm-style-cc span, body.dark-mode .gm-style .gm-style-cc div { color: #ffffff !important; text-shadow: none !important; font-weight: 400 !important; opacity: 0.9 !important; }
+        body.dark-mode .gm-style .gm-style-cc a:link, body.dark-mode .gm-style .gm-style-cc a:visited { color: #ffffff !important; text-decoration: none !important; opacity: 0.9 !important; }
+        body.dark-mode .gm-style .gm-style-cc a:hover { color: #ffffff !important; text-decoration: underline !important; opacity: 1 !important; }
+        body.dark-mode .list-content li:hover span.school-name { text-decoration: underline; }
+        body.dark-mode .list-content li.list-item-highlight { background-color: #2a3950;  }
+
+        body.dark-mode .tip-message { background-color: #2a3a50; border-color: #4a6a90; color: #bcd8f0; }
+        body.dark-mode .dismiss-button { color: #888; }
+        body.dark-mode .dismiss-button:hover { color: #ddd; background-color: #444; }
+        body.dark-mode .filter-control-buttons button { background-color: #444; border-color: #666; color: #e0e0e0; }
+        body.dark-mode .filter-control-buttons button:hover { background-color: #555; }
+        body.dark-mode #zoom-exit-note { background-color: #2a3a50; border-color: #4a6a90; color: #bcd8f0; }
+        body.dark-mode #zoom-exit-note .dismiss-button { color: #888;}
+        body.dark-mode #zoom-exit-note .dismiss-button:hover { color: #ddd; background-color: #444; }
+
+    </style>
+</head>
+<body>
+    <div id="map-container">
+        <div id="controls-and-list-container">
+            <div id="description-control" class="map-control">
+                 <span>Senior College Destinations Map</span>
+            </div>
+            <div id="map-options-control" class="map-control">
+                <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
+                <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
+            </div>
+            <div id="filter-control" class="map-control">
+                 <h4 class="grad-class-filter-header">Filter by Graduating Class</h4>
+                 <div class="filter-control-buttons">
+                     <button id="checkAllGradClassesBtn" title="Check all graduating class filters">Check All</button>
+                     <button id="uncheckAllGradClassesBtn" title="Uncheck all graduating class filters">Uncheck All</button>
+                 </div>
+                 <div id="instagram-links-control">
+                    <a href="https://www.instagram.com/nestmdecisions2021/" target="_blank" class="instagram-link-button" title="Instagram '21 Decisions">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="instagram-logo">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>'21</span>
+                    </a>
+                    <a href="https://www.instagram.com/nestm2022decisions/" target="_blank" class="instagram-link-button" title="Instagram '22 Decisions">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="instagram-logo">
+                           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>'22</span>
+                    </a>
+                    <a href="https://www.instagram.com/nestmdecisions2023/" target="_blank" class="instagram-link-button" title="Instagram '23 Decisions">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="instagram-logo">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>'23</span>
+                    </a>
+                    <a href="https://www.instagram.com/nestmdecisions2024/" target="_blank" class="instagram-link-button" title="Instagram '24 Decisions">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="instagram-logo">
+                           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>'24</span>
+                    </a>
+                    <a href="https://www.instagram.com/nestmdecisions25/" target="_blank" class="instagram-link-button" title="Instagram '25 Decisions">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="instagram-logo">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <span>'25</span>
+                    </a>
+                </div>
+                 <div style="clear: both;"></div>
+                 <div id="grad-class-filters-container">
+                     {} <!-- Grad class filters will be populated here -->
+                 </div>
+            </div>
+            <div id="stats-table-control" class="map-control">
+                <h4>College Attendance Statistics</h4>
+                <table id="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Location Focus</th>
+                            <th>Public</th>
+                            <th>Private</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-header">In City (NYC)</td>
+                            <td data-stat="InCityNYC-Public">0</td>
+                            <td data-stat="InCityNYC-Private">0</td>
+                            <td data-stat="InCityNYC-Total">0</td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">In State (NY, Other)</td>
+                            <td data-stat="InStateNYOther-Public">0</td>
+                            <td data-stat="InStateNYOther-Private">0</td>
+                            <td data-stat="InStateNYOther-Total">0</td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Out of State (US)</td>
+                            <td data-stat="OutOfStateUS-Public">0</td>
+                            <td data-stat="OutOfStateUS-Private">0</td>
+                            <td data-stat="OutOfStateUS-Total">0</td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">International</td>
+                            <td data-stat="International-Public">0</td>
+                            <td data-stat="International-Private">0</td>
+                            <td data-stat="International-Total">0</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="row-header">Grand Total</td>
+                            <td data-stat="Total-Public" style="font-weight:bold;">0</td>
+                            <td data-stat="Total-Private" style="font-weight:bold;">0</td>
+                            <td data-stat="Total-Overall" style="font-weight:bold;">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div id="school-list-control" class="map-control">
+                <div class="list-header-container">
+                    <h4>College List & Seniors</h4>
+                     <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
+                    <div id="schoolSearchContainer">
+                        <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
+                        <div id="searchSuggestions"></div>
+                    </div>
+                </div>
+                 <div class="list-content">
+                     <div class="school-list-collapsible-content">
+                        {} <!-- School list ul will be populated here -->
+                     </div>
+                 </div>
+            </div>
+        </div>
+        <div id="panel-resizer"></div>
+        <div id="map"></div>
+    </div>
+    <div id="senior-photo-popup">
+        <span id="close-senior-photo-popup" class="dismiss-button" title="Close Photo">&times;</span>
+        <img src="#" alt="Senior Photo" onerror="this.style.display='none'; this.onerror=null;">
+        <p id="senior-photo-caption">Senior Name</p>
+    </div>
+    <div id="zoom-exit-note" class="tip-message" style="display: none;">
+        <span>To exit zooming, click out of the picture.</span>
+        <span class="dismiss-button" onclick="this.parentElement.style.display='none';">&times;</span>
+    </div>
+    <!-- Overlay div will be created and appended by JavaScript -->
+
+    <script>
+        // Graduating Class Colors
+        const gradClassColors = {
+            "'21": "#AA66CC", // Purple
+            "'22": "#FF0000", // Red
+            "'23": "#99CC00", // Green
+            "'24": "#FFBB33", // Orange
+            "'25": "#007FFF"  // Blue
+        };
+        const gradClassNames = Object.keys(gradClassColors);
+
+        const TYPE_IVY_LEAGUE = "Ivy League";
+        const TYPE_SUNY = "SUNY";
+        const TYPE_CUNY = "CUNY";
+        const TYPE_PURDUE = "Purdue University System";
+        const TYPE_OTHER_PUBLIC = "Other Public";
+        const TYPE_OTHER_PRIVATE = "Other Private";
+        const TYPE_UNDECIDED = "Undecided";
+
+
+        // Helper to determine location focus and public/private status
+        // NYC Bounding Box: Approx. North: 40.92 N, South: 40.47 N, West: -74.26 W, East: -73.70 E
+        const NYC_BOUNDS = { north: 40.92, south: 40.47, west: -74.26, east: -73.70 };
+
+        function getCollegeProperties(collegeEntry) {
+            let isCampusPublic = false;
+
+            // Determine public/private status from type
+            if ([TYPE_SUNY, TYPE_CUNY, TYPE_OTHER_PUBLIC, TYPE_PURDUE].includes(collegeEntry.type)) {
+                isCampusPublic = true;
+            } else if ([TYPE_IVY_LEAGUE, TYPE_OTHER_PRIVATE].includes(collegeEntry.type)) {
+                isCampusPublic = false;
+            }
+            if (collegeEntry.type === "Purdue University System") isCampusPublic = true;
+
+
+            // Determine location focus
+            let locationFocus;
+            const stateOrCountryUpper = collegeEntry.stateOrCountry ? collegeEntry.stateOrCountry.toUpperCase() : null;
+            let isInternationallyFlagged = false;
+
+            if (collegeEntry.name && (collegeEntry.name.includes("Shanghai") || collegeEntry.name.includes("London") || collegeEntry.name.includes("Edinburgh") || collegeEntry.name.includes("McGill") || collegeEntry.name.includes("St Andrews"))) {
+                isInternationallyFlagged = true;
+            }
+            else if (stateOrCountryUpper) {
+                if (["UK", "CANADA", "CHINA"].includes(stateOrCountryUpper)) {
+                    isInternationallyFlagged = true;
+                } else if (stateOrCountryUpper.length > 2 && stateOrCountryUpper !== "USA") {
+                    isInternationallyFlagged = true;
+                }
+            }
+
+            if (isInternationallyFlagged) {
+                locationFocus = "International";
+            } else {
+                if (collegeEntry.lat >= NYC_BOUNDS.south && collegeEntry.lat <= NYC_BOUNDS.north &&
+                    collegeEntry.lng >= NYC_BOUNDS.west && collegeEntry.lng <= NYC_BOUNDS.east) {
+                    locationFocus = "InCityNYC";
+                } else if (stateOrCountryUpper === "NY") {
+                    locationFocus = "InStateNYOther";
+                } else {
+                    locationFocus = "OutOfStateUS";
+                }
+            }
+
+            if (collegeEntry.name && (collegeEntry.name.includes("McGill University") || collegeEntry.name.includes("University of St Andrews") || collegeEntry.name.includes("University of Edinburgh"))) {
+                locationFocus = "International";
+            }
+            if (collegeEntry.name && (collegeEntry.name.includes("Shanghai") || collegeEntry.name.includes("London"))) {
+                 locationFocus = "International";
+            }
+            if (collegeEntry.name === "Undecided" || (collegeEntry.lat === 0 && collegeEntry.lng === 0)) {
+                locationFocus = "N/A"; // Or some other appropriate value for Undecided
+            }
+
+            return { isCampusPublic, locationFocus };
+        }
+
+
+        const collegeCoordsAndInfo = {
+            // Ivy League (All Private)
+            "Cornell University": { name: "Cornell University", lat: 42.454323, lng: -76.475266, type: TYPE_IVY_LEAGUE, imageUrl: "https://images.seeklogo.com/logo-png/19/2/cornell-university-logo-png_seeklogo-190243.png", homepageUrl: "https://www.cornell.edu/", stateOrCountry: "NY" },
+            "Princeton University": { name: "Princeton University", lat: 40.343899, lng: -74.660049, type: TYPE_IVY_LEAGUE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Princeton_seal.svg/1200px-Princeton_seal.svg.png", homepageUrl: "https://www.princeton.edu/", stateOrCountry: "NJ" },
+            "University of Pennsylvania": { name: "University of Pennsylvania", lat: 39.952305, lng: -75.193703, type: TYPE_IVY_LEAGUE, imageUrl: "https://branding.web-resources.upenn.edu/sites/default/files/styles/card_3x2/public/2022-03/UniversityofPennsylvania_Shield_RGB-2.png?h=3c287ac3&itok=HgG1DNc-", homepageUrl: "https://www.upenn.edu/", stateOrCountry: "PA" },
+            "Brown University": { name: "Brown University", lat: 41.826820, lng: -71.402931, type: TYPE_IVY_LEAGUE, imageUrl: "https://thebruinclub.wordpress.com/wp-content/uploads/2013/11/brown_logo.gif", homepageUrl: "https://www.brown.edu/", stateOrCountry: "RI" },
+            "Yale University": { name: "Yale University", lat: 41.316307, lng: -72.922585, type: TYPE_IVY_LEAGUE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Yale_University_logo.svg/500px-Yale_University_logo.svg.png", homepageUrl: "https://www.yale.edu/", stateOrCountry: "CT" },
+            "Harvard University": { name: "Harvard University", lat: 42.374443, lng: -71.116943, type: TYPE_IVY_LEAGUE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Harvard_University_coat_of_arms.svg/1200px-Harvard_University_coat_of_arms.svg.png", homepageUrl: "https://www.harvard.edu/", stateOrCountry: "MA" },
+            "Dartmouth College": { name: "Dartmouth College", lat: 43.704540, lng: -72.288986, type: TYPE_IVY_LEAGUE, imageUrl: "https://logolook.net/wp-content/uploads/2024/04/Dartmouth-College-Logo.png", homepageUrl: "https://home.dartmouth.edu/", stateOrCountry: "NH" },
+            "Columbia University": { name: "Columbia University", lat: 40.807384, lng: -73.963036, type: TYPE_IVY_LEAGUE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Columbia_coat_of_arms_no_crest.svg/640px-Columbia_coat_of_arms_no_crest.svg.png", homepageUrl: "https://www.columbia.edu/", stateOrCountry: "NY" },
+            // SUNY (All Public, NY)
+            "SUNY Binghamton": { name: "SUNY Binghamton", lat: 42.0894, lng: -75.9695, type: TYPE_SUNY, imageUrl: "https://pbs.twimg.com/profile_images/601475591918002177/qeftl81n_400x400.png", homepageUrl: "https://www.binghamton.edu/", stateOrCountry: "NY" },
+            "SUNY Albany": { name: "SUNY Albany", lat: 42.6842, lng: -73.8261, type: TYPE_SUNY, imageUrl: "https://www.albany.edu/sites/default/files/UAlbanyMark_F_S01A_HEX_Gold_Black_300ppi_.jpg", homepageUrl: "https://www.albany.edu/", stateOrCountry: "NY" },
+            "Stony Brook University": { name: "Stony Brook University", lat: 40.9041, lng: -73.1238, type: TYPE_SUNY, imageUrl: "https://www.master-of-finance.org/wp-content/uploads/2018/07/stony-brook-university-300x250.png", homepageUrl: "https://www.stonybrook.edu/", stateOrCountry: "NY" },
+            "SUNY New Paltz": { name: "SUNY New Paltz", lat: 41.7386, lng: -74.0852, type: TYPE_SUNY, imageUrl: "https://www.newpaltz.edu/media/ocm/toolkit/the-new-paltz-brand/vdp_pg13-2415x873.jpg", homepageUrl: "https://www.newpaltz.edu/", stateOrCountry: "NY" },
+            "Farmingdale State College": { name: "Farmingdale State College", lat: 40.7529, lng: -73.4267, type: TYPE_SUNY, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/SUNY_Farmingdale_seal.svg/1200px-SUNY_Farmingdale_seal.svg.png", homepageUrl: "https://www.farmingdale.edu/", stateOrCountry: "NY" },
+            "Fashion Institute of Technology": { name: "Fashion Institute of Technology", lat: 40.7467, lng: -73.9942, type: TYPE_SUNY, imageUrl: "https://www.fitnyc.edu/images/cer/fit-master-brand-wordmark-2-line.jpg", homepageUrl: "https://www.fitnyc.edu/", stateOrCountry: "NY"},
+            "University at Buffalo": { name: "University at Buffalo", lat: 42.9985, lng: -78.7892, type: TYPE_SUNY, imageUrl: "https://images.seeklogo.com/logo-png/30/2/university-at-buffalo-logo-png_seeklogo-307211.png", homepageUrl: "https://www.buffalo.edu/", stateOrCountry: "NY" },
+            // CUNY (All Public, NY - specifically NYC)
+            "Borough of Manhattan Community College": { name: "Borough of Manhattan Community College", lat: 40.7179, lng: -74.0120, type: TYPE_CUNY, imageUrl: "https://bmccprodstroac.blob.core.windows.net/uploads/2022/01/logo-2line-300x195.jpg", homepageUrl: "https://www.bmcc.cuny.edu/", stateOrCountry: "NY" },
+            "City College of New York": { name: "City College of New York", lat: 40.8194, lng: -73.9500, type: TYPE_CUNY, imageUrl: "https://www.ccny.cuny.edu/sites/default/files/2022-06/RGB_CNNY_Horizontal_Version_P2665C.png", homepageUrl: "https://www.ccny.cuny.edu/", stateOrCountry: "NY" },
+            "Baruch College": { name: "Baruch College", lat: 40.7404, lng: -73.9832, type: TYPE_CUNY, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjeFAV6ipn_I_ijO_HY8NtztoDY3XTt4oRPA&s", homepageUrl: "https://www.baruch.cuny.edu/", stateOrCountry: "NY" },
+            "Hunter College": { name: "Hunter College", lat: 40.7678, lng: -73.9645, type: TYPE_CUNY, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/98/Hunter_college_logo.png", homepageUrl: "https://hunter.cuny.edu/", stateOrCountry: "NY" },
+            "College of Staten Island": { name: "College of Staten Island", lat: 40.6022, lng: -74.1504, type: TYPE_CUNY, imageUrl: "https://academicworks.cuny.edu/assets/md5images/514e3c424d39651db69ee26172128457.jpg", homepageUrl: "https://www.csi.cuny.edu/", stateOrCountry: "NY" },
+            "Brooklyn College": { name: "Brooklyn College", lat: 40.6501, lng: -73.9496, type: TYPE_CUNY, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Brooklyn_College_Logo.svg/2560px-Brooklyn_College_Logo.svg.png", homepageUrl: "https://www.brooklyn.cuny.edu/", stateOrCountry: "NY" },
+            "Hostos Community College": { name: "Hostos Community College", lat: 40.8372, lng: -73.9174, type: TYPE_CUNY, imageUrl: "https://www.hostos.cuny.edu/getmedia/6381bdb0-c999-42b2-9baf-f5e7d62b2c64/Brand-Asset_Hostos-Pri-Vertical_2.aspx;.gif;;?width=250&height=144", homepageUrl: "https://www.hostos.cuny.edu/", stateOrCountry: "NY" },
+            "Queens College": { name: "Queens College", lat: 40.7404, lng: -73.8265, type: TYPE_CUNY, imageUrl: "https://micefa.org/wp-content/uploads/2017/09/Queens_College_Logo-300x152.png", homepageUrl: "https://www.qc.cuny.edu/", stateOrCountry: "NY" },
+            
+            // Other Public / Other Private / International
+            "University of Edinburgh": { name: "University of Edinburgh", lat: 55.9445, lng: -3.1892, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/University_of_Edinburgh_ceremonial_roundel.svg/250px-University_of_Edinburgh_ceremonial_roundel.svg.png", homepageUrl: "https://www.ed.ac.uk/", stateOrCountry: "UK" },
+            "Oberlin College": { name: "Oberlin College", lat: 41.29600657516989,  lng: -82.221110452876, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/75/Formal_Seal_of_Oberlin_College%2C_Oberlin%2C_OH%2C_USA.svg/1200px-Formal_Seal_of_Oberlin_College%2C_Oberlin%2C_OH%2C_USA.svg.png", homepageUrl: "https://www.oberlin.edu/", stateOrCountry: "OH" },
+            "Middlebury College": { name: "Middlebury College", lat: 44.00813840918396,  lng: -73.17606275693102, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.middlebury.edu/sites/default/files/styles/1136x639/public/2021-09/mdl_master_left_blue.png?fv=paBhF2wq&itok=T-evX_gn", homepageUrl: "https://www.middlebury.edu/", stateOrCountry: "VT" },
+            "University of California, Los Angeles": { name: "University of California, Los Angeles", lat: 34.0689, lng: -118.4452, type: TYPE_OTHER_PUBLIC, imageUrl: "https://brand.ucla.edu/images/logos-and-marks/campus-logo.jpg", homepageUrl: "https://www.ucla.edu/", stateOrCountry: "CA" },
+            "University of Southern California": { name: "University of Southern California", lat: 34.0224, lng: -118.2851, type: TYPE_OTHER_PRIVATE, imageUrl: "https://identity.usc.edu/wp-content/uploads/2022/09/PrimaryMonogram_0921.png", homepageUrl: "https://www.usc.edu/", stateOrCountry: "CA" },
+            "Washington University in St. Louis": { name: "Washington University in St. Louis", lat: 38.6487, lng: -90.3048, type: TYPE_OTHER_PRIVATE, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_oL6U7oIn12tHuQSAoBj657KrWLVTEGa30w&s", homepageUrl: "https://wustl.edu/", stateOrCountry: "MO" },
+            "Babson College": { name: "Babson College", lat: 42.2990, lng: -71.2648, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/9/93/Babson-logo.png", homepageUrl: "https://www.babson.edu/", stateOrCountry: "MA" },
+            "Fordham University": { name: "Fordham University", lat: 40.8613, lng: -73.8862, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.fordham.edu/media/review/content-assets/migrated/images/Athletic_Logo_Primary_Letter_Mark_1.jpg", homepageUrl: "https://www.fordham.edu/", stateOrCountry: "NY" }, // Bronx Campus
+            "University of Michigan": { name: "University of Michigan", lat: 42.2780, lng: -83.7382, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ed/University_of_Michigan_Logo.png", homepageUrl: "https://umich.edu/", stateOrCountry: "MI" },
+            "Ithaca College": { name: "Ithaca College", lat: 42.4220, lng: -76.4944, type: TYPE_OTHER_PRIVATE, imageUrl: "https://logowik.com/content/uploads/images/ithaca-college8996.jpg", homepageUrl: "https://www.ithaca.edu/", stateOrCountry: "NY" },
+            "Pratt Institute": { name: "Pratt Institute", lat: 40.6910, lng: -73.9631, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.pratt.edu/wp-content/themes/pratt/static/img/og.png", homepageUrl: "https://www.pratt.edu/", stateOrCountry: "NY" }, // Brooklyn
+            "Towson University": { name: "Towson University", lat: 39.3941, lng: -76.6100, type: TYPE_OTHER_PUBLIC, imageUrl: "https://www.towson.edu/brand/images/brand-brandmarks-horiz-sq.jpg", homepageUrl: "https://www.towson.edu/", stateOrCountry: "MD" },
+            "Emerson College": { name: "Emerson College", lat: 42.352113683371854, lng: -71.06584657503319, type: TYPE_OTHER_PRIVATE, imageUrl: "https://brand.emerson.edu/wp-content/uploads/sites/11/2017/04/Emerson-PrimaryLogo-Purple-600px.png", homepageUrl: "https://emerson.edu/", stateOrCountry: "MA" },
+            "Northeastern University": { name: "Northeastern University", lat: 42.3398, lng: -71.0892, type: TYPE_OTHER_PRIVATE, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQj8Gdl0Gui9xl5q_D4acxRtSg-k4HVkE5dYQ&s", homepageUrl: "https://www.northeastern.edu/", stateOrCountry: "MA" },
+            "Tufts University": { name: "Tufts University", lat: 42.4057, lng: -71.1186, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Tufts_University_wordmark.svg/2560px-Tufts_University_wordmark.svg.png", homepageUrl: "https://www.tufts.edu/", stateOrCountry: "MA" },
+            "Northwestern University": { name: "Northwestern University", lat: 42.0565, lng: -87.6753, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.northwestern.edu/brand/images/wordmark/guideline-sm4.gif", homepageUrl: "https://www.northwestern.edu/", stateOrCountry: "IL" },
+            "McGill University": { name: "McGill University", lat: 45.5048, lng: -73.5772, type: TYPE_OTHER_PUBLIC, imageUrl: "https://www.designyourway.net/blog/wp-content/uploads/2024/04/the-meaning-behind-the-mcGill-university-logo.jpg", homepageUrl: "https://www.mcgill.ca/", stateOrCountry: "Canada" },
+            "Massachusetts Institute of Technology": { name: "Massachusetts Institute of Technology", lat: 42.3601, lng: -71.0942, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/2560px-MIT_logo.svg.png", homepageUrl: "https://web.mit.edu/", stateOrCountry: "MA" },
+            "Wesleyan University": { name: "Wesleyan University", lat: 41.5557, lng: -72.6576, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Wesleyan_University.svg/1200px-Wesleyan_University.svg.png", homepageUrl: "https://www.wesleyan.edu/", stateOrCountry: "CT" },
+            "Vassar College": { name: "Vassar College", lat: 41.6870, lng: -73.8969, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/c/c7/Vassar_College_Seal.svg", homepageUrl: "https://www.vassar.edu/", stateOrCountry: "NY" },
+            "Williams College": { name: "Williams College", lat: 42.7133, lng: -73.2032, type: TYPE_OTHER_PRIVATE, imageUrl: "https://organizationalperformancegroup.com/wp-content/uploads/2023/11/Williams-College-logo.png", homepageUrl: "https://www.williams.edu/", stateOrCountry: "MA" },
+            "Smith College": { name: "Smith College", lat: 42.3176, lng: -72.6370, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Smith_College_logo_%282000%29%2C_color%2C_stacked.svg/693px-Smith_College_logo_%282000%29%2C_color%2C_stacked.svg.png", homepageUrl: "https://www.smith.edu/", stateOrCountry: "MA" },
+            "Colgate University": { name: "Colgate University", lat: 42.8172, lng: -75.5370, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.colgate.edu/sites/default/files/2020-10/Col_Athletics_C_RGB_500_0.png", homepageUrl: "https://www.colgate.edu/", stateOrCountry: "NY" },
+            "New York University": { name: "New York University", lat: 40.7295, lng: -73.9965, type: TYPE_OTHER_PRIVATE, imageUrl: "https://yt3.ggpht.com/-RZYi5isxH_M/AAAAAAAAAAI/AAAAAAAAAAA/rmWpoe2qZzI/s900-c-k-no/photo.jpg", homepageUrl: "https://www.nyu.edu/", stateOrCountry: "NY" },
+            "University of Vermont": { name: "University of Vermont", lat: 44.4774, lng: -73.1962, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/3/34/Vermont_Catamounts_logo.svg/1200px-Vermont_Catamounts_logo.svg.png", homepageUrl: "https://www.uvm.edu/", stateOrCountry: "VT" },
+            "Barnard College": { name: "Barnard College", lat: 40.8095, lng: -73.9640, type: TYPE_OTHER_PRIVATE, imageUrl: "https://barnardstore.com/cdn/shop/products/barnard-seal-blue.jpg?v=1580924558", homepageUrl: "https://barnard.edu/", stateOrCountry: "NY" },
+            "Rochester Institute of Technology": { name: "Rochester Institute of Technology", lat: 43.0849, lng: -77.6744, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.rit.edu/brandportal/sites/rit.edu.brandportal/files/2022-10/RIT-00071A_RGB_whiteTM.jpg", homepageUrl: "https://www.rit.edu/", stateOrCountry: "NY" },
+            "Georgetown University": { name: "Georgetown University", lat: 38.9076, lng: -77.0723, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.georgetown.edu/wp-content/uploads/2019/10/Georgetown_logo_blueRGB-300x210.jpg", homepageUrl: "https://www.georgetown.edu/", stateOrCountry: "DC" },
+            "Boston University": { name: "Boston University", lat: 42.3505, lng: -71.1054, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/1/15/Boston_University_Terriers_logo.svg/1200px-Boston_University_Terriers_logo.svg.png", homepageUrl: "https://www.bu.edu/", stateOrCountry: "MA" },
+            "University of Colorado Boulder": { name: "University of Colorado Boulder", lat: 40.0076, lng: -105.2659, type: TYPE_OTHER_PUBLIC, imageUrl: "https://www.colorado.edu/brand/sites/default/files/styles/original_image_size/public/2024-12/lockup_center_0.png?itok=6qHN63TX", homepageUrl: "https://www.colorado.edu/", stateOrCountry: "CO" },
+            "Bucknell University": { name: "Bucknell University", lat: 40.9547, lng: -76.8836, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/Bucknell_Bison_logo.svg/1200px-Bucknell_Bison_logo.svg.png", homepageUrl: "https://www.bucknell.edu/", stateOrCountry: "PA" },
+            "University of Wisconsin-Madison": { name: "University of Wisconsin-Madison", lat: 43.0766, lng: -89.4125, type: TYPE_OTHER_PUBLIC, imageUrl: "https://brand.wisc.edu/content/uploads/2023/09/vert-w-crest-logo-web-digital-color.png", homepageUrl: "https://www.wisc.edu/", stateOrCountry: "WI" },
+            "University of Massachusetts Amherst": { name: "University of Massachusetts Amherst", lat: 42.3862, lng: -72.5261, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4f/UMass_Seal_Medium_PMS_202.png", homepageUrl: "https://www.umass.edu/", stateOrCountry: "MA" },
+            "Pennsylvania State University": { name: "Pennsylvania State University", lat: 40.7982, lng: -77.8599, type: TYPE_OTHER_PUBLIC, imageUrl: "https://brand.psu.edu/images/backgrounds/veritcal-1-mark_registered.png", homepageUrl: "https://www.psu.edu/", stateOrCountry: "PA" },
+            "Florida State University": { name: "Florida State University", lat: 30.4414, lng: -84.2965, type: TYPE_OTHER_PUBLIC, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4MvcZLICQ3xHwuSAmLfq0vdf5Bq20ivlXXg&s", homepageUrl: "https://www.fsu.edu/", stateOrCountry: "FL" },
+            "Johns Hopkins University": { name: "Johns Hopkins University", lat: 39.3299, lng: -76.6205, type: TYPE_OTHER_PRIVATE, imageUrl: "https://crystalpng.com/wp-content/uploads/2025/01/johns-hopkins-university-logo-in-circle.png", homepageUrl: "https://www.jhu.edu/", stateOrCountry: "MD" },
+            "Syracuse University": { name: "Syracuse University", lat: 43.0392, lng: -76.1347, type: TYPE_OTHER_PRIVATE, imageUrl: "https://1000logos.net/wp-content/uploads/2022/02/Syracuse-Orange-Logo-2006.png", homepageUrl: "https://www.syracuse.edu/", stateOrCountry: "NY" },
+            "American University": { name: "American University", lat: 38.9379, lng: -77.0893, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.american.edu/ucm/images/AU_stacked_logo.png", homepageUrl: "https://www.american.edu/", stateOrCountry: "DC" },
+            "Howard University": { name: "Howard University", lat: 38.92344291674185,  lng: -77.01977855792838, type: TYPE_OTHER_PRIVATE, imageUrl: "https://data.org/wp-content/uploads/2022/05/Howard-Logo.png", homepageUrl: "https://howard.edu/", stateOrCountry: "DC" },
+            "Carleton College": { name: "Carleton College", lat: 44.4612, lng: -93.1536, type: TYPE_OTHER_PRIVATE, imageUrl: "https://cdn.carleton.edu/uploads/sites/158/2020/06/full-carleton-c-ray-symbol.png", homepageUrl: "https://www.carleton.edu/", stateOrCountry: "MN" },
+            "The Cooper Union": { name: "The Cooper Union", lat: 40.7296, lng: -73.9907, type: TYPE_OTHER_PRIVATE, imageUrl: "https://studyarchitecture.com/wp-content/uploads/82_TheCooperUnion_icon_white.png", homepageUrl: "https://cooper.edu/", stateOrCountry: "NY" },
+            "St. John's University": { name: "St. John's University", lat: 40.7218, lng: -73.7935, type: TYPE_OTHER_PRIVATE, imageUrl: "https://seeklogo.com/images/S/st-johns-university-logo-62DEF73135-seeklogo.com.png", homepageUrl: "https://www.stjohns.edu/", stateOrCountry: "NY" }, // Queens Campus
+            "Connecticut College": { name: "Connecticut College", lat: 41.3786, lng: -72.1059, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8b/Formal_Seal_of_Connecticut_College%2C_New_London%2C_CT%2C_USA.svg/1200px-Formal_Seal_of_Connecticut_College%2C_New_London%2C_CT%2C_USA.svg.png", homepageUrl: "https://www.conncoll.edu/", stateOrCountry: "CT" },
+            "University of Virginia": { name: "University of Virginia", lat: 38.0336, lng: -78.5080, type: TYPE_OTHER_PUBLIC, imageUrl: "https://1000logos.net/wp-content/uploads/2022/07/University-of-Virginia-Logo.png", homepageUrl: "https://www.virginia.edu/", stateOrCountry: "VA" },
+            "Wellesley College": { name: "Wellesley College", lat: 42.2934, lng: -71.3064, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Formal_Logo_of_Wellesley_College%2C_Wellesley%2C_MA%2C_USA.svg/2560px-Formal_Logo_of_Wellesley_College%2C_Wellesley%2C_MA%2C_USA.svg.png", homepageUrl: "https://www.wellesley.edu/", stateOrCountry: "MA" },
+            "University of Rhode Island": { name: "University of Rhode Island", lat: 41.4900, lng: -71.5278, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/University_of_Rhode_Island_seal.svg/1200px-University_of_Rhode_Island_seal.svg.png", homepageUrl: "https://www.uri.edu/", stateOrCountry: "RI" },
+            "Rutgers University": { name: "Rutgers University", lat: 40.5008, lng: -74.4474, type: TYPE_OTHER_PUBLIC, imageUrl: "https://1000logos.net/wp-content/uploads/2017/08/Logo-Rutgers-University.jpg", homepageUrl: "https://www.rutgers.edu/", stateOrCountry: "NJ" },
+            "AMDA College of the Performing Arts": { name: "AMDA College of the Performing Arts", lat: 40.7705, lng: -73.9850, type: TYPE_OTHER_PRIVATE, imageUrl: "https://cdn.dancemedia.com/listings/31/kyzPkoIiximk56vFujMgQ6emkV91Iu2n0JEc93Bh.png", homepageUrl: "https://www.amda.edu/", stateOrCountry: "NY" }, // NYC Campus
+            "University of Pittsburgh": { name: "University of Pittsburgh", lat: 40.4441, lng: -79.9531, type: TYPE_OTHER_PUBLIC, imageUrl: "https://www.brand.pitt.edu/sites/default/files/inline-images/clear_spacing_0.png", homepageUrl: "https://www.pitt.edu/", stateOrCountry: "PA" },
+            "NYU Shanghai": { name: "NYU Shanghai", lat: 31.2257, lng: 121.5338, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/NYU_Shanghai_logo.svg/1200px-NYU_Shanghai_logo.svg.png", homepageUrl: "https://shanghai.nyu.edu/", stateOrCountry: "China" },
+            "University of Arizona": { name: "University of Arizona", lat: 32.2319, lng: -110.9535, type: TYPE_OTHER_PUBLIC, imageUrl: "https://phoenixmed.arizona.edu/sites/default/files/campus/marcomm/brand/master-logo/1-ua-vertical/ua_stack_rgb_4.png", homepageUrl: "https://www.arizona.edu/", stateOrCountry: "AZ" },
+            "Skidmore College": { name: "Skidmore College", lat: 43.09591225667546,  lng: -73.7854101443904, type: TYPE_OTHER_PRIVATE, imageUrl: "https://collegeaim.org/wp-content/uploads/2021/09/Skidmore_Wordmark_Thick_Green.png", homepageUrl: "https://www.skidmore.edu/", stateOrCountry: "NY" },
+            "Union College": { name: "Union College", lat: 42.8174, lng: -73.9298, type: TYPE_OTHER_PRIVATE, imageUrl: "https://images.squarespace-cdn.com/content/v1/540402efe4b014c74d2fd2fe/1614274310286-JEL8U4FSJGKHO090FXT3/Union+College.png", homepageUrl: "https://www.union.edu/", stateOrCountry: "NY" },
+            "Temple University": { name: "Temple University", lat: 39.9813, lng: -75.1554, type: TYPE_OTHER_PUBLIC, imageUrl: "https://logos-world.net/wp-content/uploads/2023/03/Temple-University-Logo.png", homepageUrl: "https://www.temple.edu/", stateOrCountry: "PA" },
+            "United States Naval Academy": { name: "United States Naval Academy", lat: 38.9828, lng: -76.4850, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Logo_of_the_United_States_Naval_Academy.svg/1200px-Logo_of_the_United_States_Naval_Academy.svg.png", homepageUrl: "https://www.usna.edu/", stateOrCountry: "MD" }, // Federal Service Academy
+            "Case Western Reserve University": { name: "Case Western Reserve University", lat: 41.5043, lng: -81.6084, type: TYPE_OTHER_PRIVATE, imageUrl: "https://case.edu/brand/sites/default/files/2023-05/Centered-Four-Line-Logo-on-Blue_0.jpeg", homepageUrl: "https://case.edu/", stateOrCountry: "OH" },
+            "NYU London": { name: "NYU London", lat: 51.5139, lng: -0.1177, type: TYPE_OTHER_PRIVATE, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAfc6Ni6I0QzsYKmqhB3yPBVywpPirBeVM9Q&s", homepageUrl: "https://www.nyu.edu/london.html", stateOrCountry: "UK" },
+            "University of California San Diego": { name: "University of California San Diego", lat: 32.8801, lng: -117.2340, type: TYPE_OTHER_PUBLIC, imageUrl: "https://content.sportslogos.net/logos/35/6819/full/uc_san_diego_tritons_logo_secondary_2002_sportslogosnet-9613.png", homepageUrl: "https://ucsd.edu/", stateOrCountry: "CA" },
+            "Haverford College": { name: "Haverford College", lat: 40.0084, lng: -75.3060, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.interfolio.com/wp-content/uploads/Haverford_Logo.png", homepageUrl: "https://www.haverford.edu/", stateOrCountry: "PA" },
+            "Pace University": { name: "Pace University", lat: 40.7111, lng: -74.0048, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/79/Pace_University_Logo_2021.png", homepageUrl: "https://www.pace.edu/", stateOrCountry: "NY" }, // NYC Campus
+            "George Washington University": { name: "George Washington University", lat: 38.8994, lng: -77.0489, type: TYPE_OTHER_PRIVATE, imageUrl: "https://communications.gwu.edu/sites/g/files/zaxdzs5371/files/2024-04/athletics-logo-examples-gw_0.jpg", homepageUrl: "https://www.gwu.edu/", stateOrCountry: "DC" },
+            "University of Rochester": { name: "University of Rochester", lat: 43.1285, lng: -77.6275, type: TYPE_OTHER_PRIVATE, imageUrl: "https://1000logos.net/wp-content/uploads/2022/07/University-of-Rochester-Logo.png", homepageUrl: "https://www.rochester.edu/", stateOrCountry: "NY" },
+            "Worcester Polytechnic Institute": { name: "Worcester Polytechnic Institute", lat: 42.2743, lng: -71.8076, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/e/ec/WPI_logo.svg/1200px-WPI_logo.svg.png", homepageUrl: "https://www.wpi.edu/", stateOrCountry: "MA" },
+            "Boston College": { name: "Boston College", lat: 42.3355, lng: -71.1685, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/9/96/Boston_College_Eagles_logo.svg/1200px-Boston_College_Eagles_logo.svg.png", homepageUrl: "https://www.bc.edu/", stateOrCountry: "MA" },
+            "Brandeis University": { name: "Brandeis University", lat: 42.3659, lng: -71.2580, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.brandeis.edu/brand/images/visual-identity.jpg", homepageUrl: "https://www.brandeis.edu/", stateOrCountry: "MA" },
+            "Vanderbilt University": { name: "Vanderbilt University", lat: 36.1447, lng: -86.8027, type: TYPE_OTHER_PRIVATE, imageUrl: "https://cdn.vanderbilt.edu/vu-news/files/20230520091240/2022-Vanderbilt-University-wordmark.jpg", homepageUrl: "https://www.vanderbilt.edu/", stateOrCountry: "TN" },
+            "Bard College": { name: "Bard College", lat: 42.0215, lng: -73.9107, type: TYPE_OTHER_PRIVATE, imageUrl: "https://slsvcoalition.org/wp-content/uploads/2021/06/Bard-College-scaled.jpeg", homepageUrl: "https://www.bard.edu/", stateOrCountry: "NY" },
+            "Emory University": { name: "Emory University", lat: 33.7925, lng: -84.3240, type: TYPE_OTHER_PRIVATE, imageUrl: "https://1000logos.net/wp-content/uploads/2022/06/Emory-University-Logo.png", homepageUrl: "https://www.emory.edu/", stateOrCountry: "GA" },
+            "Purdue University": { name: "Purdue University", lat: 40.4237, lng: -86.9212, type: TYPE_PURDUE, imageUrl: "https://engineering.purdue.edu/ECE/Communications/files/PU-V-Full-RGB.png", homepageUrl: "https://www.purdue.edu/", stateOrCountry: "IN" },
+            "University of St Andrews": { name: "University of St Andrews", lat: 56.3410, lng: -2.7924, type: TYPE_OTHER_PUBLIC, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfpZWJM12MG8E5y6Lx6wTg8ZpYmXrGkznKiw&s", homepageUrl: "https://www.st-andrews.ac.uk/", stateOrCountry: "UK" },
+            "Indiana University Bloomington": { name: "Indiana University Bloomington", lat: 39.1653, lng: -86.5264, type: TYPE_OTHER_PUBLIC, imageUrl: "https://logos-world.net/wp-content/uploads/2022/01/Indiana-University-Logo.png", homepageUrl: "https://www.iu.edu/", stateOrCountry: "IN" },
+            "University of Richmond": { name: "University of Richmond", lat: 37.5793, lng: -77.5353, type: TYPE_OTHER_PRIVATE, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXMzFe3klcIl1J_FhO02G6r1SBoecRkYhhkA&s", homepageUrl: "https://www.richmond.edu/", stateOrCountry: "VA" },
+            "Lehigh University": { name: "Lehigh University", lat: 40.6073, lng: -75.3778, type: TYPE_OTHER_PRIVATE, imageUrl: "https://collegeaim.org/wp-content/uploads/2021/08/Lehigh-University-logo.png", homepageUrl: "https://www1.lehigh.edu/", stateOrCountry: "PA" },
+            "University of Washington": { name: "University of Washington", lat: 47.6553, lng: -122.3035, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/5/58/University_of_Washington_seal.svg/1200px-University_of_Washington_seal.svg.png", homepageUrl: "https://www.washington.edu/", stateOrCountry: "WA" },
+            "University of Maryland, College Park": { name: "University of Maryland, College Park", lat: 38.9869, lng: -76.9426, type: TYPE_OTHER_PUBLIC, imageUrl: "https://umd-brand.transforms.svdcdn.com/production/uploads/images/logos-formal-seal.jpg?w=1801&h=1801&auto=compress%2Cformat&fit=crop&dm=1651267392&s=81a14f930f7888983f0f8bc10146c0b2", homepageUrl: "https://www.umd.edu/", stateOrCountry: "MD" },
+            "Hamilton College": { name: "Hamilton College", lat: 43.0509, lng: -75.4065, type: TYPE_OTHER_PRIVATE, imageUrl: "https://s3.amazonaws.com/mediacdn.hamilton.edu/images/3:2/300/logohamiltonlogocolorjpgjpg.jpg", homepageUrl: "https://www.hamilton.edu/", stateOrCountry: "NY" },
+            "Fairfield University": { name: "Fairfield University", lat: 41.159862537939865,  lng: -73.25779806570878, type: TYPE_OTHER_PRIVATE, imageUrl: "https://1000logos.net/wp-content/uploads/2021/06/Fairfield-Stags-logo.png", homepageUrl: "https://www.fairfield.edu/", stateOrCountry: "CT" },
+            "University of Miami": { name: "University of Miami", lat: 25.7198, lng: -80.2790, type: TYPE_OTHER_PRIVATE, imageUrl: "https://logos-world.net/wp-content/uploads/2022/02/University-Of-Miami-Symbol.png", homepageUrl: "https://welcome.miami.edu/", stateOrCountry: "FL" },
+            "Hobart and William Smith Colleges": { name: "Hobart and William Smith Colleges", lat: 42.85823553920702,  lng: -76.98669262110342, type: TYPE_OTHER_PRIVATE, imageUrl: "https://pbs.twimg.com/profile_images/950488578970259456/zBWqPkOe_400x400.jpg", homepageUrl: "https://www.hws.edu/", stateOrCountry: "NY" },
+            "Tulane University": { name: "Tulane University", lat: 29.9346, lng: -90.1220, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7e/Tulane_logo.svg/800px-Tulane_logo.svg.png", homepageUrl: "https://tulane.edu/", stateOrCountry: "LA" },
+            "University of Florida": { name: "University of Florida", lat: 29.6436, lng: -82.3549, type: TYPE_OTHER_PUBLIC, imageUrl: "https://1000logos.net/wp-content/uploads/2022/07/University-of-Florida-Logo.png", homepageUrl: "https://www.ufl.edu/", stateOrCountry: "FL" },
+            "University of California, Berkeley": { name: "University of California, Berkeley", lat: 37.8719, lng: -122.2585, type: TYPE_OTHER_PUBLIC, imageUrl: "https://brand.berkeley.edu/wp-content/uploads/2024/08/logo-variations-thumbnail-gold-blue-1.png", homepageUrl: "https://www.berkeley.edu/", stateOrCountry: "CA" },
+            "University of Chicago": { name: "University of Chicago", lat: 41.7886, lng: -87.5987, type: TYPE_OTHER_PRIVATE, imageUrl: "https://1000logos.net/wp-content/uploads/2022/07/University-of-Chicago-Logo.png", homepageUrl: "https://www.uchicago.edu/", stateOrCountry: "IL" },
+            "Carnegie Mellon University": { name: "Carnegie Mellon University", lat: 40.4433, lng: -79.9436, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.cmu.edu/brand/brand-guidelines/images/wordmarksquare-black-600x600.png", homepageUrl: "https://www.cmu.edu/", stateOrCountry: "PA" },
+            "Duke University": { name: "Duke University", lat: 36.0014, lng: -78.9382, type: TYPE_OTHER_PRIVATE, imageUrl: "https://logos-world.net/wp-content/uploads/2023/08/Duke-University-Logo.jpg", homepageUrl: "https://duke.edu/", stateOrCountry: "NC" },
+            "Molloy University": { name: "Molloy University", lat: 40.686304859193,  lng: -73.62706838655407, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f7/Molloy_University_logo.png/250px-Molloy_University_logo.png", homepageUrl: "https://www.molloy.edu/", stateOrCountry: "NY" },
+            "Davidson College": { name: "Davidson College", lat: 35.50160957320831,  lng: -80.84241063074866, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.davidson.edu/sites/default/files/styles/max_650x650/public/2023-08/Primary-Lockup-NewsStory.png?itok=BJeJoK6D", homepageUrl: "https://www.davidson.edu/", stateOrCountry: "NC" },
+            "Bentley University": { name: "Bentley University", lat: 42.38559544108198,  lng: -71.2218761289859, type: TYPE_OTHER_PRIVATE, imageUrl: "https://d2f5upgbvkx8pz.cloudfront.net/sites/default/files/inline-files/Bentley_Logo_Vertical_Centered_Blue.png", homepageUrl: "https://www.bentley.edu/", stateOrCountry: "MA" },
+            "Muhlenberg College": { name: "Muhlenberg College", lat: 40.598201389145224, lng: -75.50810760019013, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.tours.vividmediany.com/wp-content/uploads/2022/06/Muhlenberg-Virtual-tour-logo.png", homepageUrl: "https://www.muhlenberg.edu/", stateOrCountry: "PA" },
+            "William and Mary": { name: "William and Mary", lat: 37.2719, lng: -76.7070, type: TYPE_OTHER_PUBLIC, imageUrl: "https://brand.wm.edu/wp-content/uploads/2022/06/Athletics-WM-Green-on-Gold-300x244.png", homepageUrl: "https://www.wm.edu/", stateOrCountry: "VA" },
+            "Bates College": { name: "Bates College", lat: 44.105883325008925, lng: -70.20220795125299, type: TYPE_OTHER_PRIVATE, imageUrl: "https://www.bates.edu/communications-marketing/files/2013/01/bates-bobcat-primary3-white.jpg", homepageUrl: "https://www.bates.edu/", stateOrCountry: "ME" },
+            // "University of Rhode Island": { name: "University of Rhode Island", lat: 41.48640152229749, lng: -71.5306680648677, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Rhode_Island_Rams_logo.svg/1596px-Rhode_Island_Rams_logo.svg.png", homepageUrl: "https://www.uri.edu/", stateOrCountry: "RI" }, // Duplicate of earlier URI, keeping first one.
+            "Ohio State University": { name: "Ohio State University", lat: 40.00601488158067,  lng: -83.02830531874122, type: TYPE_OTHER_PUBLIC, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Ohio_State_Buckeyes_logo.svg/2082px-Ohio_State_Buckeyes_logo.svg.png", homepageUrl: "https://www.osu.edu/", stateOrCountry: "OH" },
+            "Arizona State University": { name: "Arizona State University", lat: 33.42302431674467, lng: -111.92779841036524, type: TYPE_OTHER_PUBLIC, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHGPodz7sxsDiDzrsxKl5TXj0QitIgIB3yZQ&s", homepageUrl: "https://www.asu.edu/", stateOrCountry: "AZ" },
+            "University of East London": { name: "University of East London", lat: 51.50772556661829, lng: 0.06501698390938543, type: TYPE_OTHER_PUBLIC, imageUrl: "https://www.globalstudentcentre.com/wp-content/uploads/2023/02/UEL-logo-1.png", homepageUrl: "https://www.uel.ac.uk/", stateOrCountry: "UK" },
+            "Occidental College": { name: "Occidental College", lat: 34.12738460072989,  lng: -118.21050787222104, type: TYPE_OTHER_PRIVATE, imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Occidental_College_logo.svg/2560px-Occidental_College_logo.svg.png", homepageUrl: "https://www.oxy.edu/", stateOrCountry: "CA" },
+            "University of the Highlands and Islands": { name: "University of the Highlands and Islands", lat: 57.4754445523381,  lng: -4.184040112710482, type: TYPE_OTHER_PUBLIC, imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDB_VSjLIboInFQOK3tYGfA1vZqXtzSaAFYg&s", homepageUrl: "https://www.uhi.ac.uk/en/", stateOrCountry: "UK" },
+            
+            "Generic College": { name: "Generic College", lat: 0, lng: 0, type: "Undecided", imageUrl: "placeholder-logo.png", homepageUrl: "#", stateOrCountry: "N/A"}, // stateOrCountry should be N/A for stats
+            "Undecided": { name: "Undecided", lat: 0, lng: 0, type: TYPE_UNDECIDED, imageUrl: "placeholder-logo.png", homepageUrl: "#", stateOrCountry: "N/A" } // stateOrCountry should be N/A
+        };
+
+
+        // Add derived properties to collegeCoordsAndInfo
+        for (const collegeName in collegeCoordsAndInfo) {
+            if (collegeCoordsAndInfo.hasOwnProperty(collegeName)) {
+                const properties = getCollegeProperties(collegeCoordsAndInfo[collegeName]);
+                collegeCoordsAndInfo[collegeName].isCampusPublic = properties.isCampusPublic;
+                collegeCoordsAndInfo[collegeName].locationFocus = properties.locationFocus;
+            }
+        }
+
+
+        const collegeTypeMappings = {
+            "FIT": TYPE_SUNY, "Fashion Institute of Technology": TYPE_SUNY,
+            "AMDA": TYPE_OTHER_PRIVATE, "AMDA College of the Performing Arts": TYPE_OTHER_PRIVATE,
+            "Undecided": TYPE_UNDECIDED,
+        };
+
+
+        function normalizeCollegeName(name) {
+            name = name.trim();
+            const originalNameLower = name.toLowerCase();
+
+            // Specific normalizations first
+            if (originalNameLower === "bing") return "SUNY Binghamton";
+            if (originalNameLower === "ualbany") return "SUNY Albany";
+            if (originalNameLower === "sbu") return "Stony Brook University";
+            if (originalNameLower === "ccny") return "City College of New York";
+            if (originalNameLower === "bmcc") return "Borough of Manhattan Community College";
+            if (originalNameLower === "csi") return "College of Staten Island";
+            if (originalNameLower === "ub") return "University at Buffalo";
+            if (originalNameLower.includes("harvard")) return "Harvard University";
+            if (originalNameLower.includes("Hobart and William Smith Colleges")) return "Hobart and William Smith Colleges";
+            if (originalNameLower === "u rhode island") return "University of Rhode Island";
+            if (originalNameLower.includes("bates")) return "Bates College";
+            if (originalNameLower.includes("brooklyn college")) return "Brooklyn College";
+            if (originalNameLower.includes("yale")) return "Yale University";
+            if (originalNameLower.includes("arizona state university")) return "Arizona State University"; // Corrected
+            if (originalNameLower.includes("muhlenberg")) return "Muhlenberg College";
+            if (originalNameLower.includes("hostos")) return "Hostos Community College";
+            if (originalNameLower.includes("columbia")) return "Columbia University";
+            if (originalNameLower.includes("occidental")) return "Occidental College";
+            if (originalNameLower.includes("bentley")) return "Bentley University";
+            if (originalNameLower.includes("davidson")) return "Davidson College";
+            if (originalNameLower.includes("molloy")) return "Molloy University";
+            if (originalNameLower.includes("rutgers")) return "Rutgers University";
+            if (originalNameLower.includes("pratt")) return "Pratt Institute";
+            if (originalNameLower.includes("fordham")) return "Fordham University";
+            if (originalNameLower.includes("brown")) return "Brown University";
+            if (originalNameLower.includes("dartmouth")) return "Dartmouth College";
+            if (originalNameLower.includes("tufts")) return "Tufts University";
+            if (originalNameLower.includes("northwestern")) return "Northwestern University";
+            if (originalNameLower.includes("syracuse")) return "Syracuse University";
+            if (originalNameLower.includes("brandeis")) return "Brandeis University";
+            if (originalNameLower.includes("middlebury")) return "Middlebury College";
+            if (originalNameLower.includes("hamilton")) return "Hamilton College";
+            if (originalNameLower.includes("emerson")) return "Emerson College";
+            if (originalNameLower.includes("emory")) return "Emory University";
+            if (originalNameLower.includes("pace")) return "Pace University";
+            if (originalNameLower.includes("williams")) return "Williams College";
+            if (originalNameLower.includes("bard")) return "Bard College";
+            if (originalNameLower.includes("barnard")) return "Barnard College";
+            if (originalNameLower.includes("ithaca")) return "Ithaca College";
+            if (originalNameLower.includes("vassar")) return "Vassar College";
+            if (originalNameLower.includes("union")) return "Union College";
+            if (originalNameLower.includes("haverford")) return "Haverford College";
+            if (originalNameLower === "smith") return "Smith College";
+            if (originalNameLower.includes("oberlin")) return "Oberlin College";
+            if (originalNameLower.includes("cornell")) return "Cornell University";
+            if (originalNameLower.includes("vanderbilt")) return "Vanderbilt University";
+            if (originalNameLower.includes("princeton")) return "Princeton University";
+            if (originalNameLower.includes("duke")) return "Duke University";
+            if (originalNameLower.includes("tulane")) return "Tulane University";
+            if (originalNameLower.includes("bucknell")) return "Bucknell University";
+            if (originalNameLower.includes("skidmore")) return "Skidmore College";
+            if (originalNameLower.includes("babson")) return "Babson College";
+            if (originalNameLower.includes("colgate")) return "Colgate University";
+            if (originalNameLower.includes("towson")) return "Towson University";
+            if (originalNameLower.includes("boston college")) return "Boston College";
+            if (originalNameLower.includes("boston u")) return "Boston University";
+            if (originalNameLower.includes("georgetown")) return "Georgetown University";
+            if (originalNameLower.includes("baruch")) return "Baruch College";
+            if (originalNameLower.includes("hunter")) return "Hunter College";
+            if (originalNameLower.includes("upenn") || originalNameLower.includes("u penn")) return "University of Pennsylvania";
+            if (originalNameLower.includes("washu")) return "Washington University in St. Louis";
+            if (originalNameLower.includes("umich")) return "University of Michigan";
+            if (originalNameLower.includes("neu")) return "Northeastern University";
+            if (originalNameLower.includes("mcgill")) return "McGill University";
+            if (originalNameLower.includes("nyu - shanghai")) return "NYU Shanghai";
+            if (originalNameLower.includes("nyu - london")) return "NYU London";
+            if (originalNameLower.includes("nyu")) return "New York University"; // Must be after NYU international branches
+            if (originalNameLower.includes("usc")) return "University of Southern California";
+            if (originalNameLower.includes("ucla")) return "University of California, Los Angeles";
+            if (originalNameLower.includes("ucsd")) return "University of California San Diego";
+            if (originalNameLower.includes("uc berkeley")) return "University of California, Berkeley";
+            if (originalNameLower === "mit") return "Massachusetts Institute of Technology"; // MIT is often used
+            if (originalNameLower.includes("rit")) return "Rochester Institute of Technology";
+            if (originalNameLower.includes("uvm")) return "University of Vermont";
+            if (originalNameLower.includes("u colorado boulder")) return "University of Colorado Boulder";
+            if (originalNameLower.includes("howard")) return "Howard University";
+            if (originalNameLower.includes("uw madison")) return "University of Wisconsin-Madison";
+            if (originalNameLower.includes("umass amherst")) return "University of Massachusetts Amherst";
+            if (originalNameLower.includes("penn state")) return "Pennsylvania State University";
+            if (originalNameLower.includes("flordia state university") || originalNameLower.includes("florida state university")) return "Florida State University";
+            if (originalNameLower.includes("johns hopkins") || originalNameLower.includes("john hopkins")) return "Johns Hopkins University";
+            if (originalNameLower.includes("cooper union")) return "The Cooper Union";
+            if (originalNameLower.includes("uva")) return "University of Virginia";
+            if (originalNameLower.includes("upitt")) return "University of Pittsburgh";
+            if (originalNameLower.includes("uarizona")) return "University of Arizona";
+            if (originalNameLower.includes("us naval academy")) return "United States Naval Academy";
+            if (originalNameLower.includes("case western")) return "Case Western Reserve University";
+            if (originalNameLower.includes("gwu")) return "George Washington University";
+            if (originalNameLower.includes("urochester")) return "University of Rochester";
+            if (originalNameLower.includes("wpi")) return "Worcester Polytechnic Institute";
+            if (originalNameLower.includes("indiana university") || originalNameLower.includes("indiania university")) return "Indiana University Bloomington";
+            if (originalNameLower.includes("university of washington") || originalNameLower === "u washington") return "University of Washington";
+            if (originalNameLower.includes("umaryland college park") || originalNameLower.includes("u maryland college park")) return "University of Maryland, College Park";
+            if (originalNameLower.includes("fairfield university") || originalNameLower.includes("farifield university")) return "Fairfield University";
+            if (originalNameLower.includes("umiami")) return "University of Miami";
+            if (originalNameLower.includes("university of florida") || originalNameLower.includes("uflorida") || originalNameLower.includes("uflordia")) return "University of Florida";
+            if (originalNameLower.includes("uchicago")) return "University of Chicago";
+            if (originalNameLower.includes("carnegie mellon")) return "Carnegie Mellon University";
+            if (originalNameLower.includes("st andrews") || originalNameLower.includes("university of st andrews")) return "University of St Andrews";
+            if (originalNameLower.includes("purdue")) return "Purdue University";
+            if (originalNameLower.includes("fit")) return "Fashion Institute of Technology";
+            if (originalNameLower.includes("amda")) return "AMDA College of the Performing Arts";
+             if (originalNameLower.includes("University of the Highlands and Islands")) return "University of the Highlands and Islands"; // Benny Goodstein
+             if (originalNameLower.includes("osu") && !originalNameLower.includes("ohio state")) return "Ohio State University"; // for Tenzing Tsepak
+           
+
+            // Try to find a direct match in collegeCoordsAndInfo keys (case-insensitive for the key itself)
+            for (const key in collegeCoordsAndInfo) {
+                if (key.toLowerCase() === originalNameLower) {
+                    return key;
+                }
+            }
+
+            // Handle (POSSE), (QuestBridge), (Macaulay) suffixes by returning the base name
+            // The actual suffix display will be handled by checking the raw name later.
+            let baseName = name;
+            const posseMatch = name.match(/\s*\(posse\)/i);
+            const questbridgeMatch = name.match(/\s*\(questbridge\)/i);
+            const macaulayMatch = name.match(/\s*\(macaulay\)/i);
+
+            if (posseMatch) baseName = name.replace(posseMatch[0], '').trim();
+            else if (questbridgeMatch) baseName = name.replace(questbridgeMatch[0], '').trim();
+            else if (macaulayMatch) baseName = name.replace(macaulayMatch[0], '').trim();
+
+            if (baseName !== name) { // If suffix was removed, try normalizing the baseName
+                const normalizedBase = normalizeCollegeName(baseName); // Recursive call for the base
+                // If the base name exists in our known colleges, use that.
+                if (collegeCoordsAndInfo[normalizedBase]) {
+                    return normalizedBase;
+                }
+                // Otherwise, return the suffix-stripped baseName for potential generic lookup
+                return baseName;
+            }
+
+            return name; // Return original if no specific normalization rule applies
+        }
+
+        const rawData = `
+Class of '21
+Emma Griebsch - University of Edinburgh
+Maeve O' Donnell - Oberlin
+Stephanie Quichimbo - Middlebury
+Maya Soudatt - Bing
+August Siegel - Middlebury
+Terrance Bobb - BMCC
+Liam Ninger - UAlbany
+Natalya Rebeca Nuñez - CCNY
+Alex Procaccino - UCLA
+Lila Shulmister - University of Edinburgh
+Sara Gordon - USC
+Victoria Briggiler - WashU
+Madison Roberts - Babson
+Bernadine Gurning - Fordham
+Henry Foster - UMich
+Isabella Bogosel - Ithaca
+Stella Fusaro - Columbia
+Michaela Cusin - Pratt
+Israel Selassie - Towson
+Haylie Parrilla - Emerson
+Carli Seigelstein - NEU
+Etai Kurtzman - Tufts
+Lizbeth Yumbla - Northwestern
+Emily Cavanaugh - Cornell
+Adam Vogel - CCNY
+Sophie Blumstein - McGill
+Benjamin Ebanks - Massachusetts Institute of Technology
+Nafisa Chowdhury - CCNY
+
+Class of '22
+Shyanne Brevard - Hostos
+Rendy Cabral - SBU
+Margaux Simons - Occidental
+Benny Goodstein - University of the Highlands and Islands
+Tenzing Tsepak - OSU
+Grace Zhu - University of East London
+Gaby Fuki - Tufts
+Harold Iwuala - Cornell
+Ryan Persad - Queens College
+Rubie Menendez - Syracuse
+Tamar Greenberg - U Colorado Boulder
+Ryan Lam - Bing
+Natasha Milton - Hunter
+Jack Cao - NYU
+Analiz Quezada - Fordham
+Jack Lefkowitz - Cornell
+Grace Lessig - Muhlenberg
+Lola Regard - McGill
+Grace Gorreja - NYU
+Marcos Moya - Northwestern
+Chayla Murray - Howard
+Stella Rieben - Purdue
+Jonathan Bender - USC
+Adrianna Rodriguez - Bentley
+Winson Zheng - SBU
+Henry Pincus - Oberlin
+Taz Hasan - CCNY (Macaulay)
+Farooq Shaikh - Arizona State University
+Rachel Svoyskiy - NEU
+Anastasia Kim - SBU
+Ariel Cthwe - RIT
+Tallulah Cohen - McGill
+Chloe Shiffman - Yale
+Samantha Candelo - Barnard
+Maria Cuevas - Columbia
+Hudson Wong - Boston U
+Edwin Zamora - Bing
+Kiara Reyes - U Rhode Island
+Nicole Surowka - Bing
+Nia Mayers - Howard
+Audrey Nannor - Yale
+Simone Olivier - Brown
+Maya Jelassi - Hunter
+Emma Khidr - Cornell
+Maureen Soelaiman - Hunter
+Matthew Sylvester - NEU
+Erik Huovilainen - Bing
+Cody Bertrand - UB
+Susoma Halder - SBU
+Chetna Dawda - Davidson
+Dylan Marfrey - RIT
+Maxie Danenberg - Pratt
+Afieni Cayetano - Bing
+Sophia Tranguch - USC
+Nusrat Jahan - Bing
+Leo Gentile - Williams
+Olivia Segura - Tulane
+Chenxin Wang - RIT
+Kira Liang - Bing
+Renelle Mark - Molloy
+Solana Nevarez - Bing
+Colter Diehm - RIT
+Fran Velez - NYU
+Fabiana Montenegro - Johns Hopkins
+Luca Palacardo - UMich
+Gabrielle Mollin - Duke
+Tina He - NYU
+Amarya Levy-Mazie - Tulane
+Nicholas Medoro - Bing
+Nicholas Mancuso - Williams
+Jane Curry - Duke
+Justin Burkett - Bates
+Janeth Palagot - Hunter
+Madyson Gregory - Brooklyn College
+Melanie Candelo - Babson (POSSE)
+Salomè Noufele - Brown
+Elizabeth Beck - Cornell
+Madison Loughlin - Georgetown
+Esther Bistricher - Brandeis (POSSE)
+Clara Medina - Wesleyan University (QuestBridge)
+Mayim Richman - Oberlin
+Solana Quezada - UW Madison (POSSE)
+Donald Zheng - Boston U (QuestBridge)
+Pierluigi Di Iorio - Boston U
+Ilai Sternoff - Tufts
+Josh Poole - William and Mary
+Gregory Roitbourd - Brandeis (POSSE)
+Jonah Berlin - NEU
+Mariwa Gambo - Boston College (QuestBridge)
+Sofia Dokianos - UVA
+
+Class of '23
+Johann Maldonado - Wesleyan University
+Kaitlyn Huang - Babson (POSSE)
+Freya Braiker - Vassar
+Liliana Sofia - Princeton
+Lila Purvis - Babson (POSSE)
+Jonathan Farias Dutra Rodriguez - UPenn
+Michelle Chen - Oberlin
+Sumaiya Sayeed - Williams (QuestBridge)
+Paola Goldsand-Lamboy - Smith
+Sayed Hassan - Colgate
+Lang Yi Chen - WashU
+Sana Lee - Wesleyan University
+Jamie Huang - NYU
+Janna Galligan - UVM
+Michelle Tang - Barnard
+Samia Anisha - Baruch (Macaulay)
+Dylan Sohmer - RIT
+Melissa Munroe - Georgetown
+Clyde Paul - Boston U
+Jackson Hoffman - Oberlin
+Mattan Feldman - u colorado boulder
+Julia St. John - Cornell
+Marley Drakes - u colorado boulder
+Marley Berman Rossi Kempner - Oberlin
+Anwar Burks - u colorado boulder
+Hazel Corona - Bucknell
+Isadore Borock - UW Madison
+Gabriela Sloane - UMass Amherst
+Emma Tyka - Penn State
+Brandon Mai - RIT
+Josie Shehadi - Oberlin
+Jack Hughes - Bing
+Choiti Deb - SBU
+Galia Shkedi - McGill
+Sarah Toniuk - Bing
+Emilia Wasilewicz - Flordia State University
+Supratim Shaud - NEU
+Sambidha Gurung - Brown
+Kayla Jaffier - University of Edinburgh
+Sydney Yuille - John Hopkins
+Clara Nordgren - McGill
+Doran Kaufman - Bing
+Daisy Polowetzky - Syracuse
+Ozzy Miceli - American University
+George Hausman - Carleton College
+Ashtyn Daring - UAlbany
+Sofie Towers - Cooper Union
+Elizabeth Cruz - RIT
+Carolyn Tenesa - Williams
+Ronan McCartney - SBU
+Phoebe Wolf - UVM
+Langston Perry - Oberlin
+Menghan Zhang - UMich
+Michelle Zhuang - UVA
+Frances Lu - Williams
+Otish Das - St. John's University
+Violet Fraser - Tufts
+Ian Splaver - Connecticut College
+Tricia Derecho - Cornell
+Gabi Tien - Harvard
+Aspen Woods - NYU
+Justin Colon - Bing
+Lycianne Pitts - FIT
+Noah Feig - WashU
+Maliha Antara - Hunter
+Arthur Izik - Hunter
+Kate Lin - Wellesley College
+Ashlee Rodriguez - Hunter
+Joseph Nieto - Farmingdale State College
+Abigail Geragthy - University of Rhode Island
+Alex Huynh - McGill
+Clara Miller - Bing
+Michael Chan - Boston University
+Nicole Lin - Rutgers
+Leah Tamayev - Hunter
+Patrycja Grazda - Fordham
+Andrew Basnet - SBU
+Jack Higginbotham Washburn - McGill
+Noemi Maller - Connecticut College
+Emmi Chen - Ithaca
+Zack Schteingart - UMich
+Fitzmore Codogan - AMDA
+Krzystof Gwiazdowski - UPitt
+Oliver Hatta Jones - NYU - Shanghai
+Elle Woodward - UArizona
+Katie Wiltshire - Skidmore
+Max Cantor - Union
+Serena Pendharkar - Temple University
+Ruby Kiesewalter - Ithaca
+Gabriel Lev - US Naval Academy
+Grace Aun - Case Western Reserve University
+Jolie Leong - NYU - London
+Sonia Ehrich - NYU
+Alina Brockway - UCSD
+Daniel Adamopulos - Haverford
+Jerin Tasnim - Hunter
+Shumalia Azim - Hunter
+Fina Strazza - NYU
+Alexandra Sokolowska - Bing
+Demetrios Giannopoulos - Baruch
+Carissa Braam - Pace
+Ariel Mekonen - Harvard
+Emmett King - BMCC
+Phillip Raymond - CSI
+Talia Guigui - GWU
+Mark Depountis - Baruch
+Graydon Pound - URochester
+Amila Shah - NEU
+Eileen Polanco - Barnard
+Hudson Athas - Cornell
+Rashi Roselin - WPI
+Alem John - SUNY New Paltz
+
+Class of '24
+Steven Chen - Northwestern
+Scarlett Albertson - Wesleyan University
+Paola Dominguez - Dartmouth
+Karolina Komar - Brandeis (POSSE)
+Grace Fastovsky - Boston College
+Anya Thompson - Wesleyan University
+Eli Gordon - Vanderbilt (POSSE)
+Hugh Black - Bard
+Margot Polen - Emory
+Margot Ehrsam - Cornell
+Ben Lee - WashU
+Evan Cedeno - UW Madison
+Harrison Wong - NEU
+Milo Writer - UPenn
+Ellery Spikes - UPenn
+Aleksandra Kulis - Boston University
+Blake Riley - Brown
+Ezra Mellor - Cornell
+Julia Chaly - Tufts
+Candy Wong - Northwestern
+Ava Vogel - UVM
+Bodie Seidler - UMich
+Anya Shulga - Case Western Reserve University
+Matthew Korochik - Purdue
+Alexandra Ralles - McGill
+Craig Hohmann - Yale
+Ellie Miller - Brown
+Jade De Los Santos - UPenn
+Jayla Lynch - Yale
+James Pyne - NYU
+Hindani Patel - Yale
+Amelia Leone - Cornell
+Matilda Cox - University of St Andrews
+Matthias Gat - Emerson
+Laura DePaolo - Indiania University
+Tyler Moy - Williams
+Chloe McDermott - University of Richmond
+Indigo Ubide Holmes - Syracuse
+Charlotte Rodeghiero - McGill
+Jennifer Derise - UVM
+Giulia Pesenti - UCSD
+Mya Barbatsoulis - Ithaca
+Jonathan Qian - Baruch
+Aeriel Revivo - Lehigh University
+Josie Schlesselman - McGill
+Emily Wilkinson - Syracuse
+Ellery Kilstein - Case Western Reserve University
+Oscar Schlesinger - USC
+Simone Bellettiere - Babson
+Julian Berk - McGill
+Tyson Lin - USC
+Maddy Bernstein - University of Washington
+Indigo Gordon-Gatica - Oberlin
+Lily Hirschson - Skidmore
+Sayma Wali - NYU
+Joey Lin - UMaryland College Park
+Malaya Angeles - McGill
+Ellie Fecko - UW Madison
+Emeilia Martin - Fordham
+Lola Wiesner - Syracuse
+Liviya Hoskinison - Hamilton
+Patrick Salinas - Cornell
+Anna Levi - McGill
+Dominika Wilamowski - Hunter
+Ric Trotta - Farifield University
+B Epstein-Reyes - Tufts
+Misty Brown - Bing
+Hannah Pollack - Vassar
+Sebastian Lollos - UMiami
+Derin Ozgu - Indiania University
+Mateo Gomez-Kosturowski - UVM
+Una Laffan - Hobart and William Smith Colleges
+
+Class of '25
+Fendy Jean-Pierre Jr. - Northwestern University
+Michelle Chen - Smith (QuestBridge)
+Julia Dennis - UVM
+Issac Coughlan - Tulane
+Max Willscher - Middlebury
+Veronica Morris - Cornell
+Anita Lin - Boston University
+Ananya Parekh - NYU
+Jordis Rosolinsky - Cornell
+Jared Vazquez - NYU
+Milen Girvin - UVA
+Eve Rieser - NEU
+Micah Killmer - Cornell
+Morgan Sweeney - Vanderbilt (POSSE)
+Adrian Acker - Wesleyan University
+Jade Acker - Wesleyan University
+Sean Brust - Vanderbilt (POSSE)
+Julian Malter - UFlordia
+Tiernan Brody - Bucknell
+Lena Quezada - Bing
+Keira Theis - University of St Andrews
+Ellis Peterson - Oberlin
+Patricia Natawidjaja - Tufts
+Jack Buffolano - NYU
+Ana Dokianos - UVA
+Jaya Lewis - UC Berkeley
+David Gutin - UChicago
+Ziyoda Samadova - Middlebury
+Eloisa Bromberg - Carnegie Mellon
+Lauryn Kirkland - Cornell
+Isa Cheng - Duke
+`;
+
+      // Inside your <script> tag
+
+function parseRawData(rawData) {
+    const lines = rawData.trim().split('\n');
+    const rawEntries = []; // Temporary array to hold initial parsed data
+    let currentGradClass = null;
+
+    // --- First Pass: Parse basic info and first names ---
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith("Class of ")) {
+            currentGradClass = trimmedLine.substring("Class of ".length).trim();
+            continue;
+        }
+        if (!currentGradClass || !trimmedLine.includes(" - ") || trimmedLine === "") {
+            continue;
+        }
+
+        const parts = trimmedLine.split(" - ");
+        const seniorName = parts[0].trim();
+        const collegeNameRaw = parts[1].trim();
+        const firstName = seniorName.split(' ')[0].toLowerCase();
+
+        rawEntries.push({
+            seniorName,
+            collegeNameRaw,
+            gradClass: currentGradClass,
+            firstName
+        });
+    }
+
+    // --- Second Pass: Identify duplicate first names within each class ---
+    const firstNameCountsByClass = new Map(); // e.g., {'23': {'emily': 2, 'john': 1}, '24': {'anna': 1}}
+    for (const entry of rawEntries) {
+        if (!firstNameCountsByClass.has(entry.gradClass)) {
+            firstNameCountsByClass.set(entry.gradClass, new Map());
+        }
+        const classCounts = firstNameCountsByClass.get(entry.gradClass);
+        classCounts.set(entry.firstName, (classCounts.get(entry.firstName) || 0) + 1);
+    }
+
+    // --- Third Pass: Construct final choices with correct photo paths ---
+    const choices = [];
+    for (const entry of rawEntries) {
+        const { seniorName, collegeNameRaw, gradClass, firstName } = entry;
+        const photoYear = gradClass.replace("'", "");
+        let photoFilename;
+
+        // Check if the first name is a duplicate in its class
+        if (firstNameCountsByClass.get(gradClass).get(firstName) > 1) {
+            // Duplicate first name in this class, use full name sanitized
+            photoFilename = seniorName.toLowerCase().replace(/\s+/g, '_');
+        } else {
+            // Unique first name in this class, use only first name
+            photoFilename = firstName;
+        }
+
+        const seniorPhotoUrlBase = `photos/${photoYear}/${photoFilename}`;
+
+        // --- Your existing logic for college details and pushing to choices ---
+        const normalizedNameKey = normalizeCollegeName(collegeNameRaw);
+        const collegeDetails = collegeCoordsAndInfo[normalizedNameKey] || collegeCoordsAndInfo["Generic College"];
+
+        let finalCollegeName = collegeDetails.name;
+        if (collegeDetails === collegeCoordsAndInfo["Generic College"] && normalizedNameKey !== "Undecided") {
+            finalCollegeName = normalizedNameKey;
+        }
+        if (normalizedNameKey === "Undecided") finalCollegeName = "Undecided";
+
+        let collegeTypeToUse = collegeDetails.type;
+        if (collegeTypeMappings[normalizedNameKey]) {
+            collegeTypeToUse = collegeTypeMappings[normalizedNameKey];
+        } else if (collegeTypeMappings[collegeNameRaw]) {
+             collegeTypeToUse = collegeTypeMappings[collegeNameRaw];
+        }
+
+        choices.push({
+            seniorName: seniorName,
+            gradClass: gradClass,
+            collegeName: finalCollegeName,
+            collegeKey: normalizedNameKey,
+            collegeNameRaw: collegeNameRaw, // Keep original raw name for suffixes
+            lat: collegeDetails.lat,
+            lng: collegeDetails.lng,
+            collegeType: collegeTypeToUse,
+            collegeImageUrl: collegeDetails.imageUrl,
+            collegeHomepageUrl: collegeDetails.homepageUrl,
+            isCampusPublic: collegeDetails.isCampusPublic,
+            locationFocus: collegeDetails.locationFocus,
+            seniorPhotoUrl: `${seniorPhotoUrlBase}.jpg`,
+            seniorPhotoUrlPng: `${seniorPhotoUrlBase}.png`,
+        });
+    }
+    return choices;
+}
+
+        const seniorCollegeChoices = parseRawData(rawData);
+        const allData = seniorCollegeChoices.map((choice, index) => ({
+            ...choice,
+            displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
+            originalIndex: index,
+            isVisible: true,
+        }));
+
+
+        let map;
+        let infowindow;
+        let isDarkMode = false;
+        let allMarkers = [];
+        let gradClassFilterState = {};
+        let schoolsSelectedForZoom = new Set();
+        let activeHoverMarkerIndex = null;
+        let seniorPhotoPopup, seniorPopupImage, seniorPopupCaption, closeSeniorPhotoBtn;
+        let transitLayer;
+        let transitLayerEnabled = false;
+        let photoZoomOverlay; 
+        let zoomExitNote;
+
+
+        // Google Maps Dark Style
+        const darkMapStyle = [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+            { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+            { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+            { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+            { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+            { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+            { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+            { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+            { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
+        ];
+
+
+        function updateStatsTable() {
+            const stats = {
+                "InCityNYC": { Public: 0, Private: 0, Total: 0 },
+                "InStateNYOther": { Public: 0, Private: 0, Total: 0 },
+                "OutOfStateUS": { Public: 0, Private: 0, Total: 0 },
+                "International": { Public: 0, Private: 0, Total: 0 },
+                "Total": { Public: 0, Private: 0, Overall: 0 }
+            };
+
+            allData.forEach(school => {
+                if (school.isVisible && school.collegeName !== "Undecided" && school.locationFocus !== "N/A") { // Check for N/A
+                    const focus = school.locationFocus;
+                    const type = school.isCampusPublic ? "Public" : "Private";
+
+                    if (stats[focus]) {
+                        stats[focus][type]++;
+                        stats[focus].Total++;
+                        stats.Total[type]++;
+                        stats.Total.Overall++;
+                    }
+                }
+            });
+
+            for (const focus in stats) {
+                if (stats.hasOwnProperty(focus)) {
+                    if (focus === "Total") {
+                        document.querySelector(`#stats-table td[data-stat="Total-Public"]`).textContent = stats.Total.Public;
+                        document.querySelector(`#stats-table td[data-stat="Total-Private"]`).textContent = stats.Total.Private;
+                        document.querySelector(`#stats-table td[data-stat="Total-Overall"]`).textContent = stats.Total.Overall;
+                    } else {
+                        document.querySelector(`#stats-table td[data-stat="${focus}-Public"]`).textContent = stats[focus].Public;
+                        document.querySelector(`#stats-table td[data-stat="${focus}-Private"]`).textContent = stats[focus].Private;
+                        document.querySelector(`#stats-table td[data-stat="${focus}-Total"]`).textContent = stats[focus].Total;
+                    }
+                }
+            }
+        }
+
+
+        function updateMarkersVisibility() {
+            let visibleCount = 0;
+            const areAnyGradClassFiltersActive = gradClassNames.some(gc => gradClassFilterState[gc]);
+            const areAllGradClassFiltersChecked = gradClassNames.every(gc => gradClassFilterState[gc]);
+
+            allMarkers.forEach((markerInfo) => {
+                if (!markerInfo || !markerInfo.marker || !markerInfo.school) return;
+                const school = markerInfo.school;
+                let meetsGradClassCriteria;
+                if (areAllGradClassFiltersChecked) meetsGradClassCriteria = true;
+                else if (areAnyGradClassFiltersActive) meetsGradClassCriteria = gradClassFilterState[school.gradClass] === true;
+                else meetsGradClassCriteria = false;
+
+                const shouldBeVisible = meetsGradClassCriteria;
+                if (school.isVisible !== shouldBeVisible) {
+                    school.isVisible = shouldBeVisible;
+                    const checkboxElement = document.getElementById(`school-checkbox-${school.originalIndex}`);
+                    if (checkboxElement && checkboxElement.checked !== shouldBeVisible) checkboxElement.checked = shouldBeVisible;
+                }
+                if (markerInfo.marker.getVisible() !== shouldBeVisible) markerInfo.marker.setVisible(shouldBeVisible);
+
+                if (shouldBeVisible) visibleCount++;
+                else {
+                    if(schoolsSelectedForZoom.has(school.originalIndex)) schoolsSelectedForZoom.delete(school.originalIndex);
+                    if (infowindow && infowindow.getMap() && infowindow.anchor === markerInfo.marker) infowindow.close();
+                }
+            });
+            filterSchoolList();
+            updateStatsTable();
+        }
+
+
+        function filterSchoolList() {
+            const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
+            const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
+            const listItems = listContentDiv.querySelectorAll('ul li');
+
+            listItems.forEach(item => {
+                const nameSpan = item.querySelector('span.school-name');
+                const markerIndex = parseInt(item.getAttribute('data-marker-index'), 10);
+                let isVisibleAccordingToFilters = false;
+                if (!isNaN(markerIndex) && allMarkers[markerIndex] && allMarkers[markerIndex].school) {
+                   isVisibleAccordingToFilters = allMarkers[markerIndex].school.isVisible;
+                }
+
+                if (nameSpan && isVisibleAccordingToFilters) {
+                    const itemText = nameSpan.textContent.toLowerCase();
+                    const matchesSearch = searchTerm === '' || itemText.includes(searchTerm);
+                    item.style.display = matchesSearch ? 'flex' : 'none';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function showSeniorPhotoPopup(listItem, schoolData) {
+            seniorPopupImage.style.display = 'block';
+            seniorPopupImage.src = schoolData.seniorPhotoUrl;
+
+            seniorPopupImage.onerror = function() {
+                this.src = schoolData.seniorPhotoUrlPng;
+                this.onerror = function() {
+                    this.src = schoolData.collegeImageUrl;
+                    this.onerror = function() {
+                        this.style.display = 'none';
+                        this.onerror = null; 
+                    };
+                };
+            };
+
+            seniorPopupImage.alt = `${schoolData.seniorName}'s Photo / ${schoolData.collegeName} Logo`;
+            seniorPopupCaption.textContent = `Congrats, ${schoolData.seniorName}!`; // This caption text is now styled by CSS when zoomed
+            seniorPhotoPopup.classList.add('visible');
+
+            const popupWidth = seniorPhotoPopup.offsetWidth; 
+            const popupHeight = seniorPhotoPopup.offsetHeight;
+            const viewportWidth = window.innerWidth; 
+            const viewportHeight = window.innerHeight;
+            const marginFromItem = 10; 
+            const paddingFromViewportEdge = 10;
+
+            let popupLeft, popupTop;
+
+            if (listItem) { // Position relative to listItem if available
+                const listItemRect = listItem.getBoundingClientRect();
+                popupTop = listItemRect.top;
+                popupLeft = listItemRect.right + marginFromItem;
+
+                if (popupLeft + popupWidth > viewportWidth - paddingFromViewportEdge) {
+                    popupLeft = listItemRect.left - popupWidth - marginFromItem;
+                }
+
+                popupLeft = Math.max(paddingFromViewportEdge, popupLeft);
+                if (popupLeft + popupWidth > viewportWidth - paddingFromViewportEdge) {
+                    popupLeft = viewportWidth - popupWidth - paddingFromViewportEdge;
+                }
+                popupLeft = Math.max(paddingFromViewportEdge, popupLeft);
+
+
+                popupTop = Math.max(paddingFromViewportEdge, popupTop);
+                if (popupTop + popupHeight > viewportHeight - paddingFromViewportEdge) {
+                    popupTop = viewportHeight - popupHeight - paddingFromViewportEdge;
+                }
+                popupTop = Math.max(paddingFromViewportEdge, popupTop);
+
+            } else { // Fallback positioning (e.g., if called from marker without a direct list item link)
+                popupTop = (viewportHeight / 2) - (popupHeight / 2);
+                popupLeft = (viewportWidth / 2) - (popupWidth / 2);
+            }
+            
+            seniorPhotoPopup.style.left = `${popupLeft}px`; 
+            seniorPhotoPopup.style.top = `${popupTop}px`;
+            // Opacity and transform are handled by .visible class for showing
+        }
+
+
+        // This function is called when the small popup needs to be hidden (e.g., after zoom out, or directly)
+        function hideSeniorPhotoPopup() {
+            const parentPopup = seniorPhotoPopup;
+            parentPopup.classList.remove('visible'); // Triggers display:none and hides with animation
+            // Ensure image is not marked as zoomed if this function is somehow called directly
+            // while it was zoomed (though exitZoomMode should primarily handle this).
+            if (seniorPopupImage.classList.contains('zoomed')) {
+                seniorPopupImage.classList.remove('zoomed');
+            }
+        }
+
+        function exitZoomMode() {
+    console.log("exitZoomMode called. Image is currently zoomed:", seniorPopupImage.classList.contains('zoomed')); // Debug line
+    const parentPopup = seniorPhotoPopup;
+            if (seniorPopupImage.classList.contains('zoomed')) {
+                seniorPopupImage.classList.remove('zoomed');
+
+                if (photoZoomOverlay) photoZoomOverlay.style.display = 'none';
+                if (zoomExitNote) zoomExitNote.style.display = 'none';
+
+                // Restore parent's styles from its full-screen "zoomed-parent" state
+                // back to its "small popup" state.
+                parentPopup.style.transform = parentPopup.dataset.originalTransform || '';
+                parentPopup.style.left = parentPopup.dataset.originalLeft || '';
+                parentPopup.style.top = parentPopup.dataset.originalTop || '';
+                parentPopup.style.width = parentPopup.dataset.originalWidth || '';
+                parentPopup.style.height = parentPopup.dataset.originalHeight || '';
+                parentPopup.style.backgroundColor = parentPopup.dataset.originalBg || '';
+                parentPopup.style.border = parentPopup.dataset.originalBorder || '';
+                parentPopup.style.boxShadow = parentPopup.dataset.originalBoxShadow || '';
+                parentPopup.style.padding = parentPopup.dataset.originalPadding || '';
+                parentPopup.style.pointerEvents = parentPopup.dataset.originalPointerEvents || 'auto';
+
+
+                // Clean up dataset attributes
+                delete parentPopup.dataset.originalTransform;
+                delete parentPopup.dataset.originalLeft;
+                delete parentPopup.dataset.originalTop;
+                delete parentPopup.dataset.originalWidth;
+                delete parentPopup.dataset.originalHeight;
+                delete parentPopup.dataset.originalBg;
+                delete parentPopup.dataset.originalBorder;
+                delete parentPopup.dataset.originalBoxShadow;
+                delete parentPopup.dataset.originalPadding;
+                delete parentPopup.dataset.originalPointerEvents;
+
+                // Now that the parent popup is restored to its small, positioned state,
+                // call hideSeniorPhotoPopup() to apply the final hiding animation (opacity, scale)
+                // and remove the .visible class (which sets display: none).
+                hideSeniorPhotoPopup();
+            } else {
+                // If exitZoomMode is called when image wasn't zoomed (e.g. user clicked X on small popup)
+                // just ensure the small popup is hidden.
+                hideSeniorPhotoPopup();
+            }
+        }
+
+
+        function getHonorarySuffixHTML(rawCollegeName) {
+            let suffixHtml = "";
+            const rawLower = rawCollegeName.toLowerCase();
+            if (rawLower.includes("(macaulay)")) suffixHtml = ' <span class="honorary-suffix">(Macaulay)</span>';
+            else if (rawLower.includes("(questbridge)")) suffixHtml = ' <span class="honorary-suffix">(QuestBridge)</span>';
+            else if (rawLower.includes("(posse)")) suffixHtml = ' <span class="honorary-suffix">(POSSE)</span>';
+            return suffixHtml;
+        }
+
+        function handleListItemInteraction(event, markerIndex, isHover) {
+             if (event.target.type === 'checkbox') return;
+             if (markerIndex === undefined || !allMarkers[markerIndex]) return;
+
+             const markerInfo = allMarkers[markerIndex];
+             const schoolData = markerInfo.school;
+
+             if (!schoolData.isVisible) return;
+
+             if (!isHover) { // Click action
+                if (infowindow && infowindow.getMap()) { // Close any existing map infowindow
+                    infowindow.close();
+                }
+                const position = markerInfo.marker.getPosition();
+                map.panTo(position);
+                map.setZoom(Math.max(map.getZoom(), 12));
+
+                let contentString = `<div class="info-window-content">`;
+                const targetUrl = schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#' ? schoolData.collegeHomepageUrl : '#';
+                const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
+
+                if (schoolData.collegeImageUrl && schoolData.collegeImageUrl !== 'x' && !schoolData.collegeImageUrl.startsWith('placeholder')) {
+                    contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${schoolData.collegeImageUrl}" alt="${schoolData.collegeName} logo/photo"></a>`;
+                }
+                contentString += `<b>${schoolData.seniorName}</b>`;
+                contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[schoolData.gradClass] || '#ccc'};">Class: ${schoolData.gradClass}</span>`;
+                
+                const suffixHtml = getHonorarySuffixHTML(schoolData.collegeNameRaw);
+                if (targetUrl !== '#') {
+                    contentString += `<br>Attending: <a href="${targetUrl}" ${openInNewTab}>${schoolData.collegeName}</a>${suffixHtml}`;
+                } else {
+                    contentString += `<br>Attending: ${schoolData.collegeName}${suffixHtml}`;
+                }
+                contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
+                if (schoolData.lat !== 0 || schoolData.lng !== 0) {
+                    contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
+                }
+                contentString += `</div>`;
+                infowindow.setContent(contentString);
+                infowindow.open({ map: map, anchor: markerInfo.marker });
+             }
+
+             const listItem = event.currentTarget;
+             showSeniorPhotoPopup(listItem, schoolData);
+
+             if (!isHover && (event.ctrlKey || event.metaKey)) {
+                 if (schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#') {
+                     window.open(schoolData.collegeHomepageUrl, '_blank');
+                 }
+                 return;
+             }
+        }
+
+
+        function zoomToSelectedSchools() {
+            if (!google || !map) return;
+            const bounds = new google.maps.LatLngBounds();
+            let validVisiblePoints = 0;
+            schoolsSelectedForZoom.forEach(index => {
+                const markerInfo = allMarkers[index];
+                if (markerInfo && markerInfo.marker && markerInfo.school && markerInfo.school.isVisible) {
+                    if (markerInfo.school.lat === 0 && markerInfo.school.lng === 0 && markerInfo.school.collegeName === "Undecided") {} 
+                    else { bounds.extend(markerInfo.marker.getPosition()); validVisiblePoints++; }
+                }
+            });
+            if (validVisiblePoints > 0) {
+                map.fitBounds(bounds);
+                if (validVisiblePoints === 1 && map.getZoom() > 15) map.setZoom(15);
+                else if (validVisiblePoints > 1 && map.getZoom() > 17) map.setZoom(17);
+            } else { map.setCenter({ lat: 41.8, lng: -74.5 }); map.setZoom(7); }
+        }
+
+        function handleSearchInput() {
+             const input = document.getElementById('schoolSearchInput');
+             const suggestionsDiv = document.getElementById('searchSuggestions');
+             const searchTerm = input.value.toLowerCase().trim();
+             suggestionsDiv.innerHTML = ''; suggestionsDiv.style.display = 'none';
+             if (searchTerm.length < 2) { filterSchoolList(); return; }
+
+             const matchingEntries = allData.filter(entry =>
+                entry.isVisible &&
+                 ((entry.seniorName && entry.seniorName.toLowerCase().includes(searchTerm)) ||
+                 (entry.collegeName && entry.collegeName.toLowerCase().includes(searchTerm)) ||
+                 (entry.collegeNameRaw && entry.collegeNameRaw.toLowerCase().includes(searchTerm))
+                )
+             ).slice(0, 10);
+
+             if (matchingEntries.length > 0) {
+                 matchingEntries.forEach(entry => {
+                     const div = document.createElement('div');
+                     const suffixHtml = getHonorarySuffixHTML(entry.collegeNameRaw);
+                     div.innerHTML = `${entry.seniorName} (${entry.gradClass}) → ${entry.collegeName}${suffixHtml}`;
+                     div.onclick = () => {
+                         input.value = entry.seniorName; suggestionsDiv.style.display = 'none'; filterSchoolList();
+                         const listItem = document.querySelector(`.list-content li[data-marker-index="${entry.originalIndex}"]`);
+                         if (listItem) {
+                            handleListItemInteraction({ currentTarget: listItem, target: listItem }, entry.originalIndex, false); 
+                            listItem.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                         }
+                     };
+                     suggestionsDiv.appendChild(div);
+                 });
+                 suggestionsDiv.style.display = 'block';
+             }
+             if (matchingEntries.length === 0) filterSchoolList();
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout); timeout = setTimeout(later, wait);
+            };
+        }
+
+                function initMap() {
+            seniorPhotoPopup = document.getElementById('senior-photo-popup');
+            seniorPopupImage = seniorPhotoPopup.querySelector('img');
+            seniorPopupCaption = document.getElementById('senior-photo-caption');
+            closeSeniorPhotoBtn = document.getElementById('close-senior-photo-popup');
+            zoomExitNote = document.getElementById('zoom-exit-note');
+
+            const zoomExitNoteDismissButton = zoomExitNote.querySelector('.dismiss-button');
+            if (zoomExitNoteDismissButton) {
+                // First, remove the inline onclick to avoid double handling if you forget to remove it from HTML
+                zoomExitNoteDismissButton.removeAttribute('onclick');
+                
+                zoomExitNoteDismissButton.addEventListener('click', function(event) {
+                    event.stopPropagation(); // VERY IMPORTANT: Prevents click from reaching photoZoomOverlay
+                    this.parentElement.style.display = 'none'; // Only hide the tip
+                    console.log("Zoom exit note 'X' clicked and tip hidden.");
+                });
+            }
+
+            photoZoomOverlay = document.createElement('div');
+            photoZoomOverlay.id = 'photo-zoom-overlay';
+            document.body.appendChild(photoZoomOverlay);
+
+            closeSeniorPhotoBtn.addEventListener('click', exitZoomMode);
+            photoZoomOverlay.addEventListener('click', exitZoomMode);
+
+
+            seniorPopupImage.addEventListener('click', function() {
+                console.log("photoZoomOverlay directly clicked.");
+                const isCurrentlyZoomed = this.classList.contains('zoomed');
+                const parentPopup = this.closest('#senior-photo-popup');
+
+                if (!isCurrentlyZoomed) { // ---- Zooming IN ----
+                    this.classList.add('zoomed');
+                    // Cursor and caption position now handled by CSS based on .zoomed class
+
+                    console.log("Image classList after adding 'zoomed':", this.classList.toString()); // Debug: Check class
+                    console.log("Computed cursor for image:", getComputedStyle(this).cursor); // Debug: Check cursor immediately
+
+                    if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
+                    if (zoomExitNote) zoomExitNote.style.display = 'block';
+
+                    // Store parent's original styles to restore later
+                    parentPopup.dataset.originalTransform = getComputedStyle(parentPopup).transform;
+                    parentPopup.dataset.originalLeft = parentPopup.style.left;
+                    parentPopup.dataset.originalTop = parentPopup.style.top;
+                    parentPopup.dataset.originalWidth = parentPopup.style.width;
+                    parentPopup.dataset.originalHeight = parentPopup.style.height;
+                    parentPopup.dataset.originalBg = parentPopup.style.backgroundColor;
+                    parentPopup.dataset.originalBorder = getComputedStyle(parentPopup).border;
+                    parentPopup.dataset.originalBoxShadow = getComputedStyle(parentPopup).boxShadow;
+                    parentPopup.dataset.originalPadding = getComputedStyle(parentPopup).padding;
+                    parentPopup.dataset.originalPointerEvents = getComputedStyle(parentPopup).pointerEvents || 'auto';
+
+
+                    // Neutralize parent's transform so fixed child (zoomed image) positions to viewport
+                    // And make parent cover screen to correctly contain caption/close button for zoomed view
+                    parentPopup.style.transform = 'none';
+                    parentPopup.style.left = '0px';
+                    parentPopup.style.top = '0px';
+                    parentPopup.style.width = '100vw';
+                    parentPopup.style.height = '100vh';
+                    parentPopup.style.padding = '0'; 
+                    parentPopup.style.backgroundColor = 'transparent'; // So overlay blur is visible
+                    parentPopup.style.border = 'none';
+                    parentPopup.style.boxShadow = 'none';
+                    parentPopup.style.pointerEvents = 'none'; // Make parent pass clicks through to overlay
+
+                    console.log("PARENT POPUP after zoom-in style changes - pointer-events:", getComputedStyle(parentPopup).pointerEvents, "z-index:", getComputedStyle(parentPopup).zIndex);
+                    console.log("PHOTO ZOOM OVERLAY - pointer-events:", getComputedStyle(photoZoomOverlay).pointerEvents, "z-index:", getComputedStyle(photoZoomOverlay).zIndex, "display:", getComputedStyle(photoZoomOverlay).display);
+                    console.log("IMAGE ITSELF - pointer-events:", getComputedStyle(this).pointerEvents);
+
+                    // Ensure direct children (image, caption, close button) can still receive clicks
+                    this.style.pointerEvents = 'auto'; // The image itself
+                    if(seniorPopupCaption) seniorPopupCaption.style.pointerEvents = 'auto';
+                    if(closeSeniorPhotoBtn) closeSeniorPhotoBtn.style.pointerEvents = 'auto';
+
+
+                } else {
+                    // ALREADY ZOOMED: Browser default click on image (e.g. open in new tab, save, browser zoom tool)
+                    // The cursor: zoom-in; on .zoomed image is a hint for this.
+                }
+            });
+
+            const baseMarkerIcon = { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
+            const highlightedMarkerIcon = { ...baseMarkerIcon, scale: 10, strokeWeight: 2.0 };
+
+            function getMarkerIcon(seniorChoice, isHighlighted = false, currentIsDarkMode) {
+                let displayColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                if (seniorChoice.collegeName === "Undecided") displayColor = '#999999';
+                const iconConfig = isHighlighted ? highlightedMarkerIcon : baseMarkerIcon;
+                return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? '#111111' : '#ffffff' };
+            }
+
+            allData.sort((a, b) => {
+                const gradClassA = parseInt(a.gradClass.substring(1)); const gradClassB = parseInt(b.gradClass.substring(1));
+                if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                const firstNameA = a.seniorName.split(' ')[0]; const firstNameB = b.seniorName.split(' ')[0];
+                return firstNameA.localeCompare(firstNameB);
+            });
+
+            gradClassFilterState = {};
+            gradClassNames.forEach(gc => gradClassFilterState[gc] = true);
+
+            const mapOptions = { center: { lat: 41.8, lng: -74.5 }, zoom: 7, mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_RIGHT }, styles: null, fullscreenControl: true, streetViewControl: true, zoomControl: true, mapTypeControl: true, gestureHandling: 'greedy' };
+            map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            infowindow = new google.maps.InfoWindow();
+            schoolsSelectedForZoom = new Set();
+            transitLayer = new google.maps.TransitLayer(); 
+
+            const gradClassFiltersContainer = document.getElementById('grad-class-filters-container');
+            const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const schoolSearchInput = document.getElementById('schoolSearchInput');
+            const listHeaderContainer = document.querySelector('#school-list-control .list-header-container');
+            const toggleSchoolListBtn = document.getElementById('toggleSchoolListBtn');
+            const toggleTransitBtn = document.getElementById('toggleTransitBtn');
+            const checkAllGradClassesBtn = document.getElementById('checkAllGradClassesBtn');
+            const uncheckAllGradClassesBtn = document.getElementById('uncheckAllGradClassesBtn');
+
+            gradClassFiltersContainer.innerHTML = ''; schoolListCollapsibleContentDiv.innerHTML = '';
+
+            const fragmentGradClassFilters = document.createDocumentFragment();
+            gradClassNames.sort().forEach(gcName => { // Sort grad class names for display
+                const filterId = `filter-grad-${gcName.replace(/\W+/g, '-')}`;
+                const itemDiv = document.createElement('div'); itemDiv.className = 'filter-item';
+                const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = filterId; checkbox.value = gcName;
+                checkbox.checked = gradClassFilterState[gcName];
+                checkbox.addEventListener('change', (event) => { gradClassFilterState[gcName] = event.target.checked; updateMarkersVisibility(); });
+                const label = document.createElement('label'); label.htmlFor = filterId;
+                const colorBox = document.createElement('span'); colorBox.className = 'filter-color-box'; colorBox.style.backgroundColor = gradClassColors[gcName] || '#cccccc';
+                label.appendChild(colorBox);
+                const seniorCountForClass = allData.filter(s => s.gradClass === gcName).length;
+                label.appendChild(document.createTextNode(` ${gcName} (${seniorCountForClass})`));
+                itemDiv.appendChild(checkbox); itemDiv.appendChild(label); fragmentGradClassFilters.appendChild(itemDiv);
+            });
+            gradClassFiltersContainer.appendChild(fragmentGradClassFilters);
+
+            if (listHeaderContainer && !document.getElementById('schoolListTip')) {
+                 const tipDiv = document.createElement('div'); tipDiv.id = 'schoolListTip'; tipDiv.className = 'tip-message';
+                 const tipText = document.createElement('span');
+                 tipText.innerHTML = 'Tips: <br>• Filters/checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom.';
+                 const dismissBtn = document.createElement('span'); dismissBtn.className = 'dismiss-button'; dismissBtn.textContent = 'x'; dismissBtn.title = 'Dismiss this tip'; dismissBtn.onclick = () => { tipDiv.style.display = 'none'; };
+                 tipDiv.appendChild(tipText); tipDiv.appendChild(dismissBtn);
+                 listHeaderContainer.insertAdjacentElement('afterend', tipDiv);
+            }
+
+            toggleSchoolListBtn.addEventListener('click', () => {
+                const listContent = document.querySelector('.school-list-collapsible-content');
+                const isHidden = listContent.classList.toggle('hidden');
+                toggleSchoolListBtn.textContent = isHidden ? 'Show List' : 'Hide List';
+                toggleSchoolListBtn.title = isHidden ? 'Show college and senior list' : 'Hide college and senior list';
+            });
+
+            toggleTransitBtn.addEventListener('click', () => {
+                if (transitLayerEnabled) {
+                    transitLayer.setMap(null); toggleTransitBtn.textContent = '🚇 Show Transit'; toggleTransitBtn.title = 'Show Transit Layer';
+                } else {
+                    transitLayer.setMap(map); toggleTransitBtn.textContent = '🚇 Hide Transit'; toggleTransitBtn.title = 'Hide Transit Layer';
+                }
+                transitLayerEnabled = !transitLayerEnabled;
+            });
+
+            const schoolListUl = document.createElement('ul');
+
+            // Initialize previousGradClass to null. This variable will keep track of
+            // the graduating class of the previously processed senior.
+            let previousGradClass = null;
+
+            allData.forEach(seniorChoice => {
+                 console.log(`Processing: ${seniorChoice.seniorName}, Class: ${seniorChoice.gradClass}, Prev Class: ${previousGradClass}`);
+
+                // This is the logic to add a separator line.
+                // It checks if previousGradClass has been set (i.e., not the first item) AND
+                // if the current senior's gradClass is different from the previous one.
+                if (previousGradClass !== null && seniorChoice.gradClass !== previousGradClass) {
+                    console.log(`ADDING SEPARATOR between ${previousGradClass} and ${seniorChoice.gradClass}`);
+                    const separatorLi = document.createElement('li');
+                    separatorLi.className = 'grad-class-separator'; // CSS class for styling the line
+                    separatorLi.setAttribute('aria-hidden', 'true'); // For accessibility, as it's decorative
+                    schoolListUl.appendChild(separatorLi);
+                }
+
+
+                const listItem = document.createElement('li');
+                const markerIndex = seniorChoice.originalIndex;
+                listItem.setAttribute('data-marker-index', markerIndex);
+                listItem.setAttribute('title', `Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo. Shift+Click checkbox: Group Zoom.`);
+
+                const schoolCheckbox = document.createElement('input'); schoolCheckbox.type = 'checkbox'; schoolCheckbox.checked = seniorChoice.isVisible; schoolCheckbox.id = `school-checkbox-${markerIndex}`; schoolCheckbox.setAttribute('aria-label', `Toggle visibility for ${seniorChoice.displayName}`);
+                schoolCheckbox.addEventListener('change', (event) => {
+                    const isChecked = event.target.checked;
+                    if (allMarkers[markerIndex]?.school) allMarkers[markerIndex].school.isVisible = isChecked;
+                    if (allMarkers[markerIndex]?.marker) allMarkers[markerIndex].marker.setVisible(isChecked);
+                    updateStatsTable();
+                    if (event.shiftKey) {
+                        event.preventDefault();
+                        if (isChecked && allMarkers[markerIndex]?.school.isVisible) schoolsSelectedForZoom.add(markerIndex);
+                        else schoolsSelectedForZoom.delete(markerIndex);
+                        zoomToSelectedSchools();
+                    } else if (!isChecked) schoolsSelectedForZoom.delete(markerIndex);
+                });
+                listItem.appendChild(schoolCheckbox);
+
+                const nameSpan = document.createElement('span'); nameSpan.className = 'school-name';
+                const suffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw);
+                nameSpan.innerHTML = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span> → ${seniorChoice.collegeName}${suffixHtml}`;
+                listItem.appendChild(nameSpan);
+
+                listItem.addEventListener('mouseenter', (event) => {
+                    if (allMarkers[markerIndex]?.marker && allMarkers[markerIndex]?.school.isVisible) {
+                        allMarkers[markerIndex].marker.setIcon(getMarkerIcon(seniorChoice, true, isDarkMode));
+                        allMarkers[markerIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                        activeHoverMarkerIndex = markerIndex;
+                        handleListItemInteraction(event, markerIndex, true); 
+                    }
+                });
+                listItem.addEventListener('mouseleave', (event) => {
+                    if (allMarkers[markerIndex]?.marker) {
+                        allMarkers[markerIndex].marker.setIcon(getMarkerIcon(seniorChoice, false, isDarkMode));
+                        allMarkers[markerIndex].marker.setZIndex(null);
+                    }
+                    // Photo popup persists until new hover or explicit close (X button)
+                });
+                listItem.addEventListener('click', (event) => handleListItemInteraction(event, markerIndex, false));
+                schoolListUl.appendChild(listItem);
+
+                // After processing the senior, update previousGradClass to the current senior's
+                // gradClass for the next iteration.
+                previousGradClass = seniorChoice.gradClass;
+
+            });
+            schoolListCollapsibleContentDiv.appendChild(schoolListUl);
+
+            allMarkers = new Array(allData.length);
+            allData.forEach((seniorChoice) => {
+                 const index = seniorChoice.originalIndex;
+                 const markerIcon = getMarkerIcon(seniorChoice, false, isDarkMode);
+                 const marker = new google.maps.Marker({
+                     position: { lat: seniorChoice.lat, lng: seniorChoice.lng }, map: map,
+                     title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName}`,
+                     icon: markerIcon, visible: false // Initially false, visibility controlled by updateMarkersVisibility
+                 });
+                 allMarkers[index] = { marker: marker, school: seniorChoice };
+
+                 marker.addListener("click", () => {
+                     const schoolData = allMarkers[index].school;
+                     if (infowindow && infowindow.getMap()) { infowindow.close(); } // Close existing before opening new
+
+                     let contentString = `<div class="info-window-content">`;
+                     const targetUrl = schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#' ? schoolData.collegeHomepageUrl : '#';
+                     const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
+
+                     if (schoolData.collegeImageUrl && schoolData.collegeImageUrl !== 'x' && !schoolData.collegeImageUrl.startsWith('placeholder')) {
+                         contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${schoolData.collegeImageUrl}" alt="${schoolData.collegeName} logo/photo"></a>`;
+                     }
+                     contentString += `<b>${schoolData.seniorName}</b>`;
+                     contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[schoolData.gradClass] || '#ccc'};">Class: ${schoolData.gradClass}</span>`;
+                     
+                     const suffixHtml = getHonorarySuffixHTML(schoolData.collegeNameRaw);
+                     if (targetUrl !== '#') {
+                        contentString += `<br>Attending: <a href="${targetUrl}" ${openInNewTab}>${schoolData.collegeName}</a>${suffixHtml}`;
+                     } else {
+                        contentString += `<br>Attending: ${schoolData.collegeName}${suffixHtml}`;
+                     }
+                     contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
+                     if (schoolData.lat !== 0 || schoolData.lng !== 0) {
+                        contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
+                     }
+                     contentString += `</div>`;
+                     infowindow.setContent(contentString);
+                     infowindow.open({ map: map, anchor: marker });
+                     const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-marker-index="${index}"]`);
+                     showSeniorPhotoPopup(listItem, schoolData); // listItem might be null if list is hidden/filtered
+                 });
+
+                 marker.addListener('mouseover', () => {
+                     if (allMarkers[index]?.school.isVisible) {
+                        document.getElementById('searchSuggestions').style.display = 'none'; // Hide search suggestions
+                        const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-marker-index="${index}"]`);
+                        if (listItem) { // If list item is visible, use it for context
+                            listItem.classList.add('list-item-highlight');
+                            if (!document.querySelector('.school-list-collapsible-content.hidden')) { // Only scroll if list is visible
+                                listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                            showSeniorPhotoPopup(listItem, allMarkers[index].school);
+                        } else { // If list item not found (e.g. hidden), show popup with generic positioning
+                             showSeniorPhotoPopup(null, allMarkers[index].school);
+                        }
+                        marker.setIcon(getMarkerIcon(allMarkers[index].school, true, isDarkMode));
+                        marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                        activeHoverMarkerIndex = index;
+                     }
+                 });
+                 marker.addListener('mouseout', () => {
+                    const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-marker-index="${index}"]`);
+                    if (listItem) listItem.classList.remove('list-item-highlight');
+                    marker.setIcon(getMarkerIcon(allMarkers[index].school, false, isDarkMode));
+                    marker.setZIndex(null);
+                    // Photo popup persists
+                 });
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                 isDarkMode = !isDarkMode; document.body.classList.toggle('dark-mode', isDarkMode);
+                 map.setOptions({ styles: isDarkMode ? darkMapStyle : null });
+                 allMarkers.forEach((mInfo, idx) => {
+                     if (mInfo && mInfo.marker && mInfo.school) { 
+                         const isHighlighted = activeHoverMarkerIndex === idx && mInfo.marker.getZIndex() > 0;
+                         mInfo.marker.setIcon(getMarkerIcon(mInfo.school, isHighlighted, isDarkMode));
+                     }
+                 });
+                 darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+                 darkModeToggle.title = isDarkMode ? 'Light Mode' : 'Dark Mode';
+            });
+
+            const debouncedSearch = debounce(handleSearchInput, 250);
+            schoolSearchInput.addEventListener('input', debouncedSearch);
+            document.addEventListener('click', (event) => {
+                 if (!document.getElementById('schoolSearchContainer').contains(event.target) && 
+                     !document.getElementById('searchSuggestions').contains(event.target)) {
+                     document.getElementById('searchSuggestions').style.display = 'none';
+                 }
+            });
+
+
+            checkAllGradClassesBtn.addEventListener('click', () => {
+                 gradClassFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => { gradClassFilterState[cb.value] = true; cb.checked = true; });
+                 updateMarkersVisibility();
+            });
+            uncheckAllGradClassesBtn.addEventListener('click', () => {
+                 gradClassFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => { gradClassFilterState[cb.value] = false; cb.checked = false; });
+                 updateMarkersVisibility();
+            });
+
+            const resizer = document.getElementById('panel-resizer');
+            const leftPanel = document.getElementById('controls-and-list-container');
+            const mapPanel = document.getElementById('map');
+            let startX = 0; let startWidth = 0;
+            const savedWidth = localStorage.getItem('leftPanelWidth');
+            if (savedWidth) leftPanel.style.width = savedWidth; else leftPanel.style.width = '30%';
+
+            resizer.addEventListener('mousedown', function(e) {
+                e.preventDefault(); startX = e.clientX; startWidth = parseInt(document.defaultView.getComputedStyle(leftPanel).width, 10);
+                document.documentElement.addEventListener('mousemove', doDrag, false);
+                document.documentElement.addEventListener('mouseup', stopDrag, false);
+                document.body.style.userSelect = 'none'; document.body.style.pointerEvents = 'none'; mapPanel.style.pointerEvents = 'none';
+            });
+            function doDrag(e) {
+                let newWidth = startWidth + e.clientX - startX;
+                const containerWidth = document.getElementById('map-container').offsetWidth;
+                const minWidth = 250; const maxWidthPercentage = 0.60;
+                newWidth = Math.max(minWidth, newWidth); newWidth = Math.min(newWidth, containerWidth * maxWidthPercentage);
+                leftPanel.style.width = newWidth + 'px';
+            }
+            function stopDrag() {
+                document.documentElement.removeEventListener('mousemove', doDrag, false);
+                document.documentElement.removeEventListener('mouseup', stopDrag, false);
+                localStorage.setItem('leftPanelWidth', leftPanel.style.width);
+                document.body.style.userSelect = ''; document.body.style.pointerEvents = ''; mapPanel.style.pointerEvents = '';
+                google.maps.event.trigger(map, 'resize');
+            }
+            updateMarkersVisibility(); // This will also call updateStatsTable and filterSchoolList
+        }
+        
+
+        function gmLoadError() {
+            console.error("Google Maps failed to load.");
+            document.getElementById('map').innerHTML = '<p style="padding: 20px; text-align: center; color: red; background-color: #ffebee;">Error: Could not load Google Maps. Please check your API key and ensure the Maps JavaScript API is enabled.</p>';
+            document.getElementById('controls-and-list-container').style.opacity = '0.5';
+            document.getElementById('controls-and-list-container').style.pointerEvents = 'none';
+        }
+    </script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initMap&onerror=gmLoadError&v=weekly"
+        async
+        defer
+    ></script> <!-- IMPORTANT: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key -->
+</body>
+</html>
