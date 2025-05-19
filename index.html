@@ -138,6 +138,14 @@ body.dark-mode .grad-class-separator {
         #stats-table th { background-color: #f0f0f0; font-weight: bold; }
         #stats-table td.row-header { text-align: left; font-weight: bold; background-color: #f9f9f9;}
 
+        /* ADDED: Styles for Major Summary Table */
+        #major-summary-control { font-size: 0.9em; margin-top: 10px; }
+        #major-summary-control h4 { margin-bottom: 8px; }
+        #major-summary-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        #major-summary-table th, #major-summary-table td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 0.9em; }
+        #major-summary-table th { background-color: #f0f0f0; font-weight: bold; text-align: center; }
+        #major-summary-table td:last-child { text-align: center; } /* For count column */
+
 
         #school-list-control { font-size: 0.9em; flex-grow: 1;  display: flex; flex-direction: column; overflow: hidden;  }
         .list-header-container { overflow: visible;  margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; transition: border-color 0.3s; flex-shrink: 0;  }
@@ -162,6 +170,14 @@ body.dark-mode .grad-class-separator {
         .list-content li span.school-name { flex-grow: 1; vertical-align: middle; line-height: 1.4;  }
         .list-content a { color: #007bff; text-decoration: none; }
         .list-content a:hover { text-decoration: underline; }
+
+        /* ADDED: Style for major in list item */
+        .list-item-major {
+            font-size: 0.85em;
+            color: #555; /* Default for light mode */
+            margin-left: 3px;
+        }
+
 
         #senior-photo-popup {
             position: fixed; /* Changed to fixed for viewport positioning */
@@ -295,6 +311,12 @@ body.dark-mode .grad-class-separator {
         body.dark-mode #stats-table th { background-color: #2a2a2a; }
         body.dark-mode #stats-table td.row-header { background-color: #222; }
 
+        /* ADDED: Dark mode styles for Major Summary Table */
+        body.dark-mode #major-summary-table th, body.dark-mode #major-summary-table td { border-color: #555; }
+        body.dark-mode #major-summary-table th { background-color: #2a2a2a; }
+        body.dark-mode .list-item-major { color: #bbb; } /* For dark mode */
+
+
         body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
         body.dark-mode #toggleSchoolListBtn:hover { background-color: #555; }
 
@@ -349,8 +371,8 @@ body.dark-mode .grad-class-separator {
     <div id="map-container">
         <div id="controls-and-list-container">
             <div id="description-control" class="map-control">
-     <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
-</div>
+                <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
+            </div>
             <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
@@ -443,6 +465,21 @@ body.dark-mode .grad-class-separator {
                             <td data-stat="Total-Overall" style="font-weight:bold;">0</td>
                         </tr>
                     </tfoot>
+                </table>
+            </div>
+            <!-- ADDED: Major Summary Table HTML -->
+            <div id="major-summary-control" class="map-control">
+                <h4>Major Area Summary</h4>
+                <table id="major-summary-table">
+                    <thead>
+                        <tr>
+                            <th>Major Area</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be populated by JavaScript -->
+                    </tbody>
                 </table>
             </div>
             <div id="school-list-control" class="map-control">
@@ -844,360 +881,615 @@ body.dark-mode .grad-class-separator {
 
             return name; // Return original if no specific normalization rule applies
         }
+        
+        // ADDED: Major to Area Mapping (Customize this to your needs!)
+       const majorToAreaMapping = {
+    // STEM
+    "computer science": "STEM", "cs": "STEM",
+    "data science": "STEM",
+    "mathematics": "STEM", "math": "STEM", "pre-mathematics": "STEM",
+    "physics": "STEM",
+    "chemistry": "STEM",
+    "biology": "STEM", "biological sciences": "STEM", "human biology": "STEM", "integrative biology": "STEM",
+    "molecular and cell biology": "STEM", // Full phrase
+    "cell biology": "STEM", // Component
+    "molecular biology": "STEM", // Component
+    "biochemistry": "STEM",
+    "neuroscience": "STEM", "cognitive science": "STEM", "cognitive studies": "STEM",
+    "statistics": "STEM",
+    "astrophysics": "STEM", "astronomy": "STEM",
+    "environmental science": "STEM",
+    "environmental science & policy": "STEM", // If primarily Env Sci
+    "geoscience": "STEM", "geology": "STEM",
+    "ecology": "STEM", "evolutionary biology": "STEM",
+    "plant science": "STEM",
+    "entomology": "STEM",
+    "animal behavior": "STEM", "zoology": "STEM",
+    "marine biology": "STEM",
+    "biotechnology": "STEM",
+    "information science": "STEM",
+    "computer programming": "STEM",
+    "cybersecurity": "STEM",
+    "data analytics": "STEM",
+    "robotics": "STEM",
+    "meteorology": "STEM",
+    "oceanography": "STEM",
+    "molecular science": "STEM",
+    "forestry": "STEM", "foresty": "STEM",
+    "urban arboriculture": "STEM",
+    "materials science": "STEM",
 
+    // Engineering
+    "engineering": "Engineering",
+    "mechanical engineering": "Engineering",
+    "electrical engineering": "Engineering",
+    "civil engineering": "Engineering", "civil": "Engineering", // For split part
+    "chemical engineering": "Engineering",
+    "biomedical engineering": "Engineering", "bme": "Engineering", "biomolecular engineering": "Engineering",
+    "aerospace engineering": "Engineering", "aeronautical engineering technology": "Engineering",
+    "computer engineering": "Engineering",
+    "industrial engineering": "Engineering",
+    "software engineering": "Engineering",
+    "environmental engineering": "Engineering",
+    "environmental engineering and ethics": "Engineering", // Primary category for this specific combo
+    "materials engineering": "Engineering",
+    "materials science & engineering": "Engineering", // If primarily Engineering
+    "manufacturing & design engineering": "Engineering",
+    "manufacturing engineering": "Engineering", "manufacturing": "Engineering", // For split part
+    "design engineering": "Engineering",
+
+    // Business & Economics
+    "business administration": "Business/Economics", "business": "Business/Economics",
+    "business management": "Business/Economics", "management": "Business/Economics",
+    "economics": "Business/Economics", "econ": "Business/Economics", "business economics": "Business/Economics", "financial economics": "Business/Economics", "applied economics and management": "Business/Economics",
+    "economics & african american studies": "Business/Economics", // If Econ is primary for this student, though AAS is H/SS
+    "finance": "Business/Economics",
+    "biomedical studies & finance": "Business/Economics", // If Finance is primary (Biomedical Studies also added to Health Sci)
+    "marketing": "Business/Economics", "marketing management": "Business/Economics",
+    "marketing & advertising": "Business/Economics",
+    "advertising": "Business/Economics", // Component
+    "accounting": "Business/Economics",
+    "international business": "Business/Economics",
+    "entrepreneurship": "Business/Economics",
+    "sport management": "Business/Economics",
+    "information systems": "Business/Economics",
+    "computer information systems": "Business/Economics",
+    "actuarial science": "Business/Economics",
+    "supply chain management": "Business/Economics",
+    "real estate": "Business/Economics",
+    "hospitality management": "Business/Economics",
+    "human resources": "Business/Economics",
+    "political economy": "Business/Economics", // Already present
+    "philsophy & politics and economics": "Business/Economics", // If Econ is focus; Phil and PoliSci are H/SS. Or map to H/SS
+
+    // Humanities & Social Sciences
+    "english": "Humanities/Social Sciences",
+    "english literature": "Humanities/Social Sciences", "literature": "Humanities/Social Sciences",
+    "english language & literature": "Humanities/Social Sciences",
+    "history": "Humanities/Social Sciences", "ancient history": "Humanities/Social Sciences",
+    "art history": "Humanities/Social Sciences", "history of art": "Humanities/Social Sciences",
+    "political science": "Humanities/Social Sciences", "polisci": "Humanities/Social Sciences", "government": "Humanities/Social Sciences", "politics": "Humanities/Social Sciences",
+    "psychology": "Humanities/Social Sciences", "psych": "Humanities/Social Sciences", "applied psychology": "Humanities/Social Sciences",
+    "sociology": "Humanities/Social Sciences", "society": "Humanities/Social Sciences", // For "Law & Society" or "Law, History, and Society"
+    "anthropology": "Humanities/Social Sciences", "social anthropology": "Humanities/Social Sciences",
+    "philosophy": "Humanities/Social Sciences", "philsophy": "Humanities/Social Sciences", // Typo
+    "ethics": "Humanities/Social Sciences", // For "Environmental Engineering and Ethics"
+    "international relations": "Humanities/Social Sciences", "ir": "Humanities/Social Sciences", "global affairs": "Humanities/Social Sciences",
+    "communications": "Humanities/Social Sciences", "communication studies": "Humanities/Social Sciences", "media studies": "Humanities/Social Sciences", "multi-cultural media": "Humanities/Social Sciences",
+    "linguistics": "Humanities/Social Sciences",
+    "journalism": "Humanities/Social Sciences",
+    "magazine, news & digital journalism": "Humanities/Social Sciences",
+    "digital journalism": "Humanities/Social Sciences",
+    "news": "Humanities/Social Sciences", "magazine": "Humanities/Social Sciences",
+    "liberal arts": "Humanities/Social Sciences", "liberal studies": "Humanities/Social Sciences", "humanities": "Humanities/Social Sciences",
+    "creative writing": "Humanities/Social Sciences",
+    "public policy": "Humanities/Social Sciences", "policy studies": "Humanities/Social Sciences", "policy": "Humanities/Social Sciences", // For "Environmental Science & Policy"
+    "environmental studies": "Humanities/Social Sciences",
+    "environmental policy": "Humanities/Social Sciences",
+    "africana studies": "Humanities/Social Sciences",
+    "african american studies": "Humanities/Social Sciences",
+    "international development": "Humanities/Social Sciences", "development": "Humanities/Social Sciences", // If part of "International Development"
+    "industrial and labor relations": "Humanities/Social Sciences", // Corrected
+    "industiral and labor relations": "Humanities/Social Sciences", // Typo
+    "industrial labor relations": "Humanities/Social Sciences", // Variation
+    "labor relations": "Humanities/Social Sciences", // Component
+    "archaeological studies": "Humanities/Social Sciences", "archaeology": "Humanities/Social Sciences",
+    "law & society": "Humanities/Social Sciences",
+    "law, history, and society": "Humanities/Social Sciences",
+    "law": "Humanities/Social Sciences",
+    "pre-law": "Humanities/Social Sciences",
+    "criminology": "Humanities/Social Sciences",
+    "criminal justice": "Humanities/Social Sciences",
+    "urban studies": "Humanities/Social Sciences", "urban planning": "Humanities/Social Sciences",
+    "geography": "Humanities/Social Sciences",
+    "foreign languages": "Humanities/Social Sciences", "modern languages": "Humanities/Social Sciences",
+    "area studies": "Humanities/Social Sciences",
+    "gender studies": "Humanities/Social Sciences", "women's studies": "Humanities/Social Sciences",
+    "classics": "Humanities/Social Sciences",
+    "religious studies": "Humanities/Social Sciences",
+    "public relations": "Humanities/Social Sciences",
+    "social sciences": "Humanities/Social Sciences",
+    "comparative literature": "Humanities/Social Sciences",
+
+    // Arts & Design
+    "fine arts": "Arts/Design", "art": "Arts/Design", "studio art": "Arts/Design", "visual arts": "Arts/Design",
+    "graphic design": "Arts/Design", "design": "Arts/Design", "digital design": "Arts/Design", "digital design & animation": "Arts/Design",
+    "music": "Arts/Design", "music performance": "Arts/Design", "music composition": "Arts/Design", "musical studies": "Arts/Design",
+    "theater": "Arts/Design", "drama": "Arts/Design", "performing arts": "Arts/Design", "acting": "Arts/Design",
+    "film studies": "Arts/Design", "film": "Arts/Design", "flim": "Arts/Design", // Typo
+    "cinema studies": "Arts/Design", "film production": "Arts/Design",
+    "politics & flim": "Arts/Design", // If Film is primary for this student (Politics is H/SS)
+    "architecture": "Arts/Design",
+    "fashion design": "Arts/Design", "fashion merchandising": "Arts/Design",
+    "photography": "Arts/Design",
+    "animation": "Arts/Design",
+    "industrial design": "Arts/Design",
+    "game design": "Arts/Design",
+    "game design and development": "Arts/Design", // "development" alone is too generic if split.
+    "collaborative arts": "Arts/Design",
+    "dance": "Arts/Design",
+    "interior design": "Arts/Design",
+    "urban design": "Arts/Design",
+    "production": "Arts/Design",
+
+    // Health Sciences
+    "nursing": "Health Sciences",
+    "pre-med": "Health Sciences", "pre-medicine": "Health Sciences", "pre-dental": "Health Sciences",
+    "public health": "Health Sciences", "global public health": "Health Sciences",
+    "kinesiology": "Health Sciences", "exercise science": "Health Sciences",
+    "pharmacy": "Health Sciences", "pre-pharmacy": "Health Sciences", "pharmacology": "Health Sciences",
+    "nutrition": "Health Sciences", "food science": "Health Sciences",
+    "hssp": "Health Sciences",
+    "medicine, science, and the humanities": "Health Sciences", // Full phrase
+    "medicine": "Health Sciences", // Component
+    "physical therapy": "Health Sciences",
+    "occupational therapy": "Health Sciences",
+    "speech pathology": "Health Sciences",
+    "social work": "Health Sciences",
+    "health sciences": "Health Sciences",
+    "biomedical studies": "Health Sciences", // For "Biomedical Studies & Finance"
+
+    // Education
+    "education": "Education", "teaching": "Education",
+    "teacher tech design": "Education",
+    "secondary english education": "Education",
+    "elementary education": "Education",
+    "special education": "Education",
+
+    // Undecided/Other
+    "undecided major": "Undecided/Other",
+    "undecided": "Undecided/Other",
+    "exploratory": "Undecided/Other",
+    "general studies": "Undecided/Other",
+    "n/a": "Undecided/Other",
+    "other": "Undecided/Other",
+    
+};
+
+       function getMajorArea(specificMajor) {
+    if (!specificMajor) return "Unknown";
+
+    const lowerSpecificMajor = specificMajor.toLowerCase().trim();
+    if (lowerSpecificMajor === "" || lowerSpecificMajor === "undecided" || lowerSpecificMajor === "undecided major" || lowerSpecificMajor === "n/a" || lowerSpecificMajor === "exploratory") {
+        return "Undecided/Other";
+    }
+
+    // --- START NEW LOGIC FOR DUAL MAJORS ---
+    // If the major string contains typical separators for dual majors
+    if (lowerSpecificMajor.includes('&') || lowerSpecificMajor.includes(' and ')) {
+        const majors = lowerSpecificMajor.split(/\s*&\s*|\s+and\s+/); // Split by '&' or 'and'
+        const areas = majors.map(singleMajor => {
+            singleMajor = singleMajor.trim();
+            // Try exact or very close matches from the mapping first
+            for (const key in majorToAreaMapping) {
+                if (singleMajor === key.toLowerCase()) {
+                    return majorToAreaMapping[key];
+                }
+            }
+            // Try "contains" matches
+            for (const key in majorToAreaMapping) {
+                if (singleMajor.includes(key.toLowerCase()) && key.length > 3) {
+                    return majorToAreaMapping[key];
+                }
+            }
+            // Generic keyword catch-alls for the single major part
+            if (singleMajor.includes("engineering")) return "Engineering";
+            // ... (add other generic keyword checks for singleMajor here if needed) ...
+            console.warn(`Part of dual major "${singleMajor}" from "${specificMajor}" mapped to "Other".`);
+            return "Other"; // Or "Unknown" for individual parts
+        });
+        // This function is expected to return a single area for the `updateMajorSummaryTable`.
+        // To make it "count twice", the logic in `updateMajorSummaryTable` needs to handle an array of areas.
+        // For now, returning a concatenated string or the first area.
+        // A better approach is to modify updateMajorSummaryTable to accept an array.
+        return areas.join(' & '); // Or return areas[0] if only one category is expected by the caller
+                                   // Or, to truly count twice, the caller (updateMajorSummaryTable)
+                                   // needs to be aware that getMajorArea can return an array of areas.
+    }
+    // --- END NEW LOGIC FOR DUAL MAJORS ---
+
+
+    // Try exact or very close matches from the mapping first (for single majors)
+    for (const key in majorToAreaMapping) {
+        if (lowerSpecificMajor === key.toLowerCase()) {
+            return majorToAreaMapping[key];
+        }
+    }
+    // Try "contains" matches from the mapping (more general)
+    for (const key in majorToAreaMapping) {
+         if (lowerSpecificMajor.includes(key.toLowerCase()) && key.length > 3) {
+            return majorToAreaMapping[key];
+        }
+    }
+
+    // More generic keyword-based catch-alls if no mapping hit
+    if (lowerSpecificMajor.includes("engineering")) return "Engineering";
+    if (lowerSpecificMajor.includes("science") && !lowerSpecificMajor.includes("social") && !lowerSpecificMajor.includes("political") && !lowerSpecificMajor.includes("environmental st")) return "STEM";
+    if (lowerSpecificMajor.includes("art") || lowerSpecificMajor.includes("design") || lowerSpecificMajor.includes("music") || lowerSpecificMajor.includes("theat") || lowerSpecificMajor.includes("film") || lowerSpecificMajor.includes("drama")) return "Arts/Design";
+    if (lowerSpecificMajor.includes("business") || lowerSpecificMajor.includes("econ") || lowerSpecificMajor.includes("financ") || lowerSpecificMajor.includes("market") || lowerSpecificMajor.includes("account")) return "Business/Economics";
+    if (lowerSpecificMajor.includes("politic") || lowerSpecificMajor.includes("gov") || lowerSpecificMajor.includes("socio") || lowerSpecificMajor.includes("psych") || lowerSpecificMajor.includes("anthro") || lowerSpecificMajor.includes("histor") || lowerSpecificMajor.includes("english") || lowerSpecificMajor.includes("philosophy")) return "Humanities/Social Sciences";
+    if (lowerSpecificMajor.includes("health") || lowerSpecificMajor.includes("medic") || lowerSpecificMajor.includes("nurs") || lowerSpecificMajor.includes("pre-med")) return "Health Sciences";
+    if (lowerSpecificMajor.includes("educat") || lowerSpecificMajor.includes("teach")) return "Education";
+    
+    console.warn(`Major "${specificMajor}" mapped to "Other". Consider adding it to majorToAreaMapping.`);
+    return "Other";
+}
+
+
+        // IMPORTANT: Update this rawData section with your actual data including majors
+        // Format: Senior Name - College Name - Major
         const rawData = `
 Class of '21
-Emma Griebsch - University of Edinburgh
-Maeve O' Donnell - Oberlin
-Stephanie Quichimbo - Middlebury
-Maya Soudatt - Bing
-August Siegel - Middlebury
-Terrance Bobb - BMCC
-Liam Ninger - UAlbany
-Natalya Rebeca Nuñez - CCNY
-Alex Procaccino - UCLA
-Lila Shulmister - University of Edinburgh
-Sara Gordon - USC
-Victoria Briggiler - WashU
-Madison Roberts - Babson
-Bernadine Gurning - Fordham
-Henry Foster - UMich
-Isabella Bogosel - Ithaca
-Stella Fusaro - Columbia
-Michaela Cusin - Pratt
-Israel Selassie - Towson
-Haylie Parrilla - Emerson
-Carli Seigelstein - NEU
-Etai Kurtzman - Tufts
-Lizbeth Yumbla - Northwestern
-Emily Cavanaugh - Cornell
-Adam Vogel - CCNY
-Sophie Blumstein - McGill
-Benjamin Ebanks - Massachusetts Institute of Technology
-Nafisa Chowdhury - CCNY
+Adam Vogel - CCNY - Undecided Major
+Alex Procaccino - UCLA - Pre-Mathematics
+August Siegel - Middlebury (POSSE) - Undecided Major
+Benjamin Ebanks - Massachusetts Institute of Technology - Computer Science, Economics, & Data Science
+Bernadine Gurning - Fordham - Neuroscience
+Carli Seigelstein - NEU - Communication Studies
+Emily Cavanaugh - Cornell - Entomology
+Emma Griebsch - University of Edinburgh - History & Politics
+Etai Kurtzman - Tufts - Computer Science
+Haylie Parrilla - Emerson - Media Arts Production
+Henry Foster - UMich - Computer Science
+Isabella Bogosel - Ithaca - Undecided Major
+Israel Selassie - Towson - Social Sciences
+Liam Ninger - UAlbany - Computer Science
+Lila Shulmister - University of Edinburgh - Social Anthropology
+Lizbeth Yumbla - Northwestern - Undecided Major
+Madison Roberts - Babson - Undecided Major
+Maeve O' Donnell - Oberlin - Law & Society
+Maya Soudatt - Bing - Biology
+Michaela Cusin - Pratt - Photography
+Nafisa Chowdhury - CCNY - Psychology
+Natalya Rebeca Nuñez - CCNY - Psychology
+Sara Gordon - USC - Communications
+Sophie Blumstein - McGill - Business
+Stella Fusaro - Columbia - Undecided Major
+Stephanie Quichimbo - Middlebury - Sociology & Environmental Studies
+Terrance Bobb - BMCC - Physical Therapy & Exercise Science
+Victoria Briggiler - WashU - Psychology
 
 Class of '22
-Shyanne Brevard - Hostos
-Rendy Cabral - SBU
-Margaux Simons - Occidental
-Benny Goodstein - University of the Highlands and Islands
-Tenzing Tsepak - OSU
-Grace Zhu - University of East London
-Gaby Fuki - Tufts
-Harold Iwuala - Cornell
-Ryan Persad - Queens College
-Rubie Menendez - Syracuse
-Tamar Greenberg - U Colorado Boulder
-Ryan Lam - Bing
-Natasha Milton - Hunter
-Jack Cao - NYU
-Analiz Quezada - Fordham
-Jack Lefkowitz - Cornell
-Grace Lessig - Muhlenberg
-Lola Regard - McGill
-Grace Gorreja - NYU
-Marcos Moya - Northwestern
-Chayla Murray - Howard
-Stella Rieben - Purdue
-Jonathan Bender - USC
-Adrianna Rodriguez - Bentley
-Winson Zheng - SBU
-Henry Pincus - Oberlin
-Taz Hasan - CCNY (Macaulay)
-Farooq Shaikh - Arizona State University
-Rachel Svoyskiy - NEU
-Anastasia Kim - SBU
-Ariel Cthwe - RIT
-Tallulah Cohen - McGill
-Chloe Shiffman - Yale
-Samantha Candelo - Barnard
-Maria Cuevas - Columbia
-Hudson Wong - Boston U
-Edwin Zamora - Bing
-Kiara Reyes - U Rhode Island
-Nicole Surowka - Bing
-Nia Mayers - Howard
-Audrey Nannor - Yale
-Simone Olivier - Brown
-Maya Jelassi - Hunter
-Emma Khidr - Cornell
-Maureen Soelaiman - Hunter
-Matthew Sylvester - NEU
-Erik Huovilainen - Bing
-Cody Bertrand - UB
-Susoma Halder - SBU
-Chetna Dawda - Davidson
-Dylan Marfrey - RIT
-Maxie Danenberg - Pratt
-Afieni Cayetano - Bing
-Sophia Tranguch - USC
-Nusrat Jahan - Bing
-Leo Gentile - Williams
-Olivia Segura - Tulane
-Chenxin Wang - RIT
-Kira Liang - Bing
-Renelle Mark - Molloy
-Solana Nevarez - Bing
-Colter Diehm - RIT
-Fran Velez - NYU
-Fabiana Montenegro - Johns Hopkins
-Luca Palacardo - UMich
-Gabrielle Mollin - Duke
-Tina He - NYU
-Amarya Levy-Mazie - Tulane
-Nicholas Medoro - Bing
-Nicholas Mancuso - Williams
-Jane Curry - Duke
-Justin Burkett - Bates
-Janeth Palagot - Hunter
-Madyson Gregory - Brooklyn College
-Melanie Candelo - Babson (POSSE)
-Salomè Noufele - Brown
-Elizabeth Beck - Cornell
-Madison Loughlin - Georgetown
-Esther Bistricher - Brandeis (POSSE)
-Clara Medina - Wesleyan University (QuestBridge)
-Mayim Richman - Oberlin
-Solana Quezada - UW Madison (POSSE)
-Donald Zheng - Boston U (QuestBridge)
-Pierluigi Di Iorio - Boston U
-Ilai Sternoff - Tufts
-Josh Poole - William and Mary
-Gregory Roitbourd - Brandeis (POSSE)
-Jonah Berlin - NEU
-Mariwa Gambo - Boston College (QuestBridge)
-Sofia Dokianos - UVA
+Adrianna Rodriguez - Bentley - Marketing Management
+Afieni Cayetano - Bing - Anthropology
+Amarya Levy-Mazie - Tulane - Undecided Major
+Analiz Quezada - Fordham - Economics
+Anastasia Kim - SBU - Computer Science & Pre-Dental
+Ariel Cthwe - RIT - Game Design and Development
+Audrey Nannor - Yale - Cognitive Science
+Benny Goodstein - University of the Highlands and Islands - Foresty & Urban Arboriculture
+Chayla Murray - Howard - Undecided Major
+Chenxin Wang - RIT - Biomedical Studies & Finance
+Chetna Dawda - Davidson - Computer Science
+Chloe Shiffman - Yale - English Language & Literature
+Clara Medina - Wesleyan University (QuestBridge) - Computer Science & Philosophy
+Cody Bertrand - UB - Mechanical Engineering
+Colter Diehm - RIT - Biotechnology & Molecular Science
+Donald Zheng - Boston U (QuestBridge) - Biochemistry & Molecular Biology
+Dylan Marfrey - RIT - Mechanical Engineering
+Edwin Zamora - Bing - Business Administration & Finanical Economics
+Elizabeth Beck - Cornell - Undecided Major
+Emma Khidr - Cornell - Biomedical Engineering
+Erik Huovilainen - Bing - Economics
+Esther Bistricher - Brandeis (POSSE) - Neuroscience & HSSP
+Fabiana Montenegro - Johns Hopkins - Pre-Med
+Farooq Shaikh - Arizona State University - Software Engineering
+Fran Velez - NYU - Teacher Tech Design
+Gabrielle Mollin - Duke - History & Public Policy
+Gaby Fuki - Tufts - Chemistry
+Grace Gorreja - NYU - Finance
+Grace Lessig - Muhlenberg - Undecided Major
+Grace Zhu - University of East London - Philsophy & Politics and Economics
+Gregory Roitbourd - Brandeis (POSSE) - Physics
+Harold Iwuala - Cornell - Chemical Engineering
+Henry Pincus - Oberlin - Music & Creative Writing
+Hudson Wong - Boston U - Business
+Ilai Sternoff - Tufts - Film
+Jack Cao - NYU - Finance & Business
+Jack Lefkowitz - Cornell - Physics
+Jane Curry - Duke - Undecided Major
+Janeth Palagot - Hunter - Computer Science
+Jonah Berlin - NEU - Civil & Environmental Engineering
+Jonathan Bender - USC - Undecided Major
+Josh Poole - William and Mary - Business & Economics
+Justin Burkett - Bates - Economics
+Kiara Reyes - U Rhode Island - Undecided Major
+Kira Liang - Bing - Physics
+Leo Gentile - Williams - Statistics
+Lola Regard - McGill - Materials Engineering
+Luca Palacardo - UMich - Undecided Major
+Madison Loughlin - Georgetown - Undecided Major
+Madyson Gregory - Brooklyn College - Psychology
+Marcos Moya - Northwestern - Mechanical Engineering
+Margaux Simons - Occidental - Undecided Major
+Maria Cuevas - Columbia - Astrophysics & Computer Science
+Mariwa Gambo - Boston College (QuestBridge) - Biology
+Matthew Sylvester - NEU - Engineering & Pre-Med
+Maureen Soelaiman - Hunter - Undecided Major
+Maxie Danenberg - Pratt - Architecture
+Maya Jelassi - Hunter - Art History
+Mayim Richman - Oberlin - Undecided Major
+Melanie Candelo - Babson (POSSE) - Business Management
+Natasha Milton - Hunter - Psychology
+Nia Mayers - Howard - Sociology
+Nicholas Mancuso - Williams - Undecided Major
+Nicholas Medoro - Bing - Biology
+Nicole Surowka - Bing - Undecided Major
+Nusrat Jahan - Bing - Integrative Neuroscience
+Olivia Segura - Tulane - Comparative Literature
+Pierluigi Di Iorio - Boston U - Undecided Major
+Rachel Svoyskiy - NEU - Business Administration & Psychology
+Rendy Cabral - SBU - Marine Biology
+Renelle Mark - Molloy - Nursing
+Rubie Menendez - Syracuse - Architecture
+Ryan Lam - Bing - Biology
+Ryan Persad - Queens College - Astronomy & Astrophysics
+Salomè Noufele - Brown - Undecided Major
+Samantha Candelo - Barnard - Undecided Major
+Shyanne Brevard - Hostos - Digital Design & Animation
+Simone Olivier - Brown - Africana Studies & Economics & Multi-Cultural Media
+Sofia Dokianos - UVA - Business
+Solana Nevarez - Bing - English
+Solana Quezada - UW Madison (POSSE) - Nursing
+Sophia Tranguch - USC - Undecided Major
+Stella Rieben - Purdue - Mechanical Engineering
+Susoma Halder - SBU - Biology
+Tallulah Cohen - McGill - Art History & Religious Studies
+Tamar Greenberg - U Colorado Boulder - Ecology & Evolutionary Biology
+Taz Hasan - CCNY (Macaulay) - Architecture
+Tenzing Tsepak - OSU - Exercise Science
+Tina He - NYU - Applied Psychology
+Winson Zheng - SBU - Undecided Major
 
 Class of '23
-Johann Maldonado - Wesleyan University
-Kaitlyn Huang - Babson (POSSE)
-Freya Braiker - Vassar
-Liliana Sofia - Princeton
-Lila Purvis - Babson (POSSE)
-Jonathan Farias Dutra Rodriguez - UPenn
-Michelle Chen - Oberlin
-Sumaiya Sayeed - Williams (QuestBridge)
-Paola Goldsand-Lamboy - Smith
-Sayed Hassan - Colgate
-Lang Yi Chen - WashU
-Sana Lee - Wesleyan University
-Jamie Huang - NYU
-Janna Galligan - UVM
-Michelle Tang - Barnard
-Samia Anisha - Baruch (Macaulay)
-Dylan Sohmer - RIT
-Melissa Munroe - Georgetown
-Clyde Paul - Boston U
-Jackson Hoffman - Oberlin
-Mattan Feldman - u colorado boulder
-Julia St. John - Cornell
-Marley Drakes - u colorado boulder
-Marley Berman Rossi Kempner - Oberlin
-Anwar Burks - u colorado boulder
-Hazel Corona - Bucknell
-Isadore Borock - UW Madison
-Gabriela Sloane - UMass Amherst
-Emma Tyka - Penn State
-Brandon Mai - RIT
-Josie Shehadi - Oberlin
-Jack Hughes - Bing
-Choiti Deb - SBU
-Galia Shkedi - McGill
-Sarah Toniuk - Bing
-Emilia Wasilewicz - Flordia State University
-Supratim Shaud - NEU
-Sambidha Gurung - Brown
-Kayla Jaffier - University of Edinburgh
-Sydney Yuille - John Hopkins
-Clara Nordgren - McGill
-Doran Kaufman - Bing
-Daisy Polowetzky - Syracuse
-Ozzy Miceli - American University
-George Hausman - Carleton College
-Ashtyn Daring - UAlbany
-Sofie Towers - Cooper Union
-Elizabeth Cruz - RIT
-Carolyn Tenesa - Williams
-Ronan McCartney - SBU
-Phoebe Wolf - UVM
-Langston Perry - Oberlin
-Menghan Zhang - UMich
-Michelle Zhuang - UVA
-Frances Lu - Williams
-Otish Das - St. John's University
-Violet Fraser - Tufts
-Ian Splaver - Connecticut College
-Tricia Derecho - Cornell
-Gabi Tien - Harvard
-Aspen Woods - NYU
-Justin Colon - Bing
-Lycianne Pitts - FIT
-Noah Feig - WashU
-Maliha Antara - Hunter
-Arthur Izik - Hunter
-Kate Lin - Wellesley College
-Ashlee Rodriguez - Hunter
-Joseph Nieto - Farmingdale State College
-Abigail Geragthy - University of Rhode Island
-Alex Huynh - McGill
-Clara Miller - Bing
-Michael Chan - Boston University
-Nicole Lin - Rutgers
-Leah Tamayev - Hunter
-Patrycja Grazda - Fordham
-Andrew Basnet - SBU
-Jack Higginbotham Washburn - McGill
-Noemi Maller - Connecticut College
-Emmi Chen - Ithaca
-Zack Schteingart - UMich
-Fitzmore Codogan - AMDA
-Krzystof Gwiazdowski - UPitt
-Oliver Hatta Jones - NYU - Shanghai
-Elle Woodward - UArizona
-Katie Wiltshire - Skidmore
-Max Cantor - Union
-Serena Pendharkar - Temple University
-Ruby Kiesewalter - Ithaca
-Gabriel Lev - US Naval Academy
-Grace Aun - Case Western Reserve University
-Jolie Leong - NYU - London
-Sonia Ehrich - NYU
-Alina Brockway - UCSD
-Daniel Adamopulos - Haverford
-Jerin Tasnim - Hunter
-Shumalia Azim - Hunter
-Fina Strazza - NYU
-Alexandra Sokolowska - Bing
-Demetrios Giannopoulos - Baruch
-Carissa Braam - Pace
-Ariel Mekonen - Harvard
-Emmett King - BMCC
-Phillip Raymond - CSI
-Talia Guigui - GWU
-Mark Depountis - Baruch
-Graydon Pound - URochester
-Amila Shah - NEU
-Eileen Polanco - Barnard
-Hudson Athas - Cornell
-Rashi Roselin - WPI
-Alem John - SUNY New Paltz
+Abigail Geragthy - University of Rhode Island - English
+Alem John - SUNY New Paltz - Political Science & Anthropology
+Alex Huynh - McGill - International Development
+Alexandra Sokolowska - Bing - Chemistry
+Alina Brockway - UCSD - Engineering
+Amila Shah - NEU - Undecided Major
+Andrew Basnet - SBU - Computer Science
+Anwar Burks - u colorado boulder - Astrophysics & Astronomy
+Ariel Mekonen - Harvard - Undecided Major
+Arthur Izik - Hunter - Human Biology
+Ashlee Rodriguez - Hunter - Pre-Health
+Ashtyn Daring - UAlbany - Africana Studies
+Aspen Woods - NYU - Psychology & Political Science
+Brandon Mai - RIT - Civil Engineering
+Carissa Braam - Pace - Criminal Justice & Psychology
+Carolyn Tenesa - Williams - Undecided Major
+Choiti Deb - SBU - Biology
+Clara Miller - Bing - Undecided Major
+Clara Nordgren - McGill - Kinesiology
+Clyde Paul - Boston U - Business Adminstration
+Daisy Polowetzky - Syracuse - Magazine, News & Digital Journalism
+Daniel Adamopulos - Haverford - Undecided Major
+Demetrios Giannopoulos - Baruch - Finance
+Doran Kaufman - Bing - Undecided Major
+Dylan Sohmer - RIT - Aerospace Engineering
+Eileen Polanco - Barnard - Computer Science
+Elizabeth Cruz - RIT - Flim Production
+Elle Woodward - UArizona - Communications
+Emilia Wasilewicz - Flordia State University - Nursing
+Emma Tyka - Penn State - Engineering
+Emmett King - BMCC - Undecided Major
+Emmi Chen - Ithaca - Film, Photography, and Visual Arts
+Fina Strazza - NYU - Collaborative Arts
+Fitzmore Codogan - AMDA - Acting
+Frances Lu - Williams - Economics & Mathematics
+Freya Braiker - Vassar - Anthropology
+Gabi Tien - Harvard - Integrative Biology
+Gabriel Lev - US Naval Academy - Undecided Major
+Gabriela Sloane - UMass Amherst - Political Science
+Galia Shkedi - McGill - Psychology
+George Hausman - Carleton College - Mathematics & Ancient History
+Grace Aun - Case Western Reserve University - Undecided Major
+Graydon Pound - URochester - Business
+Hazel Corona - Bucknell - Animal Behavior
+Hudson Athas - Cornell - Industrial Labor Relations
+Ian Splaver - Connecticut College - History & Music
+Isadore Borock - UW Madison - History
+Jack Higginbotham Washburn - McGill - History
+Jack Hughes - Bing - Psychology
+Jackson Hoffman - Oberlin - Musical Studies & History
+Jamie Huang - NYU - English Literature
+Janna Galligan - UVM - Undecided Major
+Jerin Tasnim - Hunter - Nursing
+Johann Maldonado - Wesleyan University - Undecided Major
+Jolie Leong - NYU - London - Undecided Major
+Jonathan Farias Dutra Rodriguez - UPenn - Electrical Engineering
+Joseph Nieto - Farmingdale State College - Computer Programming and Information Systems
+Josie Shehadi - Oberlin - Undecided Major
+Julia St. John - Cornell - Plant Science
+Justin Colon - Bing - Undecided Major
+Kaitlyn Huang - Babson (POSSE) - Entrepreneurship
+Kate Lin - Wellesley College - Biology
+Katie Wiltshire - Skidmore - Education
+Kayla Jaffier - University of Edinburgh - History & Politics
+Krzystof Gwiazdowski - UPitt - Pre-Law
+Lang Yi Chen - WashU - Mathematics & Statistics
+Langston Perry - Oberlin - Studio Art
+Leah Tamayev - Hunter - Biology
+Lila Purvis - Babson (POSSE) - Undecided Major
+Liliana Sofia - Princeton - Undecided Major
+Lycianne Pitts - FIT - Marketing & Advertising
+Maliha Antara - Hunter - Biology
+Mark Depountis - Baruch - Finance
+Marley Berman Rossi Kempner - Oberlin - Politics & Flim
+Marley Drakes - u colorado boulder - Undecided Major
+Mattan Feldman - u colorado boulder - Mathematics
+Max Cantor - Union - Undecided Major
+Melissa Munroe - Georgetown - Business Marketing
+Menghan Zhang - UMich - Nursing
+Michael Chan - Boston University - Mechanical Engineering
+Michelle Chen - Oberlin - Psychology & Archaeological Studies
+Michelle Tang - Barnard - Economics
+Michelle Zhuang - UVA - Psychology
+Nicole Lin - Rutgers - Computer Science & Business
+Noah Feig - WashU - Economics & Mathematics
+Noemi Maller - Connecticut College - Philosophy & Sociology
+Oliver Hatta Jones - NYU - Shanghai - Undecided Major
+Otish Das - St. John's University - Business Management
+Ozzy Miceli - American University - Philosophy & Journalism
+Paola Goldsand-Lamboy - Smith - Biology
+Patrycja Grazda - Fordham - Psychology
+Phillip Raymond - CSI - Electrical Engineering
+Phoebe Wolf - UVM - Undecided Major
+Rashi Roselin - WPI - Computer Science
+Ronan McCartney - SBU - Business Management
+Ruby Kiesewalter - Ithaca - Undecided Major
+Sambidha Gurung - Brown - Neuroscience & Public Health
+Samia Anisha - Baruch (Macaulay) - Computer Information Systems
+Sana Lee - Wesleyan University - Undecided Major
+Sarah Toniuk - Bing - Undecided Major
+Sayed Hassan - Colgate - Neuroscience
+Serena Pendharkar - Temple University - Environmental Engineering
+Shumalia Azim - Hunter - Public Health
+Sofie Towers - Cooper Union - Architecture
+Sonia Ehrich - NYU - Mathematics & English Literature
+Sumaiya Sayeed - Williams (QuestBridge) - Public Health
+Supratim Shaud - NEU - Mechanical Engineering
+Sydney Yuille - John Hopkins - Medicine, Science, and The Humanities
+Talia Guigui - GWU - Pre-Law
+Tricia Derecho - Cornell - Applied Economics and Management
+Violet Fraser - Tufts - Undecided Major
+Zack Schteingart - UMich - Economics
 
 Class of '24
-Steven Chen - Northwestern
-Scarlett Albertson - Wesleyan University
-Paola Dominguez - Dartmouth
-Karolina Komar - Brandeis (POSSE)
-Grace Fastovsky - Boston College
-Anya Thompson - Wesleyan University
-Eli Gordon - Vanderbilt (POSSE)
-Hugh Black - Bard
-Margot Polen - Emory
-Margot Ehrsam - Cornell
-Ben Lee - WashU
-Evan Cedeno - UW Madison
-Harrison Wong - NEU
-Milo Writer - UPenn
-Ellery Spikes - UPenn
-Aleksandra Kulis - Boston University
-Blake Riley - Brown
-Ezra Mellor - Cornell
-Julia Chaly - Tufts
-Candy Wong - Northwestern
-Ava Vogel - UVM
-Bodie Seidler - UMich
-Anya Shulga - Case Western Reserve University
-Matthew Korochik - Purdue
-Alexandra Ralles - McGill
-Craig Hohmann - Yale
-Ellie Miller - Brown
-Jade De Los Santos - UPenn
-Jayla Lynch - Yale
-James Pyne - NYU
-Hindani Patel - Yale
-Amelia Leone - Cornell
-Matilda Cox - University of St Andrews
-Matthias Gat - Emerson
-Laura DePaolo - Indiania University
-Tyler Moy - Williams
-Chloe McDermott - University of Richmond
-Indigo Ubide Holmes - Syracuse
-Charlotte Rodeghiero - McGill
-Jennifer Derise - UVM
-Giulia Pesenti - UCSD
-Mya Barbatsoulis - Ithaca
-Jonathan Qian - Baruch
-Aeriel Revivo - Lehigh University
-Josie Schlesselman - McGill
-Emily Wilkinson - Syracuse
-Ellery Kilstein - Case Western Reserve University
-Oscar Schlesinger - USC
-Simone Bellettiere - Babson
-Julian Berk - McGill
-Tyson Lin - USC
-Maddy Bernstein - University of Washington
-Indigo Gordon-Gatica - Oberlin
-Lily Hirschson - Skidmore
-Sayma Wali - NYU
-Joey Lin - UMaryland College Park
-Malaya Angeles - McGill
-Ellie Fecko - UW Madison
-Emeilia Martin - Fordham
-Lola Wiesner - Syracuse
-Liviya Hoskinison - Hamilton
-Patrick Salinas - Cornell
-Anna Levi - McGill
-Dominika Wilamowski - Hunter
-Ric Trotta - Farifield University
-B Epstein-Reyes - Tufts
-Misty Brown - Bing
-Hannah Pollack - Vassar
-Sebastian Lollos - UMiami
-Derin Ozgu - Indiania University
-Mateo Gomez-Kosturowski - UVM
-Una Laffan - Hobart and William Smith Colleges
+Aeriel Revivo - Lehigh University - Architecture
+Aleksandra Kulis - Boston University - Undecided Major
+Alexandra Ralles - McGill - Undecided Major
+Amelia Leone - Cornell - Philosophy and Linguistics
+Anna Levi - McGill - Undecided Major
+Anya Shulga - Case Western Reserve University - Cognitive Science
+Anya Thompson - Wesleyan University - Anthropology
+Ava Vogel - UVM - Secondary English Education
+B Epstein-Reyes - Tufts - Mechanical Engineering
+Ben Lee - WashU - Undecided Major
+Blake Riley - Brown - Africana Studies & Political Science
+Bodie Seidler - UMich - Sport Management
+Candy Wong - Northwestern - Manufacturing & Design Engineering
+Charlotte Rodeghiero - McGill - Undecided Major
+Chloe McDermott - University of Richmond - Undecided Major
+Craig Hohmann - Yale - Global Affairs
+Derin Ozgu - Indiania University - Finance
+Dominika Wilamowski - Hunter - Nursing
+Eli Gordon - Vanderbilt (POSSE) - Economics
+Ellery Kilstein - Case Western Reserve University - Computer Science
+Ellery Spikes - UPenn - Environmental Studies & Economics
+Ellie Fecko - UW Madison - Mechanical Engineering
+Ellie Miller - Brown - Philosophy and Religious Studies
+Emeilia Martin - Fordham - Psychology
+Emily Wilkinson - Syracuse - Communications
+Evan Cedeno - UW Madison - Mechanical Engineering & Computer Science
+Ezra Mellor - Cornell - Industiral and Labor Relations
+Giulia Pesenti - UCSD - Molecular and Cell Biology
+Grace Fastovsky - Boston College - Biology
+Hannah Pollack - Vassar - Chemistry & Mathematics
+Harrison Wong - NEU - Business Analytics
+Hindani Patel - Yale - Environmental Engineering and Ethics
+Hugh Black - Bard - Undecided Major
+Indigo Gordon-Gatica - Oberlin - Undecided Major
+Indigo Ubide Holmes - Syracuse - Architecture
+Jade De Los Santos - UPenn - Psychology
+James Pyne - NYU - Global Public Health & Biology
+Jayla Lynch - Yale - Economics & African American Studies
+Jennifer Derise - UVM - Civil Engineering
+Joey Lin - UMaryland College Park - Public Health Science
+Jonathan Qian - Baruch - Biology
+Josie Schlesselman - McGill - Kinesiology
+Julia Chaly - Tufts - Undecided Major
+Julian Berk - McGill - Materials Science & Engineering
+Karolina Komar - Brandeis (POSSE) - Neuroscience
+Laura DePaolo - Indiania University - Finance & International Business
+Lily Hirschson - Skidmore - Environmental Science
+Liviya Hoskinison - Hamilton - Theatre
+Lola Wiesner - Syracuse - Finance
+Maddy Bernstein - University of Washington - Marine Biology
+Malaya Angeles - McGill - Undecided Major
+Margot Ehrsam - Cornell - Food Science
+Margot Polen - Emory - Undecided Major
+Mateo Gomez-Kosturowski - UVM - Zoology
+Matilda Cox - University of St Andrews - Psychology & Art History
+Matthew Korochik - Purdue - Aeronautical Engineering Technology
+Matthias Gat - Emerson - Journalism
+Milo Writer - UPenn - Neuroscience
+Misty Brown - Bing - Undecided Major
+Mya Barbatsoulis - Ithaca - Health Sciences
+Oscar Schlesinger - USC - Architecture
+Paola Dominguez - Dartmouth - English & Creative Writing
+Patrick Salinas - Cornell - Biological Sciences
+Ric Trotta - Farifield University - Business
+Sayma Wali - NYU - Politics & Economics
+Scarlett Albertson - Wesleyan University - Undecided Major
+Sebastian Lollos - UMiami - Finance
+Simone Bellettiere - Babson - Undecided Major
+Steven Chen - Northwestern - Mechanical Engineering
+Tyler Moy - Williams - Computer Science
+Tyson Lin - USC - Business & Finance
+Una Laffan - Hobart and William Smith Colleges - Geoscience
 
 Class of '25
-Fendy Jean-Pierre Jr. - Northwestern University
-Michelle Chen - Smith (QuestBridge)
-Julia Dennis - UVM
-Issac Coughlan - Tulane
-Max Willscher - Middlebury
-Veronica Morris - Cornell
-Anita Lin - Boston University
-Ananya Parekh - NYU
-Jordis Rosolinsky - Cornell
-Jared Vazquez - NYU
-Milen Girvin - UVA
-Eve Rieser - NEU
-Micah Killmer - Cornell
-Morgan Sweeney - Vanderbilt (POSSE)
-Adrian Acker - Wesleyan University
-Jade Acker - Wesleyan University
-Sean Brust - Vanderbilt (POSSE)
-Julian Malter - UFlordia
-Tiernan Brody - Bucknell
-Lena Quezada - Bing
-Keira Theis - University of St Andrews
-Ellis Peterson - Oberlin
-Patricia Natawidjaja - Tufts
-Jack Buffolano - NYU
-Ana Dokianos - UVA
-Jaya Lewis - UC Berkeley
-David Gutin - UChicago
-Ziyoda Samadova - Middlebury
-Eloisa Bromberg - Carnegie Mellon
-Lauryn Kirkland - Cornell
-Isa Cheng - Duke
+Adrian Acker - Wesleyan University - Undecided Major
+Ana Dokianos - UVA - Political Science & History
+Ananya Parekh - NYU - Biomolecular Engineering
+Anita Lin - Boston University - Business
+David Gutin - UChicago - Business Economics
+Ellis Peterson - Oberlin - Ecology & Music
+Eloisa Bromberg - Carnegie Mellon - Design & Production
+Eve Rieser - NEU - Communications & Sociology
+Fendy Jean-Pierre Jr. - Northwestern University - Engineering
+Isa Cheng - Duke - Environmental Science & Policy
+Issac Coughlan - Tulane - Cognitive Studies
+Jack Buffolano - NYU - Economics
+Jade Acker - Wesleyan University - English
+Jared Vazquez - NYU - Psychology
+Jaya Lewis - UC Berkeley - Sociology
+Jordis Rosolinsky - Cornell - Industrial Labor Relations
+Julia Dennis - UVM - Art History
+Julian Malter - UFlordia - Environmental Engineering
+Keira Theis - University of St Andrews - Management & Economics
+Lauryn Kirkland - Cornell - Nutrition
+Lena Quezada - Bing - Psychology
+Max Willscher - Middlebury - Political Science
+Micah Killmer - Cornell - Cognitive Science
+Michelle Chen - Smith (QuestBridge) - Biology
+Milen Girvin - UVA - Business
+Morgan Sweeney - Vanderbilt (POSSE) - Law, History, and Society
+Patricia Natawidjaja - Tufts - Engineering
+Sean Brust - Vanderbilt (POSSE) - Civil Engineering
+Tiernan Brody - Bucknell - Anthropology
+Veronica Morris - Cornell - Sociology
+Ziyoda Samadova - Middlebury - Psychology
 `;
 
       // Inside your <script> tag
 
 function parseRawData(rawData) {
     const lines = rawData.trim().split('\n');
-    const rawEntries = []; // Temporary array to hold initial parsed data
+    const rawEntries = []; 
     let currentGradClass = null;
 
-    // --- First Pass: Parse basic info and first names ---
     for (const line of lines) {
         const trimmedLine = line.trim();
         if (trimmedLine.startsWith("Class of ")) {
@@ -1211,18 +1503,25 @@ function parseRawData(rawData) {
         const parts = trimmedLine.split(" - ");
         const seniorName = parts[0].trim();
         const collegeNameRaw = parts[1].trim();
+        // MODIFIED: Parse major
+        let major = "Undecided Major"; // Default if not provided or if only 2 parts
+        if (parts.length > 2) {
+            major = parts[2].trim();
+            if (major === "") major = "Undecided Major"; // Handle empty major string
+        }
+        
         const firstName = seniorName.split(' ')[0].toLowerCase();
 
         rawEntries.push({
             seniorName,
             collegeNameRaw,
+            major, // ADDED
             gradClass: currentGradClass,
             firstName
         });
     }
 
-    // --- Second Pass: Identify duplicate first names within each class ---
-    const firstNameCountsByClass = new Map(); // e.g., {'23': {'emily': 2, 'john': 1}, '24': {'anna': 1}}
+    const firstNameCountsByClass = new Map(); 
     for (const entry of rawEntries) {
         if (!firstNameCountsByClass.has(entry.gradClass)) {
             firstNameCountsByClass.set(entry.gradClass, new Map());
@@ -1231,25 +1530,19 @@ function parseRawData(rawData) {
         classCounts.set(entry.firstName, (classCounts.get(entry.firstName) || 0) + 1);
     }
 
-    // --- Third Pass: Construct final choices with correct photo paths ---
     const choices = [];
     for (const entry of rawEntries) {
-        const { seniorName, collegeNameRaw, gradClass, firstName } = entry;
+        const { seniorName, collegeNameRaw, major, gradClass, firstName } = entry; // MODIFIED: included major
         const photoYear = gradClass.replace("'", "");
         let photoFilename;
 
-        // Check if the first name is a duplicate in its class
         if (firstNameCountsByClass.get(gradClass).get(firstName) > 1) {
-            // Duplicate first name in this class, use full name sanitized
             photoFilename = seniorName.toLowerCase().replace(/\s+/g, '_');
         } else {
-            // Unique first name in this class, use only first name
             photoFilename = firstName;
         }
 
         const seniorPhotoUrlBase = `photos/${photoYear}/${photoFilename}`;
-
-        // --- Your existing logic for college details and pushing to choices ---
         const normalizedNameKey = normalizeCollegeName(collegeNameRaw);
         const collegeDetails = collegeCoordsAndInfo[normalizedNameKey] || collegeCoordsAndInfo["Generic College"];
 
@@ -1271,7 +1564,8 @@ function parseRawData(rawData) {
             gradClass: gradClass,
             collegeName: finalCollegeName,
             collegeKey: normalizedNameKey,
-            collegeNameRaw: collegeNameRaw, // Keep original raw name for suffixes
+            collegeNameRaw: collegeNameRaw, 
+            major: major, // ADDED
             lat: collegeDetails.lat,
             lng: collegeDetails.lng,
             collegeType: collegeTypeToUse,
@@ -1370,6 +1664,69 @@ function parseRawData(rawData) {
             }
         }
 
+        // ADDED: Function to update Major Summary Table
+        function updateMajorSummaryTable() {
+            const majorAreaCounts = {};
+            // Define the order of areas for the table. Customize as needed.
+            const predefinedAreas = ["STEM", "Engineering", "Business/Economics", "Humanities/Social Sciences", "Arts/Design", "Health Sciences", "Education", "Undecided/Other", "Other", "Unknown"];
+
+            predefinedAreas.forEach(area => majorAreaCounts[area] = 0);
+
+            allData.forEach(school => {
+    if (school.isVisible && school.collegeName !== "Undecided") {
+        const majorAreaResult = getMajorArea(school.major); // This might be a string like "STEM & Business/Economics" or an array
+        
+        const areasToCount = [];
+        if (typeof majorAreaResult === 'string' && majorAreaResult.includes(' & ')) {
+            areasToCount.push(...majorAreaResult.split(' & '));
+        } else if (Array.isArray(majorAreaResult)) { // If getMajorArea was changed to return an array
+             areasToCount.push(...majorAreaResult);
+        } else {
+            areasToCount.push(majorAreaResult);
+        }
+
+        areasToCount.forEach(area => {
+            if (majorAreaCounts.hasOwnProperty(area)) {
+                majorAreaCounts[area]++;
+            } else {
+                majorAreaCounts[area] = (majorAreaCounts[area] || 0) + 1;
+                 if (!predefinedAreas.includes(area)) {
+                     console.warn(`Unexpected major area encountered: ${area} from major: ${school.major}. Adding to table.`);
+                }
+            }
+        });
+    }
+});
+
+            const tableBody = document.querySelector("#major-summary-table tbody");
+            tableBody.innerHTML = ""; // Clear existing rows
+
+            // Iterate through predefinedAreas to maintain order in the table
+            predefinedAreas.forEach(area => {
+                // Show area if it has counts, or if it's a general "catch-all" category that should always be listed if it might receive entries
+                if (majorAreaCounts[area] > 0 || ["Undecided/Other", "Other", "Unknown"].includes(area)) {
+                     if (majorAreaCounts[area] > 0 || (area === "Undecided/Other" && Object.values(majorAreaCounts).some(count => count>0) )) { // Only show Undecided if there are any counts at all
+                        const row = tableBody.insertRow();
+                        const cellArea = row.insertCell();
+                        const cellCount = row.insertCell();
+                        cellArea.textContent = area;
+                        cellCount.textContent = majorAreaCounts[area];
+                     }
+                }
+            });
+            
+            // Add any other areas that might have been dynamically added (should be rare if predefinedAreas and getMajorArea are comprehensive)
+            for (const area in majorAreaCounts) {
+                if (!predefinedAreas.includes(area) && majorAreaCounts[area] > 0) {
+                    const row = tableBody.insertRow();
+                    const cellArea = row.insertCell();
+                    const cellCount = row.insertCell();
+                    cellArea.textContent = area;
+                    cellCount.textContent = majorAreaCounts[area];
+                }
+            }
+        }
+
 
         function updateMarkersVisibility() {
             let visibleCount = 0;
@@ -1400,6 +1757,7 @@ function parseRawData(rawData) {
             });
             filterSchoolList();
             updateStatsTable();
+            updateMajorSummaryTable(); // ADDED: Update major summary too
         }
 
 
@@ -1410,11 +1768,10 @@ function parseRawData(rawData) {
 
             listItems.forEach(item => {
                 if (item.classList.contains('grad-class-separator')) {
-                    item.style.display = 'block'; // Ensure separator lines are always block-displayed
-                    return; // Skip further processing for separator lines
+                    item.style.display = 'block'; 
+                    return; 
                 }
 
-                // Existing logic for student list items
                 const nameSpan = item.querySelector('span.school-name');
                 const markerIndex = parseInt(item.getAttribute('data-marker-index'), 10);
                 let isVisibleAccordingToFilters = false;
@@ -1423,9 +1780,9 @@ function parseRawData(rawData) {
                 }
 
                 if (nameSpan && isVisibleAccordingToFilters) {
-                    const itemText = nameSpan.textContent.toLowerCase();
+                    const itemText = nameSpan.textContent.toLowerCase(); // This includes major now
                     const matchesSearch = searchTerm === '' || itemText.includes(searchTerm);
-                    item.style.display = matchesSearch ? 'flex' : 'none'; // Student items use 'flex'
+                    item.style.display = matchesSearch ? 'flex' : 'none'; 
                 } else {
                     item.style.display = 'none';
                 }
@@ -1448,7 +1805,7 @@ function parseRawData(rawData) {
             };
 
             seniorPopupImage.alt = `${schoolData.seniorName}'s Photo / ${schoolData.collegeName} Logo`;
-            seniorPopupCaption.textContent = `Congrats, ${schoolData.seniorName}!`; // This caption text is now styled by CSS when zoomed
+            seniorPopupCaption.textContent = `Congrats, ${schoolData.seniorName}!`; 
             seniorPhotoPopup.classList.add('visible');
 
             const popupWidth = seniorPhotoPopup.offsetWidth; 
@@ -1460,7 +1817,7 @@ function parseRawData(rawData) {
 
             let popupLeft, popupTop;
 
-            if (listItem) { // Position relative to listItem if available
+            if (listItem) { 
                 const listItemRect = listItem.getBoundingClientRect();
                 popupTop = listItemRect.top;
                 popupLeft = listItemRect.right + marginFromItem;
@@ -1482,30 +1839,26 @@ function parseRawData(rawData) {
                 }
                 popupTop = Math.max(paddingFromViewportEdge, popupTop);
 
-            } else { // Fallback positioning (e.g., if called from marker without a direct list item link)
+            } else { 
                 popupTop = (viewportHeight / 2) - (popupHeight / 2);
                 popupLeft = (viewportWidth / 2) - (popupWidth / 2);
             }
             
             seniorPhotoPopup.style.left = `${popupLeft}px`; 
             seniorPhotoPopup.style.top = `${popupTop}px`;
-            // Opacity and transform are handled by .visible class for showing
         }
 
 
-        // This function is called when the small popup needs to be hidden (e.g., after zoom out, or directly)
         function hideSeniorPhotoPopup() {
             const parentPopup = seniorPhotoPopup;
-            parentPopup.classList.remove('visible'); // Triggers display:none and hides with animation
-            // Ensure image is not marked as zoomed if this function is somehow called directly
-            // while it was zoomed (though exitZoomMode should primarily handle this).
+            parentPopup.classList.remove('visible'); 
             if (seniorPopupImage.classList.contains('zoomed')) {
                 seniorPopupImage.classList.remove('zoomed');
             }
         }
 
         function exitZoomMode() {
-    console.log("exitZoomMode called. Image is currently zoomed:", seniorPopupImage.classList.contains('zoomed')); // Debug line
+    console.log("exitZoomMode called. Image is currently zoomed:", seniorPopupImage.classList.contains('zoomed')); 
     const parentPopup = seniorPhotoPopup;
             if (seniorPopupImage.classList.contains('zoomed')) {
                 seniorPopupImage.classList.remove('zoomed');
@@ -1513,8 +1866,6 @@ function parseRawData(rawData) {
                 if (photoZoomOverlay) photoZoomOverlay.style.display = 'none';
                 if (zoomExitNote) zoomExitNote.style.display = 'none';
 
-                // Restore parent's styles from its full-screen "zoomed-parent" state
-                // back to its "small popup" state.
                 parentPopup.style.transform = parentPopup.dataset.originalTransform || '';
                 parentPopup.style.left = parentPopup.dataset.originalLeft || '';
                 parentPopup.style.top = parentPopup.dataset.originalTop || '';
@@ -1527,7 +1878,6 @@ function parseRawData(rawData) {
                 parentPopup.style.pointerEvents = parentPopup.dataset.originalPointerEvents || 'auto';
 
 
-                // Clean up dataset attributes
                 delete parentPopup.dataset.originalTransform;
                 delete parentPopup.dataset.originalLeft;
                 delete parentPopup.dataset.originalTop;
@@ -1538,14 +1888,8 @@ function parseRawData(rawData) {
                 delete parentPopup.dataset.originalBoxShadow;
                 delete parentPopup.dataset.originalPadding;
                 delete parentPopup.dataset.originalPointerEvents;
-
-                // Now that the parent popup is restored to its small, positioned state,
-                // call hideSeniorPhotoPopup() to apply the final hiding animation (opacity, scale)
-                // and remove the .visible class (which sets display: none).
                 hideSeniorPhotoPopup();
             } else {
-                // If exitZoomMode is called when image wasn't zoomed (e.g. user clicked X on small popup)
-                // just ensure the small popup is hidden.
                 hideSeniorPhotoPopup();
             }
         }
@@ -1569,8 +1913,8 @@ function parseRawData(rawData) {
 
              if (!schoolData.isVisible) return;
 
-             if (!isHover) { // Click action
-                if (infowindow && infowindow.getMap()) { // Close any existing map infowindow
+             if (!isHover) { 
+                if (infowindow && infowindow.getMap()) { 
                     infowindow.close();
                 }
                 const position = markerInfo.marker.getPosition();
@@ -1593,6 +1937,8 @@ function parseRawData(rawData) {
                 } else {
                     contentString += `<br>Attending: ${schoolData.collegeName}${suffixHtml}`;
                 }
+                // MODIFIED: Add Major to InfoWindow
+                contentString += `<br>Major: ${schoolData.major || 'Undecided Major'}`; 
                 contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
                 if (schoolData.lat !== 0 || schoolData.lng !== 0) {
                     contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
@@ -1643,7 +1989,8 @@ function parseRawData(rawData) {
                 entry.isVisible &&
                  ((entry.seniorName && entry.seniorName.toLowerCase().includes(searchTerm)) ||
                  (entry.collegeName && entry.collegeName.toLowerCase().includes(searchTerm)) ||
-                 (entry.collegeNameRaw && entry.collegeNameRaw.toLowerCase().includes(searchTerm))
+                 (entry.collegeNameRaw && entry.collegeNameRaw.toLowerCase().includes(searchTerm)) ||
+                 (entry.major && entry.major.toLowerCase().includes(searchTerm)) // ADDED: Search by major
                 )
              ).slice(0, 10);
 
@@ -1651,7 +1998,8 @@ function parseRawData(rawData) {
                  matchingEntries.forEach(entry => {
                      const div = document.createElement('div');
                      const suffixHtml = getHonorarySuffixHTML(entry.collegeNameRaw);
-                     div.innerHTML = `${entry.seniorName} (${entry.gradClass}) → ${entry.collegeName}${suffixHtml}`;
+                     // MODIFIED: Include major in search suggestions if desired
+                     div.innerHTML = `${entry.seniorName} (${entry.gradClass}) → ${entry.collegeName}${suffixHtml} (${entry.major || 'Undecided'})`;
                      div.onclick = () => {
                          input.value = entry.seniorName; suggestionsDiv.style.display = 'none'; filterSchoolList();
                          const listItem = document.querySelector(`.list-content li[data-marker-index="${entry.originalIndex}"]`);
@@ -1675,7 +2023,7 @@ function parseRawData(rawData) {
             };
         }
 
-                function initMap() {
+        function initMap() {
             seniorPhotoPopup = document.getElementById('senior-photo-popup');
             seniorPopupImage = seniorPhotoPopup.querySelector('img');
             seniorPopupCaption = document.getElementById('senior-photo-caption');
@@ -1684,12 +2032,11 @@ function parseRawData(rawData) {
 
             const zoomExitNoteDismissButton = zoomExitNote.querySelector('.dismiss-button');
             if (zoomExitNoteDismissButton) {
-                // First, remove the inline onclick to avoid double handling if you forget to remove it from HTML
                 zoomExitNoteDismissButton.removeAttribute('onclick');
                 
                 zoomExitNoteDismissButton.addEventListener('click', function(event) {
-                    event.stopPropagation(); // VERY IMPORTANT: Prevents click from reaching photoZoomOverlay
-                    this.parentElement.style.display = 'none'; // Only hide the tip
+                    event.stopPropagation(); 
+                    this.parentElement.style.display = 'none'; 
                     console.log("Zoom exit note 'X' clicked and tip hidden.");
                 });
             }
@@ -1707,17 +2054,14 @@ function parseRawData(rawData) {
                 const isCurrentlyZoomed = this.classList.contains('zoomed');
                 const parentPopup = this.closest('#senior-photo-popup');
 
-                if (!isCurrentlyZoomed) { // ---- Zooming IN ----
+                if (!isCurrentlyZoomed) { 
                     this.classList.add('zoomed');
-                    // Cursor and caption position now handled by CSS based on .zoomed class
-
-                    console.log("Image classList after adding 'zoomed':", this.classList.toString()); // Debug: Check class
-                    console.log("Computed cursor for image:", getComputedStyle(this).cursor); // Debug: Check cursor immediately
+                    console.log("Image classList after adding 'zoomed':", this.classList.toString()); 
+                    console.log("Computed cursor for image:", getComputedStyle(this).cursor); 
 
                     if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
                     if (zoomExitNote) zoomExitNote.style.display = 'block';
 
-                    // Store parent's original styles to restore later
                     parentPopup.dataset.originalTransform = getComputedStyle(parentPopup).transform;
                     parentPopup.dataset.originalLeft = parentPopup.style.left;
                     parentPopup.dataset.originalTop = parentPopup.style.top;
@@ -1729,33 +2073,28 @@ function parseRawData(rawData) {
                     parentPopup.dataset.originalPadding = getComputedStyle(parentPopup).padding;
                     parentPopup.dataset.originalPointerEvents = getComputedStyle(parentPopup).pointerEvents || 'auto';
 
-
-                    // Neutralize parent's transform so fixed child (zoomed image) positions to viewport
-                    // And make parent cover screen to correctly contain caption/close button for zoomed view
                     parentPopup.style.transform = 'none';
                     parentPopup.style.left = '0px';
                     parentPopup.style.top = '0px';
                     parentPopup.style.width = '100vw';
                     parentPopup.style.height = '100vh';
                     parentPopup.style.padding = '0'; 
-                    parentPopup.style.backgroundColor = 'transparent'; // So overlay blur is visible
+                    parentPopup.style.backgroundColor = 'transparent'; 
                     parentPopup.style.border = 'none';
                     parentPopup.style.boxShadow = 'none';
-                    parentPopup.style.pointerEvents = 'none'; // Make parent pass clicks through to overlay
+                    parentPopup.style.pointerEvents = 'none'; 
 
                     console.log("PARENT POPUP after zoom-in style changes - pointer-events:", getComputedStyle(parentPopup).pointerEvents, "z-index:", getComputedStyle(parentPopup).zIndex);
                     console.log("PHOTO ZOOM OVERLAY - pointer-events:", getComputedStyle(photoZoomOverlay).pointerEvents, "z-index:", getComputedStyle(photoZoomOverlay).zIndex, "display:", getComputedStyle(photoZoomOverlay).display);
                     console.log("IMAGE ITSELF - pointer-events:", getComputedStyle(this).pointerEvents);
 
-                    // Ensure direct children (image, caption, close button) can still receive clicks
-                    this.style.pointerEvents = 'auto'; // The image itself
+                    this.style.pointerEvents = 'auto'; 
                     if(seniorPopupCaption) seniorPopupCaption.style.pointerEvents = 'auto';
                     if(closeSeniorPhotoBtn) closeSeniorPhotoBtn.style.pointerEvents = 'auto';
 
 
                 } else {
-                    // ALREADY ZOOMED: Browser default click on image (e.g. open in new tab, save, browser zoom tool)
-                    // The cursor: zoom-in; on .zoomed image is a hint for this.
+                    // ALREADY ZOOMED
                 }
             });
 
@@ -1798,7 +2137,7 @@ function parseRawData(rawData) {
             gradClassFiltersContainer.innerHTML = ''; schoolListCollapsibleContentDiv.innerHTML = '';
 
             const fragmentGradClassFilters = document.createDocumentFragment();
-            gradClassNames.sort().forEach(gcName => { // Sort grad class names for display
+            gradClassNames.sort().forEach(gcName => { 
                 const filterId = `filter-grad-${gcName.replace(/\W+/g, '-')}`;
                 const itemDiv = document.createElement('div'); itemDiv.className = 'filter-item';
                 const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = filterId; checkbox.value = gcName;
@@ -1839,25 +2178,17 @@ function parseRawData(rawData) {
             });
 
             const schoolListUl = document.createElement('ul');
-
-            // Initialize previousGradClass to null. This variable will keep track of
-            // the graduating class of the previously processed senior.
             let previousGradClass = null;
 
             allData.forEach(seniorChoice => {
                  console.log(`Processing: ${seniorChoice.seniorName}, Class: ${seniorChoice.gradClass}, Prev Class: ${previousGradClass}`);
-
-                // This is the logic to add a separator line.
-                // It checks if previousGradClass has been set (i.e., not the first item) AND
-                // if the current senior's gradClass is different from the previous one.
                 if (previousGradClass !== null && seniorChoice.gradClass !== previousGradClass) {
                     console.log(`ADDING SEPARATOR between ${previousGradClass} and ${seniorChoice.gradClass}`);
                     const separatorLi = document.createElement('li');
-                    separatorLi.className = 'grad-class-separator'; // CSS class for styling the line
-                    separatorLi.setAttribute('aria-hidden', 'true'); // For accessibility, as it's decorative
+                    separatorLi.className = 'grad-class-separator'; 
+                    separatorLi.setAttribute('aria-hidden', 'true'); 
                     schoolListUl.appendChild(separatorLi);
                 }
-
 
                 const listItem = document.createElement('li');
                 const markerIndex = seniorChoice.originalIndex;
@@ -1870,6 +2201,7 @@ function parseRawData(rawData) {
                     if (allMarkers[markerIndex]?.school) allMarkers[markerIndex].school.isVisible = isChecked;
                     if (allMarkers[markerIndex]?.marker) allMarkers[markerIndex].marker.setVisible(isChecked);
                     updateStatsTable();
+                    updateMajorSummaryTable(); // ADDED
                     if (event.shiftKey) {
                         event.preventDefault();
                         if (isChecked && allMarkers[markerIndex]?.school.isVisible) schoolsSelectedForZoom.add(markerIndex);
@@ -1881,7 +2213,8 @@ function parseRawData(rawData) {
 
                 const nameSpan = document.createElement('span'); nameSpan.className = 'school-name';
                 const suffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw);
-                nameSpan.innerHTML = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span> → ${seniorChoice.collegeName}${suffixHtml}`;
+                // MODIFIED: Include major in list item display
+                nameSpan.innerHTML = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span> → ${seniorChoice.collegeName}${suffixHtml} <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
                 listItem.appendChild(nameSpan);
 
                 listItem.addEventListener('mouseenter', (event) => {
@@ -1897,15 +2230,10 @@ function parseRawData(rawData) {
                         allMarkers[markerIndex].marker.setIcon(getMarkerIcon(seniorChoice, false, isDarkMode));
                         allMarkers[markerIndex].marker.setZIndex(null);
                     }
-                    // Photo popup persists until new hover or explicit close (X button)
                 });
                 listItem.addEventListener('click', (event) => handleListItemInteraction(event, markerIndex, false));
                 schoolListUl.appendChild(listItem);
-
-                // After processing the senior, update previousGradClass to the current senior's
-                // gradClass for the next iteration.
                 previousGradClass = seniorChoice.gradClass;
-
             });
             schoolListCollapsibleContentDiv.appendChild(schoolListUl);
 
@@ -1915,14 +2243,14 @@ function parseRawData(rawData) {
                  const markerIcon = getMarkerIcon(seniorChoice, false, isDarkMode);
                  const marker = new google.maps.Marker({
                      position: { lat: seniorChoice.lat, lng: seniorChoice.lng }, map: map,
-                     title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName}`,
-                     icon: markerIcon, visible: false // Initially false, visibility controlled by updateMarkersVisibility
+                     title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName} (${seniorChoice.major || 'Undecided Major'})`, // MODIFIED title
+                     icon: markerIcon, visible: false 
                  });
                  allMarkers[index] = { marker: marker, school: seniorChoice };
 
                  marker.addListener("click", () => {
                      const schoolData = allMarkers[index].school;
-                     if (infowindow && infowindow.getMap()) { infowindow.close(); } // Close existing before opening new
+                     if (infowindow && infowindow.getMap()) { infowindow.close(); } 
 
                      let contentString = `<div class="info-window-content">`;
                      const targetUrl = schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#' ? schoolData.collegeHomepageUrl : '#';
@@ -1940,6 +2268,8 @@ function parseRawData(rawData) {
                      } else {
                         contentString += `<br>Attending: ${schoolData.collegeName}${suffixHtml}`;
                      }
+                     // MODIFIED: Add Major to InfoWindow
+                     contentString += `<br>Major: ${schoolData.major || 'Undecided Major'}`;
                      contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
                      if (schoolData.lat !== 0 || schoolData.lng !== 0) {
                         contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
@@ -1948,20 +2278,20 @@ function parseRawData(rawData) {
                      infowindow.setContent(contentString);
                      infowindow.open({ map: map, anchor: marker });
                      const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-marker-index="${index}"]`);
-                     showSeniorPhotoPopup(listItem, schoolData); // listItem might be null if list is hidden/filtered
+                     showSeniorPhotoPopup(listItem, schoolData); 
                  });
 
                  marker.addListener('mouseover', () => {
                      if (allMarkers[index]?.school.isVisible) {
-                        document.getElementById('searchSuggestions').style.display = 'none'; // Hide search suggestions
+                        document.getElementById('searchSuggestions').style.display = 'none'; 
                         const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-marker-index="${index}"]`);
-                        if (listItem) { // If list item is visible, use it for context
+                        if (listItem) { 
                             listItem.classList.add('list-item-highlight');
-                            if (!document.querySelector('.school-list-collapsible-content.hidden')) { // Only scroll if list is visible
+                            if (!document.querySelector('.school-list-collapsible-content.hidden')) { 
                                 listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
                             showSeniorPhotoPopup(listItem, allMarkers[index].school);
-                        } else { // If list item not found (e.g. hidden), show popup with generic positioning
+                        } else { 
                              showSeniorPhotoPopup(null, allMarkers[index].school);
                         }
                         marker.setIcon(getMarkerIcon(allMarkers[index].school, true, isDarkMode));
@@ -1974,7 +2304,6 @@ function parseRawData(rawData) {
                     if (listItem) listItem.classList.remove('list-item-highlight');
                     marker.setIcon(getMarkerIcon(allMarkers[index].school, false, isDarkMode));
                     marker.setZIndex(null);
-                    // Photo popup persists
                  });
             });
 
@@ -2037,7 +2366,7 @@ function parseRawData(rawData) {
                 document.body.style.userSelect = ''; document.body.style.pointerEvents = ''; mapPanel.style.pointerEvents = '';
                 google.maps.event.trigger(map, 'resize');
             }
-            updateMarkersVisibility(); // This will also call updateStatsTable and filterSchoolList
+            updateMarkersVisibility(); 
         }
         
 
