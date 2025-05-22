@@ -476,6 +476,61 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         }
 
 
+        .college-group-header {
+            font-weight: bold;
+            padding: 6px 3px; /* Adjusted padding */
+            background-color: #e9ecef;
+            border-top: 1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+            margin-top: 3px;
+            margin-bottom: 2px;
+            position: sticky;
+            top: -1px; /* Adjust if you have other sticky headers above */
+            z-index: 10;
+            cursor: default; /* Not interactive by itself */
+        }
+        body.dark-mode .college-group-header {
+            background-color: #2c2c2c; /* Darker background for group header */
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        .student-sublist {
+            list-style: none;
+            padding-left: 15px; /* Indent student names */
+            margin: 0;
+        }
+        .list-content li.college-group-header:hover { /* Prevent hover highlight on college headers */
+            background-color: #e9ecef; /* Keep original bg */
+        }
+        body.dark-mode .list-content li.college-group-header:hover {
+             background-color: #2c2c2c; /* Keep original dark bg */
+        }
+
+        /* Hide college grouping elements in gallery view */
+        .list-content.gallery-view .college-group-header,
+        .list-content.gallery-view .student-sublist {
+            display: none !important;
+        }
+        /* Ensure student items are flex in gallery view (if they were changed for list view) */
+        .list-content.gallery-view ul > li:not(.grad-class-separator):not(.college-group-header) {
+            display: flex !important; /* This is the student item itself */
+            /* Other gallery item styles apply here... */
+        }
+
+        /* Adjustments for student list items when under a group header */
+        .student-sublist li {
+            padding: 3px 0; /* Match original li padding */
+        }
+        /* Make sure hover and selection highlights still work on student items */
+        .student-sublist li.list-item-highlight,
+        .student-sublist li.current-selection-highlight {
+            background-color: #d6eaff;
+        }
+        body.dark-mode .student-sublist li.list-item-highlight,
+        body.dark-mode .student-sublist li.current-selection-highlight {
+            background-color: #2a3950;
+        }
+
         body.dark-mode { background-color: #121212; color: #e0e0e0; }
         body.dark-mode #description-control {
     background-color: purple;
@@ -688,20 +743,20 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     </div>
                 </div>
 
-                <div id="sort-controls-container" style="padding: 5px 0px 10px 0px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
-    <label for="sortOptions" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort by:</label>
-    <select id="sortOptions" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
-        <optgroup label="Graduating Class Priority">
-            <option value="grad_first" selected>Grad Class, then First Name</option>
-            <option value="grad_last">Grad Class, then Last Name</option>
-        </optgroup>
-        <optgroup label="Overall Order">
-            <option value="first_name">First Name (Overall)</option>
-            <option value="last_name">Last Name (Overall)</option>
-            <option value="college_name">College Name (Overall)</option>
-        </optgroup>
-    </select>
-</div>
+                                <div id="sort-controls-container" style="padding: 5px 0px 10px 0px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
+                    <label for="collegeSortOptions" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Colleges by:</label>
+                    <select id="collegeSortOptions" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc; margin-right: 10px;">
+                        <option value="name" selected>Name (A-Z)</option>
+                        <option value="count">Student Count (Most)</option>
+                    </select>
+                    <label for="studentSortOptions" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Students by:</label>
+                    <select id="studentSortOptions" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
+                        <option value="grad_first" selected>Grad Class, First Name</option>
+                        <option value="grad_last">Grad Class, Last Name</option>
+                        <option value="first_name">First Name (Overall)</option>
+                        <option value="last_name">Last Name (Overall)</option>
+                    </select>
+                </div>
 
                  <div class="list-content">
                      <div class="school-list-collapsible-content">
@@ -743,7 +798,8 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         let currentlyZoomedSeniorOriginalIndex = null; // Tracks originalIndex of the currently zoomed senior
 
         let transitLayer;
-        let currentSortOption = 'grad_first';
+            let currentCollegeSortOption = 'name'; // 'name' or 'count'
+    let currentStudentSortOption = 'grad_first'; // 'grad_first', 'grad_last', etc.
         let isSatelliteViewEnabled = false;
         let transitLayerEnabled = false;
         let locationFocusFilterState = {}; // Stores true/false for each location focus key
@@ -1379,78 +1435,118 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
         // Helper to get current visible LIs from DOM for selection logic
         function getVisibleListItemsDOM() {
-            const listUl = document.querySelector('#school-list-control .list-content ul');
-            if (!listUl) return [];
-            return Array.from(listUl.querySelectorAll('li:not(.grad-class-separator)'))
-                        .filter(li => li.style.display !== 'none' && li.dataset.originalIndex);
-        }
+    const listUl = document.querySelector('#school-list-control .list-content ul');
+    if (!listUl) return [];
+
+    if (isGalleryViewEnabled) {
+         return Array.from(listUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'))
+                    .filter(li => li.style.display !== 'none');
+    } else {
+        // In grouped view, visible items are student LIs inside visible sublists
+        const items = [];
+        const sublists = listUl.querySelectorAll('ul.student-sublist');
+        sublists.forEach(sublist => {
+            if (sublist.style.display !== 'none') {
+                Array.from(sublist.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'))
+                    .filter(li => li.style.display !== 'none')
+                    .forEach(li => items.push(li));
+            }
+        });
+        return items;
+    }
+}
 
 
-        function filterSchoolList() {
-            const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
-            const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
-            if (!listContentDiv) return;
-            const listItems = listContentDiv.querySelectorAll('ul li'); 
-            const noResultsMessage = document.getElementById('no-results-message');
-            let hasVisibleItems = false;
-            let lastVisibleGradClassForSeparator = null; 
-            const showSeparators = currentSortOption === 'grad_first' || currentSortOption === 'grad_last';
+           function filterSchoolList() {
+        const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
+        const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
+        if (!listContentDiv || !listContentDiv.querySelector('ul')) return;
 
+        const mainUl = listContentDiv.querySelector('ul');
+        const noResultsMessage = document.getElementById('no-results-message');
+        let hasVisibleGroupsOrItems = false;
+
+        if (isGalleryViewEnabled) {
+            // Logic for flat gallery list
+            const listItems = mainUl.querySelectorAll('li:not(.grad-class-separator)');
             listItems.forEach(item => {
-                if (item.classList.contains('grad-class-separator')) {
-                    item.style.display = 'none'; 
-                    return; 
-                }
-
-                const nameSpan = item.querySelector('span.school-name');
                 const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
                 const schoolData = (!isNaN(originalIndex) && allData && allData[originalIndex]) ? allData[originalIndex] : null;
-
-                if (!schoolData) { 
-                    item.style.display = 'none';
-                    return;
-                }
+                if (!schoolData) { item.style.display = 'none'; return; }
 
                 const isVisibleByFilters = schoolData.isVisible;
-
                 let matchesSearch = searchTerm === '';
-                if (!matchesSearch && nameSpan) {
-                    const itemText = nameSpan.textContent.toLowerCase();
-                    matchesSearch = itemText.includes(searchTerm);
+                if (!matchesSearch) {
+                    // Simplified search for gallery: checks display name within student list item
+                    const itemTextContent = item.textContent.toLowerCase();
+                    matchesSearch = itemTextContent.includes(searchTerm);
                 }
 
-                const finalItemVisibility = isVisibleByFilters && matchesSearch;
-                
-                const schoolCheckbox = item.querySelector(`input[type="checkbox"][id="school-checkbox-${originalIndex}"]`);
-                if (schoolCheckbox) {
-                    schoolCheckbox.checked = schoolData.isVisible; 
-                }
-
-
-                if (finalItemVisibility) {
-                    item.style.display = isGalleryViewEnabled ? 'flex' : 'flex'; 
-                    hasVisibleItems = true;
-
-                    if (showSeparators) {
-                        if (lastVisibleGradClassForSeparator !== null && schoolData.gradClass !== lastVisibleGradClassForSeparator) {
-                            let potentialSeparator = item.previousElementSibling;
-                            while(potentialSeparator && potentialSeparator.style.display === 'none' && potentialSeparator.classList.contains('grad-class-separator')) {
-                                potentialSeparator = potentialSeparator.previousElementSibling; 
-                            }
-                            if (potentialSeparator && potentialSeparator.classList.contains('grad-class-separator')) {
-                                potentialSeparator.style.display = isGalleryViewEnabled ? 'block' : 'list-item'; 
-                            }
-                        }
-                        lastVisibleGradClassForSeparator = schoolData.gradClass;
-                    }
+                if (isVisibleByFilters && matchesSearch) {
+                    item.style.display = 'flex'; // Gallery items are flex
+                    hasVisibleGroupsOrItems = true;
                 } else {
                     item.style.display = 'none';
                 }
             });
+        } else {
+            // Logic for grouped list (college headers and student sublists)
+            const collegeGroupHeaders = mainUl.querySelectorAll('li.college-group-header');
+            collegeGroupHeaders.forEach(header => {
+                let groupHasVisibleStudentsMatchingSearch = false;
+                const studentSublist = header.nextElementSibling; // Assuming sublist is direct sibling ul
 
-            noResultsMessage.style.display = hasVisibleItems ? 'none' : 'block';
-            updateCurrentSelectionHighlight(); 
+                if (studentSublist && studentSublist.classList.contains('student-sublist')) {
+                    const studentItems = studentSublist.querySelectorAll('li[data-original-index]');
+                    studentItems.forEach(item => {
+                        const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
+                        const schoolData = (!isNaN(originalIndex) && allData && allData[originalIndex]) ? allData[originalIndex] : null;
+                        if (!schoolData) { item.style.display = 'none'; return; }
+
+                        const isVisibleByFilters = schoolData.isVisible;
+                        let matchesSearch = searchTerm === '';
+                        if (!matchesSearch) {
+                            const nameSpan = item.querySelector('span.school-name');
+                            const itemText = nameSpan ? nameSpan.textContent.toLowerCase() : item.textContent.toLowerCase(); // student name, grad, major
+                            const collegeNameInHeader = header.textContent.toLowerCase();
+                            matchesSearch = itemText.includes(searchTerm) || collegeNameInHeader.includes(searchTerm) || schoolData.collegeName.toLowerCase().includes(searchTerm);
+                        }
+
+                        if (isVisibleByFilters && matchesSearch) {
+                            item.style.display = 'flex'; // Student items are flex
+                            groupHasVisibleStudentsMatchingSearch = true;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+                // Also check if college header itself matches search
+                let headerMatchesSearch = false;
+                if (searchTerm !== '') {
+                    headerMatchesSearch = header.textContent.toLowerCase().includes(searchTerm);
+                }
+
+
+                if (groupHasVisibleStudentsMatchingSearch || (searchTerm !== '' && headerMatchesSearch)) {
+                    header.style.display = 'list-item'; // Or 'block'
+                    if (studentSublist) studentSublist.style.display = 'block'; // Show sublist
+                    hasVisibleGroupsOrItems = true;
+                } else if (searchTerm === '' && studentSublist && studentSublist.querySelector('li[style*="display: flex"]')) {
+                     // If search is empty, visibility is determined by student items being visible due to filters
+                    header.style.display = 'list-item';
+                    if (studentSublist) studentSublist.style.display = 'block';
+                    hasVisibleGroupsOrItems = true;
+                }
+                 else {
+                    header.style.display = 'none';
+                    if (studentSublist) studentSublist.style.display = 'none';
+                }
+            });
         }
+
+        noResultsMessage.style.display = hasVisibleGroupsOrItems ? 'none' : 'block';
+        updateCurrentSelectionHighlight();
+    }
 
 
         function showSeniorPhotoPopup(listItem, schoolData) {
@@ -1884,232 +1980,376 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             };
         }
 
-        function sortAndRebuildList(sortOption) {
-            currentSortOption = sortOption;
-            if (!allData) return;
+        function sortAndRebuildList() {
+        // This function now primarily sets the sort options.
+        // The actual sorting of allData for gallery view happens here.
+        // Grouping and sorting for list view happens within rebuildSchoolListHTML.
 
-            allData.sort((a, b) => {
-                let comparison = 0;
-                const gradClassA = parseInt(a.gradClass.substring(1));
-                const gradClassB = parseInt(b.gradClass.substring(1));
-                const firstNameA = getFirstName(a.seniorName);
-                const firstNameB = getFirstName(b.seniorName);
-                const lastNameA = getLastName(a.seniorName);
-                const lastNameB = getLastName(b.seniorName);
+        if (!allData) return;
 
-                switch (sortOption) {
-                    case 'grad_first':
-                        if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                        comparison = firstNameA.localeCompare(firstNameB);
-                        break;
-                    case 'grad_last':
-                        if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                        comparison = lastNameA.localeCompare(lastNameB);
-                        if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
-                        break;
-                    case 'first_name':
-                        comparison = firstNameA.localeCompare(firstNameB);
-                        if (comparison === 0) comparison = lastNameA.localeCompare(lastNameB);
-                        break;
-                    case 'last_name':
-                        comparison = lastNameA.localeCompare(lastNameB);
-                        if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
-                        break;
-                    case 'college_name':
-                        comparison = a.collegeName.localeCompare(b.collegeName);
-                        if (comparison === 0) comparison = lastNameA.localeCompare(lastNameB);
-                        if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
-                        break;
-                    default:
-                        if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                        comparison = firstNameA.localeCompare(firstNameB);
-                        break;
-                }
-                return comparison;
-            });
-            rebuildSchoolListHTML();
-            currentListSelectionIndex = -1; 
-            updateCurrentSelectionHighlight();
+        // Sort the flat allData array based on currentStudentSortOption.
+        // This is primarily for gallery view or if a flat list is ever needed.
+        allData.sort((a, b) => {
+            let comparison = 0;
+            const gradClassA = parseInt(a.gradClass.substring(1));
+            const gradClassB = parseInt(b.gradClass.substring(1));
+            const firstNameA = getFirstName(a.seniorName);
+            const firstNameB = getFirstName(b.seniorName);
+            const lastNameA = getLastName(a.seniorName);
+            const lastNameB = getLastName(b.seniorName);
+
+            switch (currentStudentSortOption) {
+                case 'grad_first':
+                    if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                    comparison = firstNameA.localeCompare(firstNameB);
+                    break;
+                case 'grad_last':
+                    if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                    comparison = lastNameA.localeCompare(lastNameB);
+                    if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
+                    break;
+                case 'first_name':
+                    comparison = firstNameA.localeCompare(firstNameB);
+                    if (comparison === 0) comparison = lastNameA.localeCompare(lastNameB);
+                    break;
+                case 'last_name':
+                    comparison = lastNameA.localeCompare(lastNameB);
+                    if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
+                    break;
+                default: // Should not happen
+                    if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                    comparison = firstNameA.localeCompare(firstNameB);
+                    break;
+            }
+            return comparison;
+        });
+
+        rebuildSchoolListHTML(); // This will now handle grouping and its specific sorting
+        currentListSelectionIndex = -1;
+        updateCurrentSelectionHighlight();
+    }
+
+            function rebuildSchoolListHTML() {
+        const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
+        if (!schoolListCollapsibleContentDiv) {
+            console.error("School list collapsible content div not found.");
+            return;
+        }
+        let schoolListUl = schoolListCollapsibleContentDiv.querySelector('ul');
+        const noResultsMessage = document.getElementById('no-results-message');
+
+        if (!schoolListUl) {
+            schoolListUl = document.createElement('ul');
+            schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage);
+        }
+        schoolListUl.innerHTML = '';
+
+        if (!allData) {
+            schoolListUl.innerHTML = '<li>Data is not available.</li>';
+            noResultsMessage.style.display = 'none';
+            return;
         }
 
-        function rebuildSchoolListHTML() {
-            const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
-            if (!schoolListCollapsibleContentDiv) {
-                console.error("School list collapsible content div not found.");
-                return;
-            }
-            let schoolListUl = schoolListCollapsibleContentDiv.querySelector('ul');
-            const noResultsMessage = document.getElementById('no-results-message');
+        // Helper function to create a student LI (used in both flat and grouped lists)
+               function createStudentListItem(seniorChoice) {
+            const studentLi = document.createElement('li');
+            const originalIndex = seniorChoice.originalIndex;
+            studentLi.setAttribute('data-original-index', originalIndex);
+            studentLi.setAttribute('tabindex', '0');
+            studentLi.setAttribute('title', `Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo. Shift+Click checkbox: Group Zoom.`);
 
-            if (!schoolListUl) {
-                schoolListUl = document.createElement('ul');
-                schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage); 
-            }
-
-            schoolListUl.innerHTML = '';
-
-            if (!allData) {
-                schoolListUl.innerHTML = '<li>Data is not available.</li>';
-                noResultsMessage.style.display = 'none';
-                return;
-            }
-
-            let previousGradClass = null;
-            const showSeparators = currentSortOption === 'grad_first' || currentSortOption === 'grad_last';
-
-            allData.forEach(seniorChoice => {
-
-                const listItem = document.createElement('li');
-                const originalIndex = seniorChoice.originalIndex;
-                listItem.setAttribute('data-original-index', originalIndex);
-                listItem.setAttribute('tabindex', '0'); 
-                listItem.setAttribute('title', `Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo. Shift+Click checkbox: Group Zoom.`);
-
-                const schoolCheckbox = document.createElement('input');
-                schoolCheckbox.type = 'checkbox';
-                // The checked state will be set by filterSchoolList based on schoolData.isVisible
-                schoolCheckbox.id = `school-checkbox-${originalIndex}`;
-                schoolCheckbox.setAttribute('aria-label', `Toggle visibility for ${seniorChoice.displayName}`);
-
-                schoolCheckbox.addEventListener('change', (event) => {
-                    const isChecked = event.target.checked;
-                    if (event.shiftKey) {
-                        event.preventDefault();
-                        if (isChecked && allData[originalIndex]?.isVisible) { 
-                            schoolsSelectedForZoom.add(originalIndex);
-                        } else {
-                            schoolsSelectedForZoom.delete(originalIndex);
-                        }
-                        zoomToSelectedSchools();
-                    } else if (!isChecked) {
+            const schoolCheckbox = document.createElement('input');
+            schoolCheckbox.type = 'checkbox';
+            schoolCheckbox.id = `school-checkbox-${originalIndex}`;
+            schoolCheckbox.setAttribute('aria-label', `Toggle visibility for ${seniorChoice.displayName}`);
+            schoolCheckbox.checked = schoolsSelectedForZoom.has(originalIndex) || seniorChoice.isVisible;
+            schoolCheckbox.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                if (event.shiftKey) {
+                    event.preventDefault();
+                    if (isChecked && allData[originalIndex]?.isVisible) {
+                        schoolsSelectedForZoom.add(originalIndex);
+                    } else {
                         schoolsSelectedForZoom.delete(originalIndex);
                     }
-                });
-
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'school-name';
-                const suffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw);
-                nameSpan.innerHTML = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span> → ${seniorChoice.collegeName}${suffixHtml} <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
-
-               if (isGalleryViewEnabled) {
-                    listItem.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
-                    listItem.appendChild(schoolCheckbox);
-
-                    const gradClassTextElement = document.createElement('div');
-                    gradClassTextElement.className = 'gallery-grad-class-overlay';
-                    gradClassTextElement.textContent = seniorChoice.gradClass;
-
-                    const bgColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
-                    if (bgColor.startsWith('#')) {
-                        const r = parseInt(bgColor.slice(1, 3), 16);
-                        const g = parseInt(bgColor.slice(3, 5), 16);
-                        const b = parseInt(bgColor.slice(5, 7), 16);
-                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                        gradClassTextElement.style.color = brightness > 135 ? '#1A1A1A' : '#FAFAFA'; 
-                    } else {
-                        gradClassTextElement.style.color = '#FFFFFF'; 
-                    }
-                    listItem.appendChild(gradClassTextElement);
-
-                    const galleryPhotoDiv = document.createElement('div');
-                    galleryPhotoDiv.className = 'gallery-photo-div';
-
-                    const galleryImg = document.createElement('img');
-                    galleryImg.className = 'gallery-photo';
-                    galleryImg.src = seniorChoice.seniorPhotoUrl;
-                    galleryImg.alt = `${seniorChoice.seniorName}'s Photo`;
-                    galleryImg.onerror = function() {
-                        this.src = seniorChoice.seniorPhotoUrlPng;
-                        this.onerror = function() {
-                            this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png';
-                            this.onerror = null;
-                        };
-                    };
-                    galleryPhotoDiv.appendChild(galleryImg);
-                    listItem.appendChild(galleryPhotoDiv);
-                } else {
-                    listItem.appendChild(schoolCheckbox);
-                    listItem.appendChild(nameSpan);
-                }
-
-
-                listItem.addEventListener('mouseenter', (event) => {
-                    const currentOriginalIndex = originalIndex;
-                    const schoolData = allData[currentOriginalIndex];
-                    const markerInfo = allMarkers[currentOriginalIndex];
-                    if (markerInfo?.marker && schoolData?.isVisible) {
-                        markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
-                        markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                        handleListItemInteraction(event, currentOriginalIndex, true);
-                    }
-                    listItem.classList.add('list-item-highlight');
-                });
-
-                listItem.addEventListener('mouseleave', (event) => {
-                    const currentOriginalIndex = originalIndex;
-                    const schoolData = allData[currentOriginalIndex];
-                    const markerInfo = allMarkers[currentOriginalIndex];
-
-                    let isKeyboardSelected = false;
-                    if (currentListSelectionIndex !== -1) {
-                        const listUl = document.querySelector('#school-list-control .list-content ul');
-                        const visibleLIs = getVisibleListItemsDOM();
-                        if (currentListSelectionIndex < visibleLIs.length) {
-                            const kbdSelectedLi = visibleLIs[currentListSelectionIndex];
-                            if (kbdSelectedLi && parseInt(kbdSelectedLi.dataset.originalIndex) === currentOriginalIndex) {
-                                isKeyboardSelected = true;
-                            }
-                        }
-                    }
-
-                    if (!isKeyboardSelected && markerInfo?.marker && schoolData) {
-                        markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
-                        markerInfo.marker.setZIndex(null);
-                    }
-                     if (!isKeyboardSelected) { 
-                        listItem.classList.remove('list-item-highlight');
-                    }
-                });
-
-                listItem.addEventListener('click', (event) => {
-                    if (event.target.type === 'checkbox') return;
-
-                    const clickedOriginalIndex = originalIndex;
-                    handleListItemInteraction(event, clickedOriginalIndex, false);
-
-                    const listUl = document.querySelector('#school-list-control .list-content ul');
-                    const visibleListItems = getVisibleListItemsDOM();
-                    currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
-
-                    if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                        allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
-                        allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
-                    }
-                    if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                         allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
-                         allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                         activeHoverMarkerIndex = clickedOriginalIndex;
-                    }
-                    updateCurrentSelectionHighlight();
-                });
-
-                if (showSeparators && previousGradClass !== null && seniorChoice.gradClass !== previousGradClass && schoolListUl.lastChild) {
-                    const separatorLi = document.createElement('li');
-                    separatorLi.className = 'grad-class-separator';
-                    separatorLi.setAttribute('aria-hidden', 'true');
-                    schoolListUl.appendChild(separatorLi);
-                }
-
-                schoolListUl.appendChild(listItem);
-
-                if (showSeparators) {
-                    previousGradClass = seniorChoice.gradClass;
+                    zoomToSelectedSchools();
+                } else if (!isChecked) {
+                    schoolsSelectedForZoom.delete(originalIndex);
                 }
             });
 
-            filterSchoolList(); 
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'school-name';
+            
+            // Student's name and grad class are always shown
+            let studentDisplayText = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span>`;
+            
+            // In Gallery View (or if college sort options are missing, as a fallback to a flatter display)
+            // show the full college name and its specific suffix (if any for this student).
+            if (isGalleryViewEnabled || !document.getElementById('collegeSortOptions')) { 
+                const individualSuffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw); // Get suffix for this specific student
+                studentDisplayText += ` → ${seniorChoice.collegeName}${individualSuffixHtml}`; 
+            }
+            // For all views, show the major.
+            studentDisplayText += ` <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
+            nameSpan.innerHTML = studentDisplayText;
+
+            if (isGalleryViewEnabled) {
+                // ... (existing gallery view specific LI setup - keep as is)
+                studentLi.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                studentLi.appendChild(schoolCheckbox);
+
+                const gradClassTextElement = document.createElement('div');
+                gradClassTextElement.className = 'gallery-grad-class-overlay';
+                gradClassTextElement.textContent = seniorChoice.gradClass;
+                const bgColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                if (bgColor.startsWith('#')) {
+                    const r = parseInt(bgColor.slice(1, 3), 16);
+                    const g = parseInt(bgColor.slice(3, 5), 16);
+                    const b = parseInt(bgColor.slice(5, 7), 16);
+                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                    gradClassTextElement.style.color = brightness > 135 ? '#1A1A1A' : '#FAFAFA';
+                } else {
+                    gradClassTextElement.style.color = '#FFFFFF';
+                }
+                studentLi.appendChild(gradClassTextElement);
+
+                const galleryPhotoDiv = document.createElement('div');
+                galleryPhotoDiv.className = 'gallery-photo-div';
+                const galleryImg = document.createElement('img');
+                galleryImg.className = 'gallery-photo';
+                galleryImg.src = seniorChoice.seniorPhotoUrl;
+                galleryImg.alt = `${seniorChoice.seniorName}'s Photo`;
+                galleryImg.onerror = function() { 
+                    this.src = seniorChoice.seniorPhotoUrlPng;
+                    this.onerror = function() {
+                        this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png';
+                        this.onerror = null;
+                    };
+                };
+                galleryPhotoDiv.appendChild(galleryImg);
+                studentLi.appendChild(galleryPhotoDiv);
+
+            } else { // Default List View
+                studentLi.appendChild(schoolCheckbox);
+                studentLi.appendChild(nameSpan);
+            }
+
+            // Event listeners (mouseenter, mouseleave, click) - keep existing logic
+            studentLi.addEventListener('mouseenter', (event) => { 
+                const currentOriginalIndex = originalIndex;
+                const schoolData = allData[currentOriginalIndex];
+                const markerInfo = allMarkers[currentOriginalIndex];
+                if (markerInfo?.marker && schoolData?.isVisible) {
+                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
+                    markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    handleListItemInteraction(event, currentOriginalIndex, true);
+                }
+                studentLi.classList.add('list-item-highlight');
+            });
+            studentLi.addEventListener('mouseleave', (event) => { 
+                const currentOriginalIndex = originalIndex;
+                const schoolData = allData[currentOriginalIndex];
+                const markerInfo = allMarkers[currentOriginalIndex];
+
+                let isKeyboardSelected = false;
+                if (currentListSelectionIndex !== -1) {
+                    const visibleLIs = getVisibleListItemsDOM();
+                    if (currentListSelectionIndex < visibleLIs.length) {
+                        const kbdSelectedLi = visibleLIs[currentListSelectionIndex];
+                        if (kbdSelectedLi && kbdSelectedLi.classList.contains('college-group-header')) { 
+                            // Do nothing
+                        } else if (kbdSelectedLi && parseInt(kbdSelectedLi.dataset.originalIndex) === currentOriginalIndex) {
+                            isKeyboardSelected = true;
+                        }
+                    }
+                }
+
+                if (!isKeyboardSelected && markerInfo?.marker && schoolData) {
+                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                    markerInfo.marker.setZIndex(null);
+                }
+                 if (!isKeyboardSelected) { 
+                    studentLi.classList.remove('list-item-highlight');
+                }
+            });
+            studentLi.addEventListener('click', (event) => { 
+                if (event.target.type === 'checkbox') return;
+
+                const clickedOriginalIndex = originalIndex;
+                handleListItemInteraction(event, clickedOriginalIndex, false);
+
+                const visibleListItems = getVisibleListItemsDOM();
+                currentListSelectionIndex = visibleListItems.findIndex(li => li === studentLi); 
+
+                if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
+                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                    allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
+                }
+                if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
+                     allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
+                     allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                     activeHoverMarkerIndex = clickedOriginalIndex;
+                }
+                updateCurrentSelectionHighlight();
+            });
+            return studentLi;
         }
+
+
+        if (isGalleryViewEnabled) {
+            // Flat list for gallery view, using pre-sorted allData
+            let previousGradClass = null;
+            const showSeparators = currentStudentSortOption === 'grad_first' || currentStudentSortOption === 'grad_last';
+
+            allData.forEach(seniorChoice => {
+                if (seniorChoice.isVisible) { // Only show visible students in gallery
+                     if (showSeparators && previousGradClass !== null && seniorChoice.gradClass !== previousGradClass && schoolListUl.lastChild) {
+                        const separatorLi = document.createElement('li');
+                        separatorLi.className = 'grad-class-separator';
+                        separatorLi.setAttribute('aria-hidden', 'true');
+                        schoolListUl.appendChild(separatorLi);
+                    }
+                    schoolListUl.appendChild(createStudentListItem(seniorChoice));
+                    if (showSeparators) {
+                        previousGradClass = seniorChoice.gradClass;
+                    }
+                }
+            });
+        } else {
+            // Grouped list for normal view
+             const studentGroupsByCollege = new Map();
+            allData.forEach(seniorChoice => {
+                if (seniorChoice.isVisible) {
+                    const baseCollegeKey = seniorChoice.collegeKey || seniorChoice.collegeName; // Base key for college details
+                    let suffixIdentifier = ""; // To be part of the group key
+
+                    const rawLower = seniorChoice.collegeNameRaw.toLowerCase();
+                    if (rawLower.includes("(macaulay)")) suffixIdentifier = "::Macaulay";
+                    else if (rawLower.includes("(questbridge)")) suffixIdentifier = "::QuestBridge";
+                    else if (rawLower.includes("(posse)")) suffixIdentifier = "::POSSE";
+                    // Add more else if for other potential suffixes if needed
+
+                    const groupKey = baseCollegeKey + suffixIdentifier; // Composite key, e.g., "boston_college::QuestBridge" or "boston_college"
+
+                    if (!studentGroupsByCollege.has(groupKey)) {
+                        studentGroupsByCollege.set(groupKey, []);
+                    }
+                    studentGroupsByCollege.get(groupKey).push(seniorChoice);
+                }
+            });
+
+            let collegeEntries = Array.from(studentGroupsByCollege.entries());
+
+            // Sort colleges (collegeEntries)
+            collegeEntries.sort((entryA, entryB) => {
+                const groupKeyA = entryA[0];
+                const studentsA = entryA[1];
+                const groupKeyB = entryB[0];
+                const studentsB = entryB[1];
+
+                const baseCollegeKeyA = groupKeyA.split("::")[0];
+                const baseCollegeKeyB = groupKeyB.split("::")[0];
+
+                if (currentCollegeSortOption === 'name') {
+                    const nameA = (collegeCoordsAndInfo[baseCollegeKeyA] ? collegeCoordsAndInfo[baseCollegeKeyA].name : baseCollegeKeyA).toLowerCase();
+                    const nameB = (collegeCoordsAndInfo[baseCollegeKeyB] ? collegeCoordsAndInfo[baseCollegeKeyB].name : baseCollegeKeyB).toLowerCase();
+                    
+                    if (nameA.localeCompare(nameB) !== 0) {
+                        return nameA.localeCompare(nameB);
+                    }
+                    // If base names are the same, sort by the full groupKey (which includes suffix)
+                    // This ensures "Boston College" might come before "Boston College::QuestBridge" or vice-versa based on string comparison of suffix part
+                    return groupKeyA.localeCompare(groupKeyB); 
+                } else if (currentCollegeSortOption === 'count') {
+                    if (studentsB.length !== studentsA.length) {
+                        return studentsB.length - studentsA.length; // Descending by count
+                    }
+                    // If counts are the same, sort by name then by full groupKey
+                    const nameA = (collegeCoordsAndInfo[baseCollegeKeyA] ? collegeCoordsAndInfo[baseCollegeKeyA].name : baseCollegeKeyA).toLowerCase();
+                    const nameB = (collegeCoordsAndInfo[baseCollegeKeyB] ? collegeCoordsAndInfo[baseCollegeKeyB].name : baseCollegeKeyB).toLowerCase();
+                    if (nameA.localeCompare(nameB) !== 0) {
+                        return nameA.localeCompare(nameB);
+                    }
+                    return groupKeyA.localeCompare(groupKeyB);
+                }
+                return 0;
+            });
+
+            // Build list with college groups
+            collegeEntries.forEach(([groupKey, studentsInCollege]) => {
+                const [baseCollegeKey, suffixPart] = groupKey.split("::"); // suffixPart will be undefined if no "::"
+                
+                const collegeInfo = collegeCoordsAndInfo[baseCollegeKey] || { name: baseCollegeKey }; // Get details using base key
+                const collegeHeaderLi = document.createElement('li');
+                collegeHeaderLi.className = 'college-group-header';
+
+                let displayHeaderSuffixHtml = "";
+                // Construct the suffix HTML only if suffixPart is present
+                if (suffixPart === "Macaulay") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(Macaulay)</span>';
+                else if (suffixPart === "QuestBridge") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(QuestBridge)</span>';
+                else if (suffixPart === "POSSE") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(POSSE)</span>';
+                // Add more for other defined suffixes
+
+                collegeHeaderLi.innerHTML = `${collegeInfo.name}${displayHeaderSuffixHtml} <span style="font-weight:normal;">(Students: ${studentsInCollege.length})</span>`;
+                schoolListUl.appendChild(collegeHeaderLi);
+
+                // Sort students within this college group (existing logic is fine)
+                studentsInCollege.sort((a, b) => {
+                    // ... (student sorting logic based on currentStudentSortOption - keep as is)
+                    let comparison = 0;
+                    const gradClassA = parseInt(a.gradClass.substring(1));
+                    const gradClassB = parseInt(b.gradClass.substring(1));
+                    const firstNameA = getFirstName(a.seniorName);
+                    const firstNameB = getFirstName(b.seniorName);
+                    const lastNameA = getLastName(a.seniorName);
+                    const lastNameB = getLastName(b.seniorName);
+
+                    switch (currentStudentSortOption) {
+                        case 'grad_first':
+                            if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                            comparison = firstNameA.localeCompare(firstNameB);
+                            break;
+                        case 'grad_last':
+                            if (gradClassA !== gradClassB) return gradClassA - gradClassB;
+                            comparison = lastNameA.localeCompare(lastNameB);
+                            if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
+                            break;
+                        case 'first_name':
+                            comparison = firstNameA.localeCompare(firstNameB);
+                            if (comparison === 0) comparison = lastNameA.localeCompare(lastNameB);
+                            break;
+                        case 'last_name':
+                            comparison = lastNameA.localeCompare(lastNameB);
+                            if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB);
+                            break;
+                    }
+                    return comparison;
+                });
+
+                const studentSublistUl = document.createElement('ul');
+                studentSublistUl.className = 'student-sublist';
+                let previousGradClass = null;
+                const showSeparators = currentStudentSortOption === 'grad_first' || currentStudentSortOption === 'grad_last';
+
+                studentsInCollege.forEach(student => {
+                     if (showSeparators && previousGradClass !== null && student.gradClass !== previousGradClass && studentSublistUl.lastChild) {
+                        const separatorLi = document.createElement('li');
+                        separatorLi.className = 'grad-class-separator';
+                        separatorLi.setAttribute('aria-hidden', 'true');
+                        studentSublistUl.appendChild(separatorLi);
+                    }
+                    studentSublistUl.appendChild(createStudentListItem(student)); // createStudentListItem will be adjusted next
+                     if (showSeparators) {
+                        previousGradClass = student.gradClass;
+                    }
+                });
+                schoolListUl.appendChild(studentSublistUl);
+            });
+        }
+
+        filterSchoolList(); // Apply search term filtering to the newly built list
+    }
 
         function updateCurrentSelectionHighlight() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
@@ -2307,7 +2547,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 });
             }
 
-            sortAndRebuildList(currentSortOption);
+            sortAndRebuildList();
 
             gradClassFilterState = {};
             gradClassNames.forEach(gc => gradClassFilterState[gc] = true);
@@ -2475,10 +2715,17 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             schoolListUl.setAttribute('tabindex', '-1');
 
 
-            const sortOptionsSelect = document.getElementById('sortOptions');
-            sortOptionsSelect.addEventListener('change', (event) => {
-                sortAndRebuildList(event.target.value);
-            });
+            const collegeSortOptionsSelect = document.getElementById('collegeSortOptions');
+        collegeSortOptionsSelect.addEventListener('change', (event) => {
+            currentCollegeSortOption = event.target.value;
+            sortAndRebuildList(); // Will use global sort options
+        });
+
+        const studentSortOptionsSelect = document.getElementById('studentSortOptions');
+        studentSortOptionsSelect.addEventListener('change', (event) => {
+            currentStudentSortOption = event.target.value;
+            sortAndRebuildList(); // Will use global sort options
+        });
 
             // Keep track of coordinates that have been used for a marker to apply offsets
             const assignedCoordinatesCount = {}; // Key: "lat,lng", Value: count of markers at this exact spot
