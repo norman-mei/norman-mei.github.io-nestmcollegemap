@@ -2051,7 +2051,8 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         }
 
         // Helper function to create a student LI (used in both flat and grouped lists)
-               function createStudentListItem(seniorChoice) {
+                       // This function is nested within rebuildSchoolListHTML
+        function createStudentListItem(seniorChoice) {
             const studentLi = document.createElement('li');
             const originalIndex = seniorChoice.originalIndex;
             studentLi.setAttribute('data-original-index', originalIndex);
@@ -2084,18 +2085,24 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             // Student's name and grad class are always shown
             let studentDisplayText = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span>`;
             
-            // In Gallery View (or if college sort options are missing, as a fallback to a flatter display)
-            // show the full college name and its specific suffix (if any for this student).
+            // Get the individual honorary suffix for THIS student from their raw college name
+            const individualSuffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw); 
+
+            // In Gallery View (or if college sort options are missing as a fallback), show the college name.
             if (isGalleryViewEnabled || !document.getElementById('collegeSortOptions')) { 
-                const individualSuffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw); // Get suffix for this specific student
-                studentDisplayText += ` → ${seniorChoice.collegeName}${individualSuffixHtml}`; 
+                studentDisplayText += ` → ${seniorChoice.collegeName}`; 
             }
-            // For all views, show the major.
+            
+            // Add the major
             studentDisplayText += ` <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
+            
+            // Add the individual honorary suffix (if any) AFTER the major for ALL views
+            if (individualSuffixHtml) {
+                 studentDisplayText += individualSuffixHtml; // Appends the span e.g. " (Biology)<span class='honorary-suffix'>(QuestBridge)</span>"
+            }
             nameSpan.innerHTML = studentDisplayText;
 
             if (isGalleryViewEnabled) {
-                // ... (existing gallery view specific LI setup - keep as is)
                 studentLi.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
                 studentLi.appendChild(schoolCheckbox);
 
@@ -2129,13 +2136,12 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 };
                 galleryPhotoDiv.appendChild(galleryImg);
                 studentLi.appendChild(galleryPhotoDiv);
-
             } else { // Default List View
                 studentLi.appendChild(schoolCheckbox);
                 studentLi.appendChild(nameSpan);
             }
 
-            // Event listeners (mouseenter, mouseleave, click) - keep existing logic
+            // Event listeners for hover, click
             studentLi.addEventListener('mouseenter', (event) => { 
                 const currentOriginalIndex = originalIndex;
                 const schoolData = allData[currentOriginalIndex];
@@ -2158,7 +2164,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     if (currentListSelectionIndex < visibleLIs.length) {
                         const kbdSelectedLi = visibleLIs[currentListSelectionIndex];
                         if (kbdSelectedLi && kbdSelectedLi.classList.contains('college-group-header')) { 
-                            // Do nothing
+                            // Do nothing if the "selected" item is actually a header
                         } else if (kbdSelectedLi && parseInt(kbdSelectedLi.dataset.originalIndex) === currentOriginalIndex) {
                             isKeyboardSelected = true;
                         }
@@ -2230,7 +2236,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     else if (rawLower.includes("(posse)")) suffixIdentifier = "::POSSE";
                     // Add more else if for other potential suffixes if needed
 
-                    const groupKey = baseCollegeKey + suffixIdentifier; // Composite key, e.g., "boston_college::QuestBridge" or "boston_college"
+                    const groupKey = baseCollegeKey; // Composite key, e.g., "boston_college::QuestBridge" or "boston_college"
 
                     if (!studentGroupsByCollege.has(groupKey)) {
                         studentGroupsByCollege.set(groupKey, []);
@@ -2278,21 +2284,17 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
             // Build list with college groups
             collegeEntries.forEach(([groupKey, studentsInCollege]) => {
-                const [baseCollegeKey, suffixPart] = groupKey.split("::"); // suffixPart will be undefined if no "::"
+                const baseCollegeKey = groupKey; 
                 
                 const collegeInfo = collegeCoordsAndInfo[baseCollegeKey] || { name: baseCollegeKey }; // Get details using base key
                 const collegeHeaderLi = document.createElement('li');
                 collegeHeaderLi.className = 'college-group-header';
 
-                let displayHeaderSuffixHtml = "";
-                // Construct the suffix HTML only if suffixPart is present
-                if (suffixPart === "Macaulay") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(Macaulay)</span>';
-                else if (suffixPart === "QuestBridge") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(QuestBridge)</span>';
-                else if (suffixPart === "POSSE") displayHeaderSuffixHtml = ' <span class="honorary-suffix">(POSSE)</span>';
-                // Add more for other defined suffixes
+                
 
-                collegeHeaderLi.innerHTML = `${collegeInfo.name}${displayHeaderSuffixHtml} <span style="font-weight:normal;">(Students: ${studentsInCollege.length})</span>`;
-                schoolListUl.appendChild(collegeHeaderLi);
+               
+               collegeHeaderLi.innerHTML = `${collegeInfo.name} <span style="font-weight:normal;">(Students: ${studentsInCollege.length})</span>`;
+        schoolListUl.appendChild(collegeHeaderLi);
 
                 // Sort students within this college group (existing logic is fine)
                 studentsInCollege.sort((a, b) => {
@@ -2847,6 +2849,64 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                  });
             });
 
+            const customClusterRenderer = {
+      render: ({ count, position, markers }) => {
+        let color = "red"; // Default to red for the largest clusters
+        let diameter = 50;
+        let labelColor = "white";
+        let labelFontSize = "12px";
+        let labelFontWeight = "bold";
+
+        if (count <= 5) { // Green for 1-5 students
+          color = "green";
+          diameter = 30;
+          labelFontSize = "10px";
+          labelFontWeight = "normal";
+        } else if (count <= 10) { // Light Green for 6-10 students
+          color = "#90EE90"; // lightgreen CSS name
+          diameter = 35;
+          labelColor = "black"; // Ensure text contrast on lighter colors
+          labelFontSize = "11px";
+          labelFontWeight = "normal";
+        } else if (count <= 20) { // Yellow for 11-20 students
+          color = "yellow";
+          diameter = 40;
+          labelColor = "black"; // Ensure text contrast
+          labelFontSize = "12px";
+        } else if (count <= 50) { // Orange for 21-50 students
+          color = "orange";
+          diameter = 45;
+          labelFontSize = "12px";
+        }
+        // For counts > 50, the initial defaults (red, 50px, white text, bold) will apply.
+
+        // SVG for a simple circle.
+        // Stroke is dark for better visibility on map, opacity for slight blend.
+        const svg = window.btoa(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}">
+            <circle cx="${diameter / 2}" cy="${diameter / 2}" r="${diameter / 2 * 0.9}" fill="${color}" stroke="rgba(0,0,0,0.3)" stroke-width="${Math.max(1, diameter * 0.04)}"/>
+          </svg>`);
+
+        return new google.maps.Marker({
+          position,
+          icon: {
+            url: `data:image/svg+xml;base64,${svg}`,
+            scaledSize: new google.maps.Size(diameter, diameter),
+            anchor: new google.maps.Point(diameter / 2, diameter / 2) // Center the icon
+          },
+          label: {
+            text: String(count),
+            color: labelColor,
+            fontSize: labelFontSize,
+            fontWeight: labelFontWeight,
+          },
+          // zIndex ensures clusters are typically above individual markers if needed,
+          // and potentially larger clusters above smaller ones.
+          zIndex: 100 + count, // Base zIndex for clusters + count
+        });
+      },
+    };
+
             // Initialize MarkerClusterer
             if (typeof markerClusterer !== 'undefined' && markerClusterer.MarkerClusterer) {
                 const initialMapMarkersForClustering = allMarkers
@@ -2863,6 +2923,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 markerClustererInstance = new markerClusterer.MarkerClusterer({ 
                     map: map, 
                     markers: initialMapMarkersForClustering,
+                    renderer: customClusterRenderer,
                     maxZoom: 16 // Stop clustering at zoom level 16 (adjust as needed)
                                 // Markers above this zoom will be shown individually.
                                 // If they were offset, they'll appear near each other.
