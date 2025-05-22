@@ -310,6 +310,7 @@ Tyson Lin - USC - Business & Finance
 Una Laffan - Hobart and William Smith Colleges - Geoscience
 
 Class of '25
+Abigail Veliu - Fordham University - Biological Sciences
 Adrian Acker - Wesleyan University - Undecided Major
 Ana Dokianos - UVA - Political Science & History
 Ananya Parekh - NYU - Biomolecular Engineering
@@ -337,6 +338,7 @@ Michelle Chen - Smith (QuestBridge) - Biology
 Milen Girvin - UVA - Business
 Morgan Sweeney - Vanderbilt (POSSE) - Law, History, and Society
 Patricia Natawidjaja - Tufts - Engineering
+Rafal Panek - Lafayette (POSSE) - Civil Engineering
 Sean Brust - Vanderbilt (POSSE) - Civil Engineering
 Tiernan Brody - Bucknell - Anthropology
 Veronica Morris - Cornell - Sociology
