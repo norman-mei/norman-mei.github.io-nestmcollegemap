@@ -6,6 +6,7 @@
     <script src="rawData.js"></script>
     <script src="normalizeCollegeName.js"></script> 
      <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <head>
     <link rel="icon" href="photos/favicon/favicon.jpg" type="image/png">
     <meta charset="UTF-8">
@@ -618,6 +619,61 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
         body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
 
+        #trends-control {
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+#trends-control h4 {
+    margin-bottom: 10px; /* Increased margin for main title */
+}
+
+#trends-control h5 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1em; /* Slightly smaller than h4 */
+    font-weight: bold;
+    text-align: center;
+}
+
+.chart-container {
+    position: relative; /* Needed for Chart.js responsiveness */
+    margin: 0 auto 15px auto; /* Centering and bottom margin */
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fdfdfd; /* Light background for chart area */
+    width: 100%; /* Ensures it takes the width of its parent */
+    height: 280px; /* Increased from 280px to accommodate the paragraph below the chart */
+    box-sizing: border-box; /* Good practice */
+}
+
+body.dark-mode .chart-container {
+    border-color: #555;
+    background-color: #2a2a2a; /* Dark background for chart area */
+    /* The height is inherited, no need to repeat unless you want a different height in dark mode */
+}
+
+/* This rule is generally fine, but ensure no other rule is forcing a strange height on the canvas */
+#trends-control canvas {
+    max-width: 100%;
+     margin-bottom: 10px;
+    /* Chart.js will set the canvas width/height attributes directly based on the container */
+}
+
+/* Optional: Style for the note under popular colleges chart */
+#trends-control .chart-container p {
+    font-size: 0.8em;   /* Consistent with previous inline style */
+    text-align: center; /* Consistent with previous inline style */
+    margin-top: 5px;    /* ADDED: Small space between canvas and this paragraph */
+    margin-bottom: 5px; /* ADDED: Small space at the very bottom, within the container */
+    line-height: 1.3;   /* ADDED: Control line height for compactness */
+    color: black;       /* Default text color for light mode (adjust if needed) */
+}
+body.dark-mode #trends-control .chart-container p {
+    color: #aaa;
+}
+
 
         body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
         body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
@@ -796,6 +852,9 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     </tfoot>
                 </table>
             </div>
+
+
+
             <div id="major-summary-control" class="map-control">
                 <h4>Major Area Summary</h4>
                 <table id="major-summary-table">
@@ -811,6 +870,24 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     </tbody>
                 </table>
             </div>
+
+             <div id="trends-control" class="map-control">
+                <h4>Data Trends Over Time</h4>
+                <div class="chart-container" style="margin-bottom: 20px;">
+                    <h5>Major Area Popularity (All Years)</h5>
+                    <canvas id="majorAreaTrendChart"></canvas>
+                </div>
+                <div class="chart-container" style="margin-bottom: 20px;">
+                    <h5>Location Focus Distribution (All Years)</h5>
+                    <canvas id="locationFocusTrendChart"></canvas>
+                </div>
+                <div class="chart-container">
+    <h5>Top 5 Colleges By Overall (All Years) Attendance </h5>
+    <canvas id="popularCollegesTrendChart"></canvas>
+  
+</div>
+            </div>
+
             <div id="school-list-control" class="map-control">
                 <div class="list-header-container">
                     <h4>College List & Seniors</h4>
@@ -904,6 +981,22 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
 
         // NEW: Add a global variable for the MarkerClusterer
         let markerClustererInstance;
+
+        let majorAreaChartInstance, locationFocusChartInstance, popularCollegesChartInstance;
+
+
+        const CHART_COLORS_LIST = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+    '#8A2BE2', '#5F9EA0', '#D2691E', '#FF7F50', '#6495ED', '#DC143C',
+    '#008B8B', '#B8860B', '#006400', '#8B0000', '#FF8C00', '#2F4F4F'
+];
+let chartColorIndex = 0;
+function getNextChartColor() {
+    const color = CHART_COLORS_LIST[chartColorIndex % CHART_COLORS_LIST.length];
+    chartColorIndex++;
+    return color;
+}
+
 
         // Constants - Defer Google Maps dependent constants to initMap
         let baseMarkerIcon;
@@ -1130,7 +1223,190 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
         }
 
 
-       
+        function aggregateMajorAreaTrends(data) {
+    const trends = {}; // { 'Year': { 'MajorArea': count, ... }, ... }
+    const allMajorAreas = new Set();
+    const years = [...new Set(data.map(item => item.gradClass))].sort();
+
+    years.forEach(year => trends[year] = {});
+
+    data.forEach(item => {
+        if (item.collegeName === "Undecided") return; // Exclude undecided colleges
+
+        const year = item.gradClass;
+        const majorAreas = item.majorArea.split(' & ').map(s => s.trim());
+
+        majorAreas.forEach(area => {
+            if (area && area !== "Unknown") {
+                allMajorAreas.add(area);
+                trends[year][area] = (trends[year][area] || 0) + 1;
+            }
+        });
+    });
+    return { trends, years, majorAreas: Array.from(allMajorAreas).sort() };
+}
+
+function aggregateLocationFocusTrends(data) {
+    const trends = {}; // { 'Year': { 'LocationFocus': count, ... }, ... }
+    const allLocationFocuses = new Set();
+    const years = [...new Set(data.map(item => item.gradClass))].sort();
+
+    years.forEach(year => trends[year] = {});
+
+    data.forEach(item => {
+        if (item.collegeName === "Undecided" || item.locationFocus === "N/A") return;
+
+        const year = item.gradClass;
+        const focus = item.locationFocus;
+        allLocationFocuses.add(focus);
+        trends[year][focus] = (trends[year][focus] || 0) + 1;
+    });
+    return { trends, years, locationFocuses: Array.from(allLocationFocuses).sort() };
+}
+
+function aggregatePopularCollegeTrends(data, topN = 5) {
+    const collegeCounts = {};
+    data.forEach(item => {
+        if (item.collegeName && item.collegeName !== "Undecided") {
+            collegeCounts[item.collegeName] = (collegeCounts[item.collegeName] || 0) + 1;
+        }
+    });
+
+    const popularColleges = Object.entries(collegeCounts)
+        .sort(([, countA], [, countB]) => countB - countA)
+        .slice(0, topN)
+        .map(([name]) => name);
+
+    const trends = {}; // { 'Year': { 'CollegeName': count, ... }, ... }
+    const years = [...new Set(data.map(item => item.gradClass))].sort();
+
+    years.forEach(year => trends[year] = {});
+    popularColleges.forEach(college => {
+        years.forEach(year => {
+            trends[year][college] = 0; // Initialize for all popular colleges
+        });
+    });
+
+    data.forEach(item => {
+        if (popularColleges.includes(item.collegeName) && item.gradClass) {
+            trends[item.gradClass][item.collegeName]++;
+        }
+    });
+    return { trends, years, popularColleges };
+}
+       function getChartJsConfigOptions(titleText, currentIsDarkMode) {
+    const gridColor = currentIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const ticksColor = currentIsDarkMode ? '#ccc' : '#666';
+    const legendColor = currentIsDarkMode ? '#eee' : '#333';
+    const titleColor = currentIsDarkMode ? '#eee' : '#333';
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false, // Allow height to be controlled by CSS or container
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { color: legendColor }
+            },
+            title: { // This is for chart title, but we use h5 externally
+                display: false, // Set to true if you want Chart.js to manage title
+                text: titleText,
+                color: titleColor,
+                font: { size: 14 }
+            }
+        },
+        scales: {
+            x: {
+                grid: { color: gridColor },
+                ticks: { color: ticksColor }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: gridColor },
+                ticks: { color: ticksColor, precision: 0 } // Ensure whole numbers for counts
+            }
+        }
+    };
+}
+
+
+function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+    const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
+    if (majorAreaChartInstance) majorAreaChartInstance.destroy();
+    chartColorIndex = 0; // Reset color index for this chart
+
+    const datasets = majorAreasList.map(area => {
+        const areaData = years.map(year => data[year][area] || 0);
+        return {
+            label: area,
+            data: areaData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
+
+    majorAreaChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode)
+    });
+}
+
+function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
+    const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
+    if (locationFocusChartInstance) locationFocusChartInstance.destroy();
+    chartColorIndex = 0; // Reset color index
+
+    const datasets = locationFocusesList.map(focus => {
+        const focusData = years.map(year => data[year][focus] || 0);
+        return {
+            label: focus,
+            data: focusData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
+
+    locationFocusChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode)
+    });
+}
+
+function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
+    const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
+    if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
+    chartColorIndex = 0; // Reset color index
+
+    const datasets = popularCollegesList.map(college => {
+        const collegeData = years.map(year => data[year][college] || 0);
+        return {
+            label: college,
+            data: collegeData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
+
+    popularCollegesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode)
+    });
+}
 
         function getMajorArea(specificMajor) {
             if (!specificMajor) return "Unknown";
@@ -2944,7 +3220,7 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
             if (listHeaderContainer && !document.getElementById('schoolListTip')) {
                  const tipDiv = document.createElement('div'); tipDiv.id = 'schoolListTip'; tipDiv.className = 'tip-message';
                  const tipText = document.createElement('span');
-                 tipText.innerHTML = 'Tips: <br>• Filters update Stats & Major tables.<br>• Checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom (Esc to close).<br>• Use ↑↓ keys to navigate list; ← → in zoomed photo.<br>• Left panel is resizable.<br>• <b>New Tip:</b> Explore different sort options for colleges and students!<br>• <b>Another Tip:</b> Dark mode can be easier on the eyes.';
+                 tipText.innerHTML = 'Tips: <br>• Filters update Stats & Major tables.<br>• Checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom (Esc to close).<br>• Use ↑↓ keys to navigate list; ← → in zoomed photo.<br>• Left panel is resizable.<br>• Explore different sort options for colleges and students!<br>• Dark mode can be easier on the eyes.';
                  const dismissBtn = document.createElement('span'); dismissBtn.className = 'dismiss-button'; dismissBtn.textContent = 'x'; dismissBtn.title = 'Dismiss this tip';
                  dismissBtn.onclick = () => { tipDiv.style.display = 'none'; };
                  tipDiv.appendChild(tipText); tipDiv.appendChild(dismissBtn);
@@ -3304,6 +3580,25 @@ studentSortSelect.addEventListener('change', (event) => {
                  });
                  darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
                  darkModeToggle.title = isDarkMode ? 'Light Mode' : 'Dark Mode';
+
+                  if (allData && allData.length > 0) { // Ensure data exists
+                // Re-aggregate or just re-render with new dark mode state
+                // For simplicity, re-aggregating is fine here as it's not too expensive
+                const majorAreaData = aggregateMajorAreaTrends(allData);
+                if (document.getElementById('majorAreaTrendChart')) { // Check if element exists
+                     renderMajorAreaTrendChart(majorAreaData.trends, majorAreaData.years, majorAreaData.majorAreas, isDarkMode);
+                }
+
+                const locationFocusData = aggregateLocationFocusTrends(allData);
+                 if (document.getElementById('locationFocusTrendChart')) {
+                    renderLocationFocusTrendChart(locationFocusData.trends, locationFocusData.years, locationFocusData.locationFocuses, isDarkMode);
+                }
+
+                const popularCollegesData = aggregatePopularCollegeTrends(allData, 5);
+                if (document.getElementById('popularCollegesTrendChart')) {
+                    renderPopularCollegesTrendChart(popularCollegesData.trends, popularCollegesData.years, popularCollegesData.popularColleges, isDarkMode);
+                }
+            }
             });
 
             const debouncedSearch = debounce(handleSearchInput, 250);
@@ -3357,6 +3652,8 @@ studentSortSelect.addEventListener('change', (event) => {
                 }
             }
 
+
+
             document.addEventListener('keydown', (event) => {
                 if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
                     if (event.key === 'ArrowLeft') {
@@ -3386,10 +3683,21 @@ studentSortSelect.addEventListener('change', (event) => {
                     }
                 }
             });
+if (allData && allData.length > 0) {
+            const majorAreaData = aggregateMajorAreaTrends(allData);
+            renderMajorAreaTrendChart(majorAreaData.trends, majorAreaData.years, majorAreaData.majorAreas, isDarkMode);
 
-            rebuildSchoolListHTML();
-            updateMarkersVisibility(); 
+            const locationFocusData = aggregateLocationFocusTrends(allData);
+            renderLocationFocusTrendChart(locationFocusData.trends, locationFocusData.years, locationFocusData.locationFocuses, isDarkMode);
+
+            const popularCollegesData = aggregatePopularCollegeTrends(allData, 5); // Show top 5
+            renderPopularCollegesTrendChart(popularCollegesData.trends, popularCollegesData.years, popularCollegesData.popularColleges, isDarkMode);
         }
+
+
+        rebuildSchoolListHTML(); // This was likely already there
+        updateMarkersVisibility(); // This was likely already there
+    }
 
         function updateCheckAllLocationFocusButtonState() {
             const checkAllBtn = document.getElementById('checkAllLocationFocusBtn');
