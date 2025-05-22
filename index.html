@@ -94,21 +94,26 @@
             align-items: center;
             flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
         }
-        .dark-mode-toggle-control, #toggleTransitBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn {
-            font-size: 0.85em;
-            padding: 5px 10px;
-            margin: 5px; /* Add some margin for wrapped buttons */
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            background-color: rgba(245, 245, 245, 0.9);
-            color: #222;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-            line-height: 1.5;
-            flex-basis: auto;
-            text-align: center;
-        }
+        .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn {
+    font-size: 0.85em;
+    padding: 5px 10px;
+    margin: 5px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background-color: rgba(245, 245, 245, 0.9);
+    color: #222;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    line-height: 1.5; /* Keep this for text spacing */
+    flex-basis: auto;
+    text-align: center;
+    /* Added for better internal alignment and consistent height */
+    display: inline-flex; /* Treat the button itself as a flex container for its icon & text */
+    align-items: center;  /* Vertically center the icon and text within the button */
+    justify-content: center; /* Horizontally center if text-align isn't enough */
+    box-sizing: border-box; /* Ensure padding and border are included in the total width/height */
+}
         .dark-mode-toggle-control:hover, #toggleTransitBtn:hover, #zoomToVisibleBtn:hover, #clearAllFiltersBtn:hover, #toggleGalleryViewBtn:hover {
             background-color: rgba(230, 230, 230, 0.95);
         }
@@ -488,7 +493,10 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
 
         body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
-        body.dark-mode #toggleSchoolListBtn:hover { background-color: #555; }
+        
+
+        body.dark-mode #toggleSatelliteViewBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
+        
 
         body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
 
@@ -497,10 +505,10 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
         body.dark-mode #searchSuggestions div:hover { background-color: #444; }
         body.dark-mode .filter-color-box { border-color: #666; }
-        body.dark-mode .dark-mode-toggle-control, body.dark-mode #toggleTransitBtn, body.dark-mode #zoomToVisibleBtn, body.dark-mode #clearAllFiltersBtn, body.dark-mode #toggleGalleryViewBtn {
+                body.dark-mode .dark-mode-toggle-control, body.dark-mode #toggleTransitBtn, body.dark-mode #toggleSatelliteViewBtn, body.dark-mode #zoomToVisibleBtn, body.dark-mode #clearAllFiltersBtn, body.dark-mode #toggleGalleryViewBtn {
             background-color: rgba(50, 50, 50, 0.9); color: #e0e0e0; border-color: #555;
         }
-        body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover {
+                body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover {
             background-color: rgba(70, 70, 70, 0.95);
         }
         body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
@@ -548,7 +556,8 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
-                <button id="zoomToVisibleBtn" title="Zoom to fit all visible markers">🛰️ Zoom to Visible</button>
+                <button id="toggleSatelliteViewBtn" title="Switch to Satellite View">🛰️ Satellite View</button> 
+                <button id="zoomToVisibleBtn" title="Zoom to fit all visible markers">👁️ Zoom to Visible</button>
                 <button id="clearAllFiltersBtn" title="Clear all active filters and search">🧹 Clear All Filters</button>
                 <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
             </div>
@@ -732,6 +741,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
         let transitLayer;
         let currentSortOption = 'grad_first';
+        let isSatelliteViewEnabled = false;
         let transitLayerEnabled = false;
         let locationFocusFilterState = {}; // Stores true/false for each location focus key
         let majorAreaFilterState = {}; // Stores true/false for each major area key
@@ -2377,6 +2387,7 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
             const schoolSearchInput = document.getElementById('schoolSearchInput');
             const listHeaderContainer = document.querySelector('#school-list-control .list-header-container');
             const toggleSchoolListBtn = document.getElementById('toggleSchoolListBtn');
+            const toggleSatelliteViewBtn = document.getElementById('toggleSatelliteViewBtn');
             const toggleTransitBtn = document.getElementById('toggleTransitBtn');
             const checkAllGradClassesBtn = document.getElementById('checkAllGradClassesBtn');
             const uncheckAllGradClassesBtn = document.getElementById('uncheckAllGradClassesBtn');
@@ -2454,6 +2465,22 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                 toggleGalleryViewBtn.title = isGalleryViewEnabled ? 'Switch to List View' : 'Switch to Gallery View';
                 rebuildSchoolListHTML(); 
             });
+
+            if (toggleSatelliteViewBtn) { // <--- START ADDING HERE
+    toggleSatelliteViewBtn.addEventListener('click', () => {
+        if (!map) return;
+        isSatelliteViewEnabled = !isSatelliteViewEnabled;
+        if (isSatelliteViewEnabled) {
+            map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+            toggleSatelliteViewBtn.textContent = '🗺️ Roadmap View';
+            toggleSatelliteViewBtn.title = 'Switch to Roadmap View';
+        } else {
+            map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+            toggleSatelliteViewBtn.textContent = '🛰️ Satellite View';
+            toggleSatelliteViewBtn.title = 'Switch to Satellite View';
+        }
+    });
+}
 
             const checkAllMajorAreasBtn = document.getElementById('checkAllMajorAreasBtn');
             checkAllMajorAreasBtn.addEventListener('change', (event) => {
