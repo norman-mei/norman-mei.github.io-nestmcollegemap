@@ -106,7 +106,7 @@ function normalizeCollegeName(name) {
             if (originalNameLower.includes("amda")) return "AMDA College of the Performing Arts";
             if (originalNameLower.includes("university of the highlands and islands")) return "University of the Highlands and Islands";
              if (originalNameLower.includes("osu") && !originalNameLower.includes("ohio state")) return "Ohio State University";
-
+            if (originalNameLower === "lafayette") return "Lafayette College";
             for (const key in collegeCoordsAndInfo) {
                 if (key.toLowerCase() === originalNameLower) {
                     return key;
