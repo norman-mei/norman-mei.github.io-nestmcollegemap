@@ -5,6 +5,7 @@
     <script src="majorToAreaMapping.js"></script>
     <script src="rawData.js"></script>
     <script src="normalizeCollegeName.js"></script> 
+     <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -750,6 +751,9 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         let isGalleryViewEnabled = false;
         let currentListSelectionIndex = -1; // Index within the *visible* list items. -1 means nothing selected
 
+        // NEW: Add a global variable for the MarkerClusterer
+        let markerClustererInstance;
+
         // Constants - Defer Google Maps dependent constants to initMap
         let baseMarkerIcon;
         let highlightedMarkerIcon;
@@ -839,7 +843,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     ...choice,
                     displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
                     originalIndex: index,
-                    isVisible: true, 
+                    isVisible: true, // Set initial visibility; will be refined by filters
                     majorArea: majorArea 
                 };
             });
@@ -869,8 +873,9 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             let displayColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
             if (seniorChoice.collegeName === "Undecided") displayColor = '#999999';
 
-            const currentBaseIcon = baseMarkerIcon || { path: 0, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
+            const currentBaseIcon = baseMarkerIcon || { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
             const currentHighlightedIcon = highlightedMarkerIcon || { ...currentBaseIcon, scale: 10, strokeWeight: 2.0 };
+
 
             const iconConfig = isHighlighted ? currentHighlightedIcon : currentBaseIcon;
             return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? '#111111' : '#ffffff' };
@@ -1016,14 +1021,12 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
                 const finalAreas = areas.filter(a => a !== "Unknown" && a !== "Other");
                 if (finalAreas.length > 0) {
-                    // Prioritize specific areas over "Other" if mixed
                     const uniqueFinalAreas = [...new Set(finalAreas)];
                     if (uniqueFinalAreas.length === 1) return uniqueFinalAreas[0];
                     return uniqueFinalAreas.join(' & ');
                 } else {
-                     // If all parts resolved to "Other" or "Unknown"
                     const otherOrUnknownAreas = areas.filter(a => a === "Other" || a === "Unknown");
-                    if(otherOrUnknownAreas.length > 0) return "Other"; // Default to Other if only others/unknowns
+                    if(otherOrUnknownAreas.length > 0) return "Other"; 
                 }
             }
 
@@ -1197,7 +1200,6 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         function updateMajorSummaryTable() {
             const majorAreaCounts = {};
             PREDEFINED_MAJOR_AREAS.forEach(area => majorAreaCounts[area] = 0);
-            // Collect all unique major areas present in the *filtered* data to ensure dynamic areas are handled for display
             const allPresentMajorAreasInFilteredData = new Set(PREDEFINED_MAJOR_AREAS);
 
 
@@ -1209,18 +1211,17 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     const areasToCount = [];
                     if (typeof majorAreaResult === 'string' && majorAreaResult.includes(' & ')) {
                         areasToCount.push(...majorAreaResult.split(' & ').map(s => s.trim()));
-                    } else if (typeof majorAreaResult === 'string') { // Ensure it's a string before trying to push
+                    } else if (typeof majorAreaResult === 'string') { 
                         areasToCount.push(majorAreaResult.trim());
                     }
 
 
                     areasToCount.forEach(area => {
-                        if (area && area !== "Unknown") { // Only count valid areas
-                             allPresentMajorAreasInFilteredData.add(area); // Track for display
+                        if (area && area !== "Unknown") { 
+                             allPresentMajorAreasInFilteredData.add(area); 
                             if (majorAreaCounts.hasOwnProperty(area)) {
                                 majorAreaCounts[area]++;
                             } else {
-                                // If it's a new dynamic area not in PREDEFINED_MAJOR_AREAS
                                 majorAreaCounts[area] = 1;
                                 if (!PREDEFINED_MAJOR_AREAS.includes(area)) {
                                      // console.warn(`Unexpected major area encountered: ${area} from major: ${school.major}. Adding to table dynamically.`);
@@ -1235,15 +1236,13 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             tableBody.innerHTML = "";
 
             const sortedAreasToDisplay = Array.from(allPresentMajorAreasInFilteredData).sort((a, b) => {
-                // Put "Undecided/Other" and "Other" at the end
                 if ((a === "Undecided/Other" || a === "Other") && (b !== "Undecided/Other" && b !== "Other")) return 1;
                 if ((b === "Undecided/Other" || b === "Other") && (a !== "Undecided/Other" && a !== "Other")) return -1;
-                return a.localeCompare(b); // Alphabetical for the rest
+                return a.localeCompare(b); 
             });
 
 
             sortedAreasToDisplay.forEach(area => {
-                 // Show if count > 0, or if it's a predefined/tracked category that has a filter checkbox
                 if (majorAreaCounts[area] > 0 || PREDEFINED_MAJOR_AREAS.includes(area) || majorAreaFilterState.hasOwnProperty(area) ) {
                     const row = tableBody.insertRow();
                     const cellArea = row.insertCell();
@@ -1294,7 +1293,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         }
 
 
-        function updateMarkersVisibility() {
+                function updateMarkersVisibility() {
             if (!allMarkers || !allData) return;
 
             let visibleCount = 0;
@@ -1309,9 +1308,8 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             const areAllMajorAreaFiltersCheckedOrNoneActive = numMajorAreaFilters === 0 || Object.values(majorAreaFilterState).every(val => val) || !areAnyMajorAreaFiltersActive;
 
 
-            allData.forEach((school) => { 
+            allData.forEach((school) => { // school here refers to an item from allData with original coordinates
                 let meetsGradClassCriteria = areAllGradClassFiltersCheckedOrNoneActive || gradClassFilterState[school.gradClass] === true;
-                
                 let meetsLocationFocusCriteria = areAllLocationFiltersCheckedOrNoneActive || school.locationFocus === "N/A" || locationFocusFilterState[school.locationFocus] === true;
                 
                 let meetsMajorAreaCriteria;
@@ -1324,20 +1322,10 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 
                 if (school.collegeName === "Undecided") {
                     const undecidedMajorAreaSelected = majorAreaFilterState["Undecided/Other"] !== undefined ? majorAreaFilterState["Undecided/Other"] : true;
-                    // For Undecided, location is "N/A". It should follow the "N/A" location filter if such exists, or general visibility.
                     const undecidedLocationSelected = locationFocusFilterState["N/A"] !== undefined ? locationFocusFilterState["N/A"] : meetsLocationFocusCriteria;
-
                     school.isVisible = meetsGradClassCriteria && undecidedMajorAreaSelected && undecidedLocationSelected;
                 } else {
                     school.isVisible = meetsGradClassCriteria && meetsLocationFocusCriteria && meetsMajorAreaCriteria;
-                }
-
-
-                const markerInfo = allMarkers[school.originalIndex];
-                if (markerInfo && markerInfo.marker) {
-                    if (markerInfo.marker.getVisible() !== school.isVisible) {
-                        markerInfo.marker.setVisible(school.isVisible);
-                    }
                 }
 
                 if (school.isVisible) {
@@ -1346,19 +1334,17 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     if(schoolsSelectedForZoom.has(school.originalIndex)) {
                         schoolsSelectedForZoom.delete(school.originalIndex);
                     }
+                    const markerInfo = allMarkers[school.originalIndex]; 
                     if (infowindow && infowindow.getMap() && markerInfo && infowindow.anchor === markerInfo.marker) {
                         infowindow.close();
                     }
                     const listUl = document.querySelector('#school-list-control .list-content ul');
                     if (listUl && currentListSelectionIndex !== -1) {
-                        const visibleListItems = getVisibleListItemsDOM(); // Use helper
-                        if (currentListSelectionIndex < visibleListItems.length) { // Check against current visible list
+                        const visibleListItems = getVisibleListItemsDOM(); 
+                        if (currentListSelectionIndex < visibleListItems.length) { 
                             const currentlySelectedVisibleLi = visibleListItems[currentListSelectionIndex];
-                             // Check if the item about to be hidden was the selected one
                             if (currentlySelectedVisibleLi && parseInt(currentlySelectedVisibleLi.dataset.originalIndex) === school.originalIndex) {
-                                // Reset selection if the currently selected item becomes hidden
                                 currentListSelectionIndex = -1; 
-                                // Also deselect its marker if it was the activeHoverMarker
                                 if (activeHoverMarkerIndex === school.originalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                                     allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                                     allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
@@ -1373,7 +1359,22 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             filterSchoolList();
             updateStatsTable();
             updateMajorSummaryTable();
-            updateCurrentSelectionHighlight(); 
+            updateCurrentSelectionHighlight();
+
+            if (markerClustererInstance && typeof markerClusterer !== 'undefined' && markerClusterer.MarkerClusterer) {
+                markerClustererInstance.clearMarkers();
+                const visibleMapMarkers = [];
+                allData.forEach(schoolDataFromAllData => { // Iterate using original data
+                    if (schoolDataFromAllData.isVisible) {
+                        const markerInfo = allMarkers[schoolDataFromAllData.originalIndex];
+                        // Use original lat/lng from schoolDataFromAllData for 0,0 check
+                        if (markerInfo && markerInfo.marker && !(schoolDataFromAllData.lat === 0 && schoolDataFromAllData.lng === 0)) {
+                            visibleMapMarkers.push(markerInfo.marker); // markerInfo.marker has potentially offset position
+                        }
+                    }
+                });
+                markerClustererInstance.addMarkers(visibleMapMarkers);
+            }
         }
 
         // Helper to get current visible LIs from DOM for selection logic
@@ -1419,6 +1420,12 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 }
 
                 const finalItemVisibility = isVisibleByFilters && matchesSearch;
+                
+                const schoolCheckbox = item.querySelector(`input[type="checkbox"][id="school-checkbox-${originalIndex}"]`);
+                if (schoolCheckbox) {
+                    schoolCheckbox.checked = schoolData.isVisible; 
+                }
+
 
                 if (finalItemVisibility) {
                     item.style.display = isGalleryViewEnabled ? 'flex' : 'flex'; 
@@ -1428,10 +1435,10 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                         if (lastVisibleGradClassForSeparator !== null && schoolData.gradClass !== lastVisibleGradClassForSeparator) {
                             let potentialSeparator = item.previousElementSibling;
                             while(potentialSeparator && potentialSeparator.style.display === 'none' && potentialSeparator.classList.contains('grad-class-separator')) {
-                                potentialSeparator = potentialSeparator.previousElementSibling; // Skip hidden separators
+                                potentialSeparator = potentialSeparator.previousElementSibling; 
                             }
                             if (potentialSeparator && potentialSeparator.classList.contains('grad-class-separator')) {
-                                potentialSeparator.style.display = isGalleryViewEnabled ? 'block' : 'list-item'; // Use 'block' for gallery, 'list-item' or 'flex' for default
+                                potentialSeparator.style.display = isGalleryViewEnabled ? 'block' : 'list-item'; 
                             }
                         }
                         lastVisibleGradClassForSeparator = schoolData.gradClass;
@@ -1451,7 +1458,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 console.error("[DEBUG] Senior photo popup elements not initialized properly.");
                 return;
             }
-            currentlyZoomedSeniorOriginalIndex = schoolData.originalIndex; // Track for navigation
+            currentlyZoomedSeniorOriginalIndex = schoolData.originalIndex; 
 
             seniorPopupImage.style.display = 'block';
             seniorPopupImage.src = schoolData.seniorPhotoUrl;
@@ -1526,7 +1533,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
                     exitZoomMode(false); 
                 }
-                currentlyZoomedSeniorOriginalIndex = null; // Reset when popup is hidden
+                currentlyZoomedSeniorOriginalIndex = null; 
                  if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'none';
                  if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'none';
             }
@@ -1677,12 +1684,12 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
             }
 
             let newIndexInVisibleList;
-            if (currentIndexInVisibleList === -1) { // If current not found or not set, start from beginning/end
+            if (currentIndexInVisibleList === -1) { 
                 newIndexInVisibleList = (direction === 'next') ? 0 : visibleListItems.length - 1;
             } else {
                 if (direction === 'next') {
                     newIndexInVisibleList = (currentIndexInVisibleList + 1) % visibleListItems.length;
-                } else { // 'prev'
+                } else { 
                     newIndexInVisibleList = (currentIndexInVisibleList - 1 + visibleListItems.length) % visibleListItems.length;
                 }
             }
@@ -1693,9 +1700,8 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 const newSeniorData = allData[newOriginalIndex];
 
                 if (newSeniorData) {
-                    // Update zoomed photo and caption
                     currentlyZoomedSeniorOriginalIndex = newOriginalIndex;
-                    seniorPopupImage.src = newSeniorData.seniorPhotoUrl; // Add error handling like in showSeniorPhotoPopup
+                    seniorPopupImage.src = newSeniorData.seniorPhotoUrl; 
                      seniorPopupImage.onerror = function() {
                         this.src = newSeniorData.seniorPhotoUrlPng;
                         this.onerror = function() {
@@ -1708,17 +1714,14 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                     seniorPopupImage.alt = `${newSeniorData.seniorName}'s Photo / ${newSeniorData.collegeName} Logo`;
                     seniorPopupCaption.textContent = `Congrats, ${newSeniorData.seniorName}!`;
 
-                    // Update main list selection and map focus
                     currentListSelectionIndex = newIndexInVisibleList;
                     updateCurrentSelectionHighlight();
                     newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                      newListItem.focus();
 
 
-                    // Simulate click interaction for map and info window
                     handleListItemInteraction({ currentTarget: newListItem, target: newListItem, ctrlKey: false, metaKey: false }, newOriginalIndex, false);
                     
-                     // Ensure marker highlighting is correct
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                         allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                         allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
@@ -1964,29 +1967,15 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
 
                 const schoolCheckbox = document.createElement('input');
                 schoolCheckbox.type = 'checkbox';
-                schoolCheckbox.checked = seniorChoice.isVisible; // Check reflects current filter state
+                // The checked state will be set by filterSchoolList based on schoolData.isVisible
                 schoolCheckbox.id = `school-checkbox-${originalIndex}`;
                 schoolCheckbox.setAttribute('aria-label', `Toggle visibility for ${seniorChoice.displayName}`);
 
                 schoolCheckbox.addEventListener('change', (event) => {
                     const isChecked = event.target.checked;
-                     // This checkbox directly controls the schoolData.isVisible for THIS item only.
-                     // The overall visibility update will then be triggered.
-                    if (allData[originalIndex]) {
-                         allData[originalIndex].isVisFilterControlled = isChecked; // A new flag if needed, or just use isVisible if this is the SOLE controller
-                         // For simplicity, let's assume checking/unchecking *this* checkbox directly sets the desire for it to be visible
-                         // and updateMarkersVisibility will then consider *all* filter criteria.
-                         // This checkbox's direct effect might be overridden by other filters.
-                         // The true source of 'isVisible' comes from updateMarkersVisibility.
-                         // So, this checkbox might be more of a "request to include/exclude if other filters allow".
-                         // A better approach: the checkbox state should reflect and *influence* one of the filter states.
-                         // For now, let's have it toggle for group zoom and allow updateMarkersVisibility to handle the rest.
-                    }
-
-
                     if (event.shiftKey) {
                         event.preventDefault();
-                        if (isChecked && allData[originalIndex]?.isVisible) { // Only add if overall visible
+                        if (isChecked && allData[originalIndex]?.isVisible) { 
                             schoolsSelectedForZoom.add(originalIndex);
                         } else {
                             schoolsSelectedForZoom.delete(originalIndex);
@@ -1994,17 +1983,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                         zoomToSelectedSchools();
                     } else if (!isChecked) {
                         schoolsSelectedForZoom.delete(originalIndex);
-                        // If unchecking, we might want to make this specific item not visible
-                        // This is complex as 'isVisible' is a result of multiple filters.
-                        // Simplest: if unchecked, it's OUT for zoom. Visibility still by master filters.
                     }
-                    // No direct call to updateMarkersVisibility here; that could cause loops or override other filters.
-                    // The checkbox is for group zoom or can be a part of a "manual selection" filter type if added.
-                    // If this checkbox is *meant* to be a direct visibility toggle, then:
-                    // allData[originalIndex].isVisible = isChecked; updateMarkersVisibility();
-                    // But that bypasses other filters for this single item.
-                    // Let's assume it's primarily for the shift-click zoom for now.
-                    // The `checked` state will be set by `filterSchoolList` based on `schoolData.isVisible`.
                 });
 
 
@@ -2014,53 +1993,45 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 nameSpan.innerHTML = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span> → ${seniorChoice.collegeName}${suffixHtml} <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
 
                if (isGalleryViewEnabled) {
-    listItem.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                    listItem.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                    listItem.appendChild(schoolCheckbox);
 
-    // Checkbox - append directly to listItem for absolute positioning within it
-    listItem.appendChild(schoolCheckbox);
+                    const gradClassTextElement = document.createElement('div');
+                    gradClassTextElement.className = 'gallery-grad-class-overlay';
+                    gradClassTextElement.textContent = seniorChoice.gradClass;
 
-    // Grad Class Text Overlay
-    const gradClassTextElement = document.createElement('div');
-    gradClassTextElement.className = 'gallery-grad-class-overlay';
-    gradClassTextElement.textContent = seniorChoice.gradClass;
+                    const bgColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                    if (bgColor.startsWith('#')) {
+                        const r = parseInt(bgColor.slice(1, 3), 16);
+                        const g = parseInt(bgColor.slice(3, 5), 16);
+                        const b = parseInt(bgColor.slice(5, 7), 16);
+                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                        gradClassTextElement.style.color = brightness > 135 ? '#1A1A1A' : '#FAFAFA'; 
+                    } else {
+                        gradClassTextElement.style.color = '#FFFFFF'; 
+                    }
+                    listItem.appendChild(gradClassTextElement);
 
-    // Determine text color for contrast with background
-    const bgColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
-    if (bgColor.startsWith('#')) {
-        const r = parseInt(bgColor.slice(1, 3), 16);
-        const g = parseInt(bgColor.slice(3, 5), 16);
-        const b = parseInt(bgColor.slice(5, 7), 16);
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        gradClassTextElement.style.color = brightness > 135 ? '#1A1A1A' : '#FAFAFA'; // Darker/lighter text
-    } else {
-        gradClassTextElement.style.color = '#FFFFFF'; // Default for non-hex
-    }
-    listItem.appendChild(gradClassTextElement);
+                    const galleryPhotoDiv = document.createElement('div');
+                    galleryPhotoDiv.className = 'gallery-photo-div';
 
-    // Container for the photo, to manage spacing below the overlay
-    const galleryPhotoDiv = document.createElement('div');
-    galleryPhotoDiv.className = 'gallery-photo-div'; // New class
-
-    const galleryImg = document.createElement('img');
-    galleryImg.className = 'gallery-photo';
-    galleryImg.src = seniorChoice.seniorPhotoUrl;
-    galleryImg.alt = `${seniorChoice.seniorName}'s Photo`;
-    galleryImg.onerror = function() {
-        this.src = seniorChoice.seniorPhotoUrlPng;
-        this.onerror = function() {
-            this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png';
-            this.onerror = null;
-        };
-    };
-    galleryPhotoDiv.appendChild(galleryImg);
-    listItem.appendChild(galleryPhotoDiv);
-
-    // nameSpan is NOT appended in gallery view
-} else {
-    // Standard List View: checkbox and then the full nameSpan
-    listItem.appendChild(schoolCheckbox);
-    listItem.appendChild(nameSpan);
-}
+                    const galleryImg = document.createElement('img');
+                    galleryImg.className = 'gallery-photo';
+                    galleryImg.src = seniorChoice.seniorPhotoUrl;
+                    galleryImg.alt = `${seniorChoice.seniorName}'s Photo`;
+                    galleryImg.onerror = function() {
+                        this.src = seniorChoice.seniorPhotoUrlPng;
+                        this.onerror = function() {
+                            this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png';
+                            this.onerror = null;
+                        };
+                    };
+                    galleryPhotoDiv.appendChild(galleryImg);
+                    listItem.appendChild(galleryPhotoDiv);
+                } else {
+                    listItem.appendChild(schoolCheckbox);
+                    listItem.appendChild(nameSpan);
+                }
 
 
                 listItem.addEventListener('mouseenter', (event) => {
@@ -2137,7 +2108,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 }
             });
 
-            filterSchoolList(); // Apply current filters and search to set display styles and checkbox states
+            filterSchoolList(); 
         }
 
         function updateCurrentSelectionHighlight() {
@@ -2230,7 +2201,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         }
 
 
-        function initMap() {
+                function initMap() {
             console.log("[DEBUG] initMap function called.");
 
             if (!window.isDataReadyForMap || !allData || !Array.isArray(allData)) {
@@ -2298,7 +2269,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                 seniorPopupImage.addEventListener('click', function(e) {
                     if (e.target === seniorPopupImage && !this.classList.contains('zoomed')) {
                         const parentPopup = this.closest('#senior-photo-popup');
-                        parentPopup.classList.add('zoomed-state'); // Add class to parent
+                        parentPopup.classList.add('zoomed-state'); 
 
                         this.classList.add('zoomed');
                         if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
@@ -2331,7 +2302,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                         if(closeSeniorPhotoBtn) closeSeniorPhotoBtn.style.pointerEvents = 'auto';
 
                         if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.pointerEvents = 'auto';
-if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
+                        if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                     }
                 });
             }
@@ -2468,21 +2439,21 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                 rebuildSchoolListHTML(); 
             });
 
-            if (toggleSatelliteViewBtn) { // <--- START ADDING HERE
-    toggleSatelliteViewBtn.addEventListener('click', () => {
-        if (!map) return;
-        isSatelliteViewEnabled = !isSatelliteViewEnabled;
-        if (isSatelliteViewEnabled) {
-            map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
-            toggleSatelliteViewBtn.textContent = '🗺️ Roadmap View';
-            toggleSatelliteViewBtn.title = 'Switch to Roadmap View';
-        } else {
-            map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-            toggleSatelliteViewBtn.textContent = '🛰️ Satellite View';
-            toggleSatelliteViewBtn.title = 'Switch to Satellite View';
-        }
-    });
-}
+            if (toggleSatelliteViewBtn) { 
+                toggleSatelliteViewBtn.addEventListener('click', () => {
+                    if (!map) return;
+                    isSatelliteViewEnabled = !isSatelliteViewEnabled;
+                    if (isSatelliteViewEnabled) {
+                        map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+                        toggleSatelliteViewBtn.textContent = '🗺️ Roadmap View';
+                        toggleSatelliteViewBtn.title = 'Switch to Roadmap View';
+                    } else {
+                        map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+                        toggleSatelliteViewBtn.textContent = '🛰️ Satellite View';
+                        toggleSatelliteViewBtn.title = 'Switch to Satellite View';
+                    }
+                });
+            }
 
             const checkAllMajorAreasBtn = document.getElementById('checkAllMajorAreasBtn');
             checkAllMajorAreasBtn.addEventListener('change', (event) => {
@@ -2509,21 +2480,47 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                 sortAndRebuildList(event.target.value);
             });
 
+            // Keep track of coordinates that have been used for a marker to apply offsets
+            const assignedCoordinatesCount = {}; // Key: "lat,lng", Value: count of markers at this exact spot
+
             allMarkers = new Array(allData.length).fill(null);
             allData.forEach((seniorChoice) => {
                  const index = seniorChoice.originalIndex;
+                 let lat = seniorChoice.lat;
+                 let lng = seniorChoice.lng;
+                 const originalCoordKey = `${seniorChoice.lat},${seniorChoice.lng}`; // Use original for counting
+
+                 // Apply a small offset if this exact original coordinate is already taken by another student
+                 // and it's not the 0,0 placeholder.
+                 if (seniorChoice.lat !== 0 || seniorChoice.lng !== 0) {
+                    if (assignedCoordinatesCount[originalCoordKey]) {
+                        const count = assignedCoordinatesCount[originalCoordKey];
+                        // Simple circular offset algorithm - very small offsets
+                        const offsetMagnitude = 0.00002 * Math.sqrt(count); // Increase offset slightly for more markers
+                        const angleIncrement = Math.PI / 3; // Stagger angles
+                        const angle = (count * angleIncrement); 
+                        lat += offsetMagnitude * Math.cos(angle);
+                        lng += offsetMagnitude * Math.sin(angle);
+                        assignedCoordinatesCount[originalCoordKey]++;
+                    } else {
+                        assignedCoordinatesCount[originalCoordKey] = 1;
+                    }
+                 }
+
                  const markerInitialIcon = getMarkerIcon(seniorChoice, false, isDarkMode);
+                 // Create marker with potentially offset lat/lng
                  const marker = new google.maps.Marker({
-                     position: { lat: seniorChoice.lat, lng: seniorChoice.lng },
-                     map: map,
+                     position: { lat: lat, lng: lng }, 
+                     // map: map, // REMOVED: Clusterer will add markers.
                      title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName} (${seniorChoice.major || 'Undecided Major'})`,
                      icon: markerInitialIcon,
-                     visible: seniorChoice.isVisible 
+                     // visible: seniorChoice.isVisible // REMOVED: Clusterer handles this.
                  });
-                 allMarkers[index] = { marker: marker, school: seniorChoice };
+                 // Store the marker (with its potentially offset position) but refer to original school data
+                 allMarkers[index] = { marker: marker, school: seniorChoice }; 
 
                  marker.addListener("click", () => {
-                     const schoolData = allData[index];
+                     const schoolData = allData[index]; // Use original data for info
                      if (!schoolData.isVisible) return;
 
                      if (infowindow && infowindow.getMap()) { infowindow.close(); }
@@ -2546,20 +2543,23 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                      }
                      contentString += `<br>Major: ${schoolData.major || 'Undecided Major'} (${schoolData.majorArea || 'N/A'})`;
                      contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
-                     if (schoolData.lat !== 0 || schoolData.lng !== 0) {
+                     // Use original lat/lng for directions link
+                     if (schoolData.lat !== 0 || schoolData.lng !== 0) { 
                         contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
                      }
                      contentString += `</div>`;
                      infowindow.setContent(contentString);
-                     infowindow.open({ map: map, anchor: marker });
+                     // Anchor infowindow to the marker (which might be offset)
+                     // but the map can optionally pan to the original lat/lng if preferred
+                     infowindow.open({ map: map, anchor: marker }); 
+                     // map.panTo({lat: schoolData.lat, lng: schoolData.lng}); // Optional: pan to original exact spot
 
                      const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
                      showSeniorPhotoPopup(listItem, schoolData);
 
                      const clickedOriginalIndex = index;
-                     const listUl = document.querySelector('#school-list-control .list-content ul');
-                     const visibleListItems = getVisibleListItemsDOM();
-                     currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
+                     const currentVisibleListItems = getVisibleListItemsDOM(); // Renamed for clarity
+                     currentListSelectionIndex = currentVisibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
 
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                         allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
@@ -2600,12 +2600,46 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                  });
             });
 
+            // Initialize MarkerClusterer
+            if (typeof markerClusterer !== 'undefined' && markerClusterer.MarkerClusterer) {
+                const initialMapMarkersForClustering = allMarkers
+                    .filter(mInfo => {
+                        if (!mInfo || !mInfo.marker || !mInfo.school) return false;
+                        // Exclude markers with original 0,0 coordinates from clustering
+                        const originalSchoolData = allData[mInfo.school.originalIndex]; // Get original data
+                        if (originalSchoolData.lat === 0 && originalSchoolData.lng === 0) return false;
+                        // Use isVisible from originalSchoolData
+                        return originalSchoolData.isVisible; 
+                    })
+                    .map(mInfo => mInfo.marker);
+                
+                markerClustererInstance = new markerClusterer.MarkerClusterer({ 
+                    map: map, 
+                    markers: initialMapMarkersForClustering,
+                    maxZoom: 16 // Stop clustering at zoom level 16 (adjust as needed)
+                                // Markers above this zoom will be shown individually.
+                                // If they were offset, they'll appear near each other.
+                });
+            } else {
+                console.error("MarkerClusterer library is not loaded correctly! Markers will not be clustered.");
+                 // Fallback: if clusterer is not available, add markers directly to map
+                allMarkers.forEach(mInfo => {
+                    if (mInfo && mInfo.marker && mInfo.school) {
+                        const originalSchoolData = allData[mInfo.school.originalIndex];
+                         if (originalSchoolData.isVisible && !(originalSchoolData.lat === 0 && originalSchoolData.lng === 0)) {
+                            mInfo.marker.setMap(map);
+                        }
+                    }
+                });
+            }
+
+
             darkModeToggle.addEventListener('click', () => {
                  isDarkMode = !isDarkMode; document.body.classList.toggle('dark-mode', isDarkMode);
                  map.setOptions({ styles: isDarkMode ? darkMapStyle : null });
                  allMarkers.forEach((mInfo, idx) => {
                      if (mInfo && mInfo.marker && mInfo.school) {
-                         const currentSchoolData = allData[idx];
+                         const currentSchoolData = allData[idx]; // Use original data for icon color
                          const isHighlighted = activeHoverMarkerIndex === idx;
                          mInfo.marker.setIcon(getMarkerIcon(currentSchoolData, isHighlighted, isDarkMode));
                      }
@@ -2684,24 +2718,19 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
                         infowindow.close();
                     }
                     event.preventDefault();
-                } else if (event.key === 'ArrowDown') {
-                    if (document.activeElement !== schoolSearchInput && ! (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) ) { 
+                } else if (document.activeElement !== schoolSearchInput && ! (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) ) { 
+                    if (event.key === 'ArrowDown') {
                         navigateList('down');
                         event.preventDefault();
-                    }
-                } else if (event.key === 'ArrowUp') {
-                     if (document.activeElement !== schoolSearchInput && ! (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) ) {
+                    } else if (event.key === 'ArrowUp') {
                         navigateList('up');
                         event.preventDefault();
                     }
                 }
             });
 
-
-            rebuildSchoolListHTML(); // Initial build based on default sort
-            updateMarkersVisibility(); // Then apply filters to set initial visibility and update dependent UI
-            // updateStatsTable(); // Called by updateMarkersVisibility
-            // updateMajorSummaryTable(); // Called by updateMarkersVisibility
+            rebuildSchoolListHTML();
+            updateMarkersVisibility(); 
         }
 
         function updateCheckAllLocationFocusButtonState() {
@@ -2741,6 +2770,7 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
         }
     </script>
 
+
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initMap&onerror=gmLoadError&v=weekly"
         async
@@ -2748,4 +2778,3 @@ if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.pointerEvents = 'auto';
     ></script> <!-- IMPORTANT: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key -->
 </body>
 </html>
-
