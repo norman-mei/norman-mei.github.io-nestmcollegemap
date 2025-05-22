@@ -1724,8 +1724,96 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
 
             noResultsMessage.style.display = hasVisibleItemsOverall ? 'none' : 'block';
             updateCurrentSelectionHighlight(); 
+            updateSeparators();
         }
 
+        function updateSeparators() {
+            const listContentDiv = document.querySelector('#school-list-control .list-content');
+            if (!listContentDiv) return;
+
+            const mainUl = listContentDiv.querySelector('ul');
+            if (!mainUl) return;
+
+            // Helper function to process a given UL (either main UL or a sublist UL)
+            const processUlForSeparators = (ulElement, isSubListContext) => {
+                // Remove existing separators within this specific ulElement using :scope to target direct children
+                ulElement.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
+
+                // Determine if separators should be added for this context
+                let shouldAddSeparatorsInThisContext = false;
+                if (isSubListContext) { // Separators within a college group's student list
+                    shouldAddSeparatorsInThisContext = (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last');
+                } else { // Separators in the main list (flat student list or gallery)
+                    shouldAddSeparatorsInThisContext =
+                        (isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last')) ||
+                        (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last'));
+                }
+
+                if (!shouldAddSeparatorsInThisContext) {
+                    return;
+                }
+
+                // Get visible LI elements *directly within this ulElement* that represent students
+                const visibleListItemsInUl = Array.from(ulElement.querySelectorAll(':scope > li:not(.grad-class-separator)[data-original-index]'))
+                    .filter(li => li.style.display !== 'none' && !li.classList.contains('college-group-header'));
+
+                if (visibleListItemsInUl.length === 0) return;
+
+                const visibleGradClassesInUl = visibleListItemsInUl.map(li => {
+                    const originalIndex = parseInt(li.dataset.originalIndex);
+                    return allData[originalIndex]?.gradClass;
+                }).filter(gc => gc); // Filter out undefined if any originalIndex was bad
+
+                const uniqueVisibleGradClassesInUl = new Set(visibleGradClassesInUl);
+
+                if (uniqueVisibleGradClassesInUl.size <= 1) {
+                    return; // No separators if only one (or zero) unique grad class is visible in this specific list/sublist
+                }
+
+                // Iterate through the visible student LIs and insert separators
+                let previousVisibleGradClass = null;
+                for (let i = 0; i < visibleListItemsInUl.length; i++) {
+                    const currentLi = visibleListItemsInUl[i];
+                    const originalIndex = parseInt(currentLi.dataset.originalIndex);
+                    const currentGradClass = allData[originalIndex]?.gradClass;
+
+                    if (currentGradClass) {
+                        if (previousVisibleGradClass !== null && currentGradClass !== previousVisibleGradClass) {
+                            const separatorLi = document.createElement('li');
+                            separatorLi.className = 'grad-class-separator';
+                            // The existing CSS for .grad-class-separator and its gallery-view variant will apply
+                            ulElement.insertBefore(separatorLi, currentLi);
+                        }
+                        previousVisibleGradClass = currentGradClass;
+                    }
+                }
+            };
+
+            if (currentPrimarySortTarget === 'students' || isGalleryViewEnabled) {
+                // Processing the main UL for flat student list or gallery view
+                processUlForSeparators(mainUl, false);
+            } else { // currentPrimarySortTarget === 'colleges' and not gallery view (grouped list)
+                // First, ensure no top-level separators in mainUl from a previous state.
+                mainUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
+
+                const studentSublists = mainUl.querySelectorAll('ul.student-sublist');
+                studentSublists.forEach(sublistUl => {
+                    const parentHeader = sublistUl.previousElementSibling;
+                    // Only process sublists whose parent group header is visible and the sublist itself is visible
+                    if (parentHeader && parentHeader.classList.contains('college-group-header') && parentHeader.style.display !== 'none') {
+                        if (sublistUl.style.display !== 'none') {
+                           processUlForSeparators(sublistUl, true);
+                        } else {
+                           // If sublist is hidden, ensure no separators within it
+                           sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
+                        }
+                    } else {
+                         // If parent group is hidden, also clear separators from its sublist
+                         sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
+                    }
+                });
+            }
+        }
 
         function showSeniorPhotoPopup(listItem, schoolData) {
             if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
@@ -2231,31 +2319,19 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
             // `allData` should be pre-sorted by `sortAndRebuildList` if primary target is 'students' or for gallery.
             // If primary target is 'colleges', `allData` is used to build groups, and then colleges/students are sorted.
 
-            if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
+                       if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
                 // FLAT LIST: Gallery View OR Primary Sort Target is "Students"
                 // `allData` is already sorted according to student sort preferences by `sortAndRebuildList`
-                let previousGradClassForSeparator = null;
-                const showSeparators = (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last')) ||
-                                     (isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last'));
-
 
                 allData.forEach(seniorChoice => {
                     // For flat lists, we only care about the student's own visibility.
                     // Search filtering will hide/show this LI later in filterSchoolList().
                     // Here, we just build based on `seniorChoice.isVisible` from global filters.
                     if (seniorChoice.isVisible) {
-                        if (showSeparators && previousGradClassForSeparator !== null && seniorChoice.gradClass !== previousGradClassForSeparator && schoolListUl.lastChild) {
-                            const separatorLi = document.createElement('li');
-                            separatorLi.className = 'grad-class-separator';
-                            separatorLi.setAttribute('aria-hidden', 'true');
-                            schoolListUl.appendChild(separatorLi);
-                        }
                         schoolListUl.appendChild(createStudentListItem(seniorChoice));
-                        if (showSeparators) {
-                            previousGradClassForSeparator = seniorChoice.gradClass;
-                        }
                     }
                 });
+            
             } else { // GROUPED LIST: Primary Sort Target is "Colleges" (and not Gallery View)
                 const studentGroupsByCollege = new Map();
                 allData.forEach(seniorChoice => {
@@ -2341,20 +2417,12 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
 
                     const studentSublistUl = document.createElement('ul');
                     studentSublistUl.className = 'student-sublist';
-                    let previousGradClassForSeparator = null;
+                   
                     const showSeparatorsInGroup = currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last';
 
                     collegeEntry.students.forEach(student => {
-                        if (showSeparatorsInGroup && previousGradClassForSeparator !== null && student.gradClass !== previousGradClassForSeparator && studentSublistUl.lastChild) {
-                            const separatorLi = document.createElement('li');
-                            separatorLi.className = 'grad-class-separator';
-                            separatorLi.setAttribute('aria-hidden', 'true');
-                            studentSublistUl.appendChild(separatorLi);
-                        }
-                        studentSublistUl.appendChild(createStudentListItem(student));
-                        if (showSeparatorsInGroup) {
-                            previousGradClassForSeparator = student.gradClass;
-                        }
+                        
+                
                     });
                     schoolListUl.appendChild(studentSublistUl);
                 });
