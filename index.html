@@ -598,6 +598,7 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
         body.dark-mode .map-control { background-color: rgba(40, 40, 40, 0.9); color: #e0e0e0; border-color: #555; }
         body.dark-mode .map-control h4 { border-bottom-color: #444; }
         body.dark-mode #filter-control .filter-header { border-bottom-color: #555; }
+        body.dark-mode #state-country-filters-container { border-color: #555; }
         body.dark-mode .list-header-container { border-bottom-color: #444; }
 
         body.dark-mode #stats-table th, body.dark-mode #stats-table td { border-color: #555; }
@@ -731,6 +732,16 @@ body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) {
                  <div id="grad-class-filters-container">
                      {} <!-- Grad class filters will be populated here -->
                  </div>
+
+                  <h4 class="filter-header" style="margin-top: 15px;">Filter by State/Country</h4>
+                 <div class="filter-control-buttons">
+                     <button id="checkAllStateCountryBtn" title="Check all state/country filters">Check All</button>
+                     <button id="uncheckAllStateCountryBtn" title="Uncheck all state/country filters">Uncheck All</button>
+                 </div>
+                 <div id="state-country-filters-container" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin-top: 5px; font-size: 0.9em;">
+                     <!-- State/Country filters will be populated here by JavaScript -->
+                 </div>
+
             </div>
             <div id="stats-table-control" class="map-control">
                 <h4>College Attendance Statistics</h4>
@@ -887,6 +898,7 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
         let transitLayerEnabled = false;
         let locationFocusFilterState = {}; // Stores true/false for each location focus key
         let majorAreaFilterState = {}; // Stores true/false for each major area key
+         let stateCountryFilterState = {};
         let isGalleryViewEnabled = false;
         let currentListSelectionIndex = -1; // Index within the *visible* list items. -1 means nothing selected
 
@@ -1312,6 +1324,7 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
                     collegeHomepageUrl: collegeDetails.homepageUrl,
                     isCampusPublic: collegeDetails.isCampusPublic,
                     locationFocus: collegeDetails.locationFocus,
+                    stateOrCountry: collegeDetails.stateOrCountry,
                     seniorPhotoUrl: `${seniorPhotoUrlBase}.jpg`,
                     seniorPhotoUrlPng: `${seniorPhotoUrlBase}.png`,
                 });
@@ -1470,8 +1483,13 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
             const areAnyMajorAreaFiltersActive = numMajorAreaFilters > 0 && Object.values(majorAreaFilterState).some(val => val);
             const areAllMajorAreaFiltersCheckedOrNoneActive = numMajorAreaFilters === 0 || Object.values(majorAreaFilterState).every(val => val) || !areAnyMajorAreaFiltersActive;
 
+            // <<< NEW: State/Country Filter Logic >>>
+            const numStateCountryFilters = Object.keys(stateCountryFilterState).length;
+            const areAnyStateCountryFiltersActive = numStateCountryFilters > 0 && Object.values(stateCountryFilterState).some(val => val);
+            const areAllStateCountryFiltersCheckedOrNoneActive = numStateCountryFilters === 0 || Object.values(stateCountryFilterState).every(val => val) || !areAnyStateCountryFiltersActive;
+            const UNKNOWN_STATE_COUNTRY_KEY_FOR_CHECK = "Unknown/Not Applicable"; // Ensure this matches key used in initMap
 
-            allData.forEach((school) => { // school here refers to an item from allData with original coordinates
+            allData.forEach((school) => {
                 let meetsGradClassCriteria = areAllGradClassFiltersCheckedOrNoneActive || gradClassFilterState[school.gradClass] === true;
                 let meetsLocationFocusCriteria = areAllLocationFiltersCheckedOrNoneActive || school.locationFocus === "N/A" || locationFocusFilterState[school.locationFocus] === true;
                 
@@ -1481,6 +1499,28 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
                 } else {
                     const schoolMajorAreas = school.majorArea.split(' & ').map(s => s.trim());
                     meetsMajorAreaCriteria = schoolMajorAreas.some(area => majorAreaFilterState[area] === true);
+                }
+
+                // <<< NEW: State/Country Criteria Check >>>
+                let meetsStateCountryCriteria;
+                if (school.collegeName === "Undecided") { // "Undecided" schools bypass specific state/country check
+                     meetsStateCountryCriteria = true; // Or depends on how you want "Undecided" to interact with state filter.
+                                                       // True means "Undecided" is not filtered by state/country.
+                                                       // If you want it to be filtered (e.g. by "Unknown/Not Applicable"), then:
+                                                       // meetsStateCountryCriteria = areAllStateCountryFiltersCheckedOrNoneActive || stateCountryFilterState[UNKNOWN_STATE_COUNTRY_KEY_FOR_CHECK] === true;
+                } else {
+                    const schoolSCKey = (school.stateOrCountry && school.stateOrCountry.trim() !== "" && school.stateOrCountry !== "N/A") ? school.stateOrCountry.trim() : UNKNOWN_STATE_COUNTRY_KEY_FOR_CHECK;
+                    meetsStateCountryCriteria = areAllStateCountryFiltersCheckedOrNoneActive || stateCountryFilterState[schoolSCKey] === true;
+                }
+                // <<< END NEW Criteria Check >>>
+                
+                if (school.collegeName === "Undecided") {
+                    const undecidedMajorAreaSelected = majorAreaFilterState["Undecided/Other"] !== undefined ? majorAreaFilterState["Undecided/Other"] : true;
+                    // For "Undecided", locationFocus is N/A. Let locationFocus filter handle N/A.
+                    // And meetsStateCountryCriteria is handled above for "Undecided".
+                    school.isVisible = meetsGradClassCriteria && undecidedMajorAreaSelected && meetsLocationFocusCriteria && meetsStateCountryCriteria;
+                } else {
+                    school.isVisible = meetsGradClassCriteria && meetsLocationFocusCriteria && meetsMajorAreaCriteria && meetsStateCountryCriteria;
                 }
                 
                 if (school.collegeName === "Undecided") {
@@ -2589,6 +2629,84 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
             }
             console.log(`[DEBUG] initMap: Data is ready. Proceeding with allData containing ${allData.length} items.`);
 
+            stateCountryFilterState = {}; // Initialize as empty object
+
+            const stateCountryFiltersContainer = document.getElementById('state-country-filters-container');
+            if (stateCountryFiltersContainer && allData && allData.length > 0) {
+                const uniqueStateCountries = new Set();
+                const UNKNOWN_STATE_COUNTRY_KEY = "Unknown/Not Applicable";
+
+                allData.forEach(school => {
+                    if (school.collegeName === "Undecided") { // Skip "Undecided" for state/country listing
+                        return;
+                    }
+                    const stateCountry = school.stateOrCountry;
+                    if (stateCountry && stateCountry.trim() !== "" && stateCountry !== "N/A") {
+                        uniqueStateCountries.add(stateCountry.trim());
+                    } else {
+                        uniqueStateCountries.add(UNKNOWN_STATE_COUNTRY_KEY);
+                    }
+                });
+
+                const sortedStateCountries = Array.from(uniqueStateCountries).sort((a, b) => {
+                    if (a === UNKNOWN_STATE_COUNTRY_KEY) return 1; // Push "Unknown" to the end
+                    if (b === UNKNOWN_STATE_COUNTRY_KEY) return -1;
+                    return a.localeCompare(b);
+                });
+
+                const fragmentStateCountryFilters = document.createDocumentFragment();
+                sortedStateCountries.forEach(scName => {
+                    stateCountryFilterState[scName] = true; // Default to checked
+
+                    const filterId = `filter-sc-${scName.replace(/\W+/g, '-')}`;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'filter-item'; // Re-use existing class for styling consistency
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = filterId;
+                    checkbox.value = scName;
+                    checkbox.checked = true;
+                    checkbox.addEventListener('change', (event) => {
+                        stateCountryFilterState[scName] = event.target.checked;
+                        updateMarkersVisibility();
+                        // Optional: update a master check/uncheck button for states/countries if you add one
+                    });
+
+                    const label = document.createElement('label');
+                    label.htmlFor = filterId;
+                    const studentCountForSC = allData.filter(s => {
+                        const currentSchoolSC = (s.stateOrCountry && s.stateOrCountry.trim() !== "" && s.stateOrCountry !== "N/A") ? s.stateOrCountry.trim() : UNKNOWN_STATE_COUNTRY_KEY;
+                        return currentSchoolSC === scName && s.collegeName !== "Undecided";
+                    }).length;
+                    label.appendChild(document.createTextNode(` ${scName} (${studentCountForSC})`));
+
+                    itemDiv.appendChild(checkbox);
+                    itemDiv.appendChild(label);
+                    fragmentStateCountryFilters.appendChild(itemDiv);
+                });
+                stateCountryFiltersContainer.appendChild(fragmentStateCountryFilters);
+
+                // Add event listeners for the new Check All/Uncheck All buttons
+                document.getElementById('checkAllStateCountryBtn').addEventListener('click', () => {
+                    stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => {
+                        stateCountryFilterState[cb.value] = true;
+                        cb.checked = true;
+                    });
+                    updateMarkersVisibility();
+                });
+                document.getElementById('uncheckAllStateCountryBtn').addEventListener('click', () => {
+                    stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => {
+                        stateCountryFilterState[cb.value] = false;
+                        cb.checked = false;
+                    });
+                    updateMarkersVisibility();
+                });
+
+            } else if (stateCountryFiltersContainer) {
+                 stateCountryFiltersContainer.innerHTML = "<p style='font-style:italic; font-size:0.9em; padding:5px;'>No state/country data to filter.</p>";
+            }
+
             baseMarkerIcon = { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
             highlightedMarkerIcon = { ...baseMarkerIcon, scale: 10, strokeWeight: 2.0 };
 
@@ -2784,6 +2902,7 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
             zoomToVisibleBtn.addEventListener('click', zoomToAllVisibleMarkers);
 
             clearAllFiltersBtn.addEventListener('click', () => {
+                // ... (existing resets for grad class, location focus, major area) ...
                 gradClassNames.forEach(gc => gradClassFilterState[gc] = true);
                 gradClassFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
 
@@ -2792,9 +2911,16 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
                 updateCheckAllLocationFocusButtonState();
 
                 PREDEFINED_MAJOR_AREAS.forEach(area => majorAreaFilterState[area] = true);
-                Object.keys(majorAreaFilterState).forEach(area => majorAreaFilterState[area] = true);
+                Object.keys(majorAreaFilterState).forEach(area => majorAreaFilterState[area] = true); // Ensure dynamic areas also reset
                 document.querySelectorAll('#major-summary-table tbody input[type="checkbox"]').forEach(cb => cb.checked = true);
                 updateCheckAllMajorAreasButtonState();
+
+                // Reset State/Country filters
+                Object.keys(stateCountryFilterState).forEach(sc => stateCountryFilterState[sc] = true);
+                if (stateCountryFiltersContainer) {
+                    stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
+                }
+                // END Reset State/Country filters
 
                 schoolSearchInput.value = '';
                 updateMarkersVisibility();
