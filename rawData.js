@@ -315,6 +315,7 @@ Adrian Acker - Wesleyan University - Undecided Major
 Ana Dokianos - UVA - Political Science & History
 Ananya Parekh - NYU - Biomolecular Engineering
 Anita Lin - Boston University - Business
+Arianne de Maat Alvarez - Maastricht - Psychology
 David Gutin - UChicago - Business Economics
 Ellis Peterson - Oberlin - Ecology & Music
 Eloisa Bromberg - Carnegie Mellon - Design & Production
@@ -342,5 +343,6 @@ Rafal Panek - Lafayette (POSSE) - Civil Engineering
 Sean Brust - Vanderbilt (POSSE) - Civil Engineering
 Tiernan Brody - Bucknell - Anthropology
 Veronica Morris - Cornell - Sociology
+Xena Cole Nelson - UCSB - Psychology & Brain Science
 Ziyoda Samadova - Middlebury - Psychology
 `;
