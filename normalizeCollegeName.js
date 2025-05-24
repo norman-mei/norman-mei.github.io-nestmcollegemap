@@ -1,9 +1,9 @@
 function normalizeCollegeName(name) {
             name = name.trim();
             const originalNameLower = name.toLowerCase();
-
-            if (originalNameLower === "bing") return "SUNY Binghamton";
-            if (originalNameLower === "ualbany") return "SUNY Albany";
+// EVERYTHING MUST BE LOWERCASED FOR if (originalNameLower === "college name") 
+            if (originalNameLower === "bing") return "Binghamton University";
+            if (originalNameLower === "ualbany") return "University at Albany";
             if (originalNameLower === "sbu") return "Stony Brook University";
             if (originalNameLower === "ccny") return "City College of New York";
             if (originalNameLower === "bmcc") return "Borough of Manhattan Community College";
@@ -12,7 +12,9 @@ function normalizeCollegeName(name) {
             if (originalNameLower.includes("harvard")) return "Harvard University";
             if (originalNameLower.includes("hobart and william smith colleges")) return "Hobart and William Smith Colleges";
             if (originalNameLower === "u rhode island") return "University of Rhode Island";
-            if (originalNameLower.includes("bates")) return "Bates College";
+            if (originalNameLower === "maastricht") return "Maastricht University";
+            if (originalNameLower === "ucsb") return "University of California, Santa Barbara";
+                if (originalNameLower.includes("bates")) return "Bates College";
             if (originalNameLower.includes("brooklyn college")) return "Brooklyn College";
             if (originalNameLower.includes("yale")) return "Yale University";
             if (originalNameLower.includes("arizona state university")) return "Arizona State University";
