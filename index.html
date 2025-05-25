@@ -3,7 +3,6 @@
 
     <script src="collegeCoordsAndInfo.js"></script>
     <script src="majorToAreaMapping.js"></script>
-    <script src="rawData.js"></script>
     <script src="normalizeCollegeName.js"></script>
      <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,6 +12,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEST+m Senior College Destinations Map 🦅</title>
     <style>
+
+    
+
+/* when the panel is collapsed, go back to the very corner */
+body .panel-desktop-hidden ~ .hamburger {
+  left: .75rem;
+}
+
+.list-content li .social-icon-link svg,
+.info-window-content .social-icon-link svg {
+    width: 16px; /* Small size */
+    height: 16px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+.list-content li .social-icon-link {
+    text-decoration: none; /* Remove underline from link */
+}
+
+/* New Grad Class Info Box Styling */
+#zoomed-grad-class-info {
+    padding: 8px 12px;
+    margin-bottom: 12px; /* Space below this box, before bio */
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.05em;
+    border: 1px solid #ddd; /* Light mode border */
+    background-color: #111; /* Dark background for light mode */
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#zoomed-grad-class-info .grad-class-label {
+    font-weight: bold;
+    color: #f0f0f0; /* Light text for light mode (on dark background) */
+    margin-right: 6px;
+    transition: color 0.3s;
+}
+
+#zoomed-grad-class-info #zoomed-grad-class-value {
+    font-weight: bold;
+    /* Color will be set by JS using gradClassColors */
+}
+
+/* Dark Mode for Grad Class Info Box */
+body.dark-mode #zoomed-grad-class-info {
+    background-color: #f8f9fa; /* Light background for dark mode */
+    border-color: #555;
+}
+
+body.dark-mode #zoomed-grad-class-info .grad-class-label {
+    color: #222; /* Dark text for dark mode (on light background) */
+}
+
+/* Zoomed Info Panel for Senior Photo */
+#zoomed-info-panel {
+    position: fixed;
+    right: 100px; /* Stays the same, ensures clearance from right arrow */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 500px; /* MODIFIED: Increased width from 280px */
+    max-height: 80vh;
+    overflow-y: auto;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #333;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 2020;
+    font-size: 0.9em;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, right .25s ease, width .25s ease; /* ADDED width to transition */
+}
+#zoomed-bio-caption-content {
+    margin-top: 0;
+    margin-bottom: 12px;
+    white-space: pre-wrap; /* Respect line breaks in the caption */
+}
+
+#zoomed-social-links-container a {
+    margin-right: 10px; /* Spacing between social icons */
+    text-decoration: none;
+    display: inline-block; /* Allows margin to work properly */
+}
+#zoomed-social-links-container svg {
+    width: 28px; /* Medium size */
+    height: 28px;
+    vertical-align: middle;
+}
+
+body.dark-mode #zoomed-info-panel {
+    background-color: rgba(40, 40, 40, 0.95); /* Darker background for dark mode */
+    color: #e0e0e0;
+    border-color: #555;
+}
+
+
+/* Ensure the main bottom caption is hidden when zoomed info panel is active */
+#senior-photo-popup.zoomed-state.with-side-panel p#senior-photo-caption {
+    display: none !important;
+}
+
 
     /* Credits Section Styling */
     #credits {
@@ -156,10 +257,10 @@
     /* HAMBURGER MENU ICON (Visible on all screen sizes) */
      /* HAMBURGER MENU ICON (Visible on all screen sizes) */
     /* HAMBURGER MENU ICON (Visible on all screen sizes) */
-   .hamburger{
+      .hamburger{
     position: absolute;
     top: .75rem;
-    left: .75rem;           /* Default position (panel closed) */
+    left: .75rem;           /* Default position (panel closed or mobile) */
     right: auto;
     width: 44px;
     height: 44px;
@@ -174,10 +275,14 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 5px rgba(0,0,0,.1);
-    transition: background-color .3s, border-color .3s, color .3s, left .3s ease-out; /* MODIFIED: Added left to transition */
+    transition: background-color .3s, border-color .3s, color .3s, left .3s ease-out;
+    /* margin-left: calc(var(--panel-width) + 14px + 12px); */ /* REMOVED THIS LINE */
 }
 
-
+body:not(.panel-desktop-hidden) .hamburger {
+  left: .75rem !important;
+  right: auto !important;   /* just in case another rule tries to set it */
+}
 
 
 
@@ -316,40 +421,64 @@
 
     /* SENIOR PHOTO POPUP */
     #senior-photo-popup {
-        position: fixed; background-color: white; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        padding: 10px; border-radius: 5px; z-index: 2000; display: none; width: 200px;
-        transition: opacity 0.2s, transform 0.2s; opacity: 0; transform: scale(0.95);
-    }
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 2000;
+    display: none;
+    width: 200px; /* Default width, can be overridden by JS for panel-closed-desktop state */
+    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0;
+    transform: scale(0.95);
+    max-height: 75vh; /* MODIFIED: Added max-height to constrain popup height */
+    overflow-y: auto;  /* MODIFIED: Added overflow-y to enable scrollbar when content exceeds max-height */
+}
     #senior-photo-popup.visible { display: block; opacity: 1; transform: scale(1); }
     #close-senior-photo-popup { position: absolute; top: 2px; right: 5px; font-size: 18px; line-height: 1; padding: 2px 5px; z-index: 2001; pointer-events: auto; }
     #senior-photo-popup img { max-width: 100%; height: auto; border-radius: 3px; cursor: zoom-in; display: block; pointer-events: auto; }
        #senior-photo-popup img.zoomed {
-    position: fixed;
+     position: fixed;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    /* REMOVE fixed width and height */
-    /* width: 95vw; */
-    /* height: 95vh; */
-    /* USE max-width and max-height to constrain the image size */
+    left: 50%; /* Default centering */
+    transform: translate(-50%, -50%); /* Default centering */
     max-width: 95vw;
     max-height: 95vh;
     object-fit: contain;    /* Preserves aspect ratio within the max bounds */
     z-index: 2000;
-    cursor: zoom-in;
+    cursor: default; /* Changed from zoom-in as per user's existing hover style */
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     border: 2px solid white; /* Border will now be around the actual scaled image */
-    /* The background will apply if the image itself has transparency, 
-       or if it fails to load and the alt text is shown within these bounds. */
     background: #fff; 
-    transition: transform .25s ease;
+    transition: transform .25s ease, left .25s ease, max-width .25s ease; /* ADDED left and max-width to transition */
     pointer-events: auto;
 }
 
+#senior-photo-popup.with-side-panel img.zoomed {
+    /*
+      Panel width: 340px (new)
+      Panel's new right offset: 100px
+      Gap between image and panel: 20px
+      Left arrow area width (approx): 65px (15px offset + 50px width)
+      Total horizontal space NOT for image = 100px (panel right) + 340px (panel width) + 20px (gap) + 65px (left arrow) = 525px
+    */
+    max-width: calc(100vw - 525px); /* MODIFIED: Adjusted from 465px */
+    /*
+      Center the image in the available space.
+      Available space starts after the left arrow (65px).
+    */
+    left: calc(65px + ( (100vw - 525px) / 2 ) ); /* MODIFIED: Adjusted from 465px */
+    /* transform: translate(-50%, -50%); is still needed to center based on the new 'left' and 'max-width' */
+}
+
+
+
 /* Extra magnification while you hover over the zoomed photo */
 #senior-photo-popup img.zoomed:hover {
-    transform: translate(-50%, -50%) scale(1.25); /* 1.25× while hovered */
-    cursor: zoom-out;
+    /* transform: translate(-50%, -50%) scale(1.25); /* 1.25× while hovered */
+    cursor: default;
 }
 
 
@@ -527,6 +656,13 @@
 
     /* MOBILE RESPONSIVENESS & DRAWER OVERRIDES */
     @media (max-width: 768px) {
+  #trends-control .chart-container {
+        height: 300px; /* General default for all charts on mobile */
+    }
+    #trends-control .chart-container:first-child { /* Specific for Major Area Popularity chart */
+        height: 360px; /* Increased from 340px to give more vertical room for the chart + legend */
+    }
+
         #controls-and-list-container {
             /* Drawer specific styles for mobile */
             position: absolute;
@@ -552,9 +688,7 @@
         }
 
 
-        #panel-resizer {
-            display: none !important; /* Resizer is not used on mobile */
-        }
+        
 
         /* General mobile font/button size adjustments */
         .map-control h4 { font-size: 1em; }
@@ -968,12 +1102,14 @@
         let allMarkers = []; // Stores { marker: google.maps.Marker, school: SeniorChoiceData }
         let gradClassFilterState = {};
         let schoolsSelectedForZoom = new Set();
+        let zoomedGradClassInfoDiv, zoomedGradClassValueSpan; // NEW
+     let panelJustToggledOpen = false;
         let activeHoverMarkerIndex = null; // Stores originalIndex of hovered/keyboard-selected item's marker
         let seniorPhotoPopup, seniorPopupImage, seniorPopupCaption, closeSeniorPhotoBtn, zoomExitNote, photoZoomOverlay;
         let prevSeniorPhotoBtn, nextSeniorPhotoBtn; // For zoomed photo navigation
         let faqPopup, faqOverlay;
         let currentlyZoomedSeniorOriginalIndex = null; // Tracks originalIndex of the currently zoomed senior
-        let panelJustToggledOpen = false;
+       
 let panelToggleTimeout = null;
         let transitLayer;
            let currentPrimarySortTarget = 'students'; // 'students' or 'colleges'
@@ -993,6 +1129,20 @@ let currentStudentSortValue = 'grad_first'; // Default student sort
         let majorAreaChartInstance, locationFocusChartInstance, popularCollegesChartInstance;
 
 
+const LINKEDIN_SVG_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.776 13.019H3.561V9h3.552v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z";
+        const INSTAGRAM_SVG_PATH = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z";
+
+        function createSocialLinkSVG(type, size = 16, currentIsDarkMode, forZoomedPanel = false) {
+            const path = type === 'linkedin' ? LINKEDIN_SVG_PATH : INSTAGRAM_SVG_PATH;
+            let fillColor;
+            if (type === 'linkedin') {
+                fillColor = currentIsDarkMode ? (forZoomedPanel ? '#88C5F6' : '#70B4F0') : (forZoomedPanel ? '#0A66C2' : '#0077B5');
+            } else { // instagram
+                fillColor = currentIsDarkMode ? (forZoomedPanel ? '#F56040' :'#E1306C') : (forZoomedPanel ? '#E1306C' : '#C13584');
+            }
+            const marginStyle = forZoomedPanel ? 'margin: 5px;' : 'margin-left: 4px; margin-right: 1px;'; // More margin for zoomed panel
+            return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fillColor}" style="vertical-align: middle; ${marginStyle}"><path d="${path}"></path></svg>`;
+        }
         const CHART_COLORS_LIST = [
     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
     '#8A2BE2', '#5F9EA0', '#D2691E', '#FF7F50', '#6495ED', '#DC143C',
@@ -1083,78 +1233,7 @@ function getNextChartColor() {
         let allData;
         window.isDataReadyForMap = false;
 
-         try {
-            console.log("[DEBUG] Attempting to initialize seniorCollegeChoices and allData globally...");
-            seniorCollegeChoices = parseRawData(rawData);
-            if (!Array.isArray(seniorCollegeChoices)) {
-                console.error("[DEBUG] parseRawData did not return an array. Value:", seniorCollegeChoices);
-                throw new Error("Data parsing failed: seniorCollegeChoices is not an array.");
-            }
-            console.log(`[DEBUG] seniorCollegeChoices initialized. Length: ${seniorCollegeChoices.length}`);
-
-            console.log("[DEBUG] Initializing allData by mapping seniorCollegeChoices...");
-            allData = seniorCollegeChoices.map((choice, index) => {
-                if (!choice || typeof choice !== 'object') {
-                    console.error(`[DEBUG] Malformed item in seniorCollegeChoices at index ${index}:`, choice);
-                    throw new Error(`Malformed item at index ${index} in seniorCollegeChoices during allData mapping.`);
-                }
-                if (typeof choice.seniorName !== 'string' || typeof choice.gradClass !== 'string' || typeof choice.collegeName !== 'string') {
-                    console.error(`[DEBUG] Item with missing/invalid properties in seniorCollegeChoices at index ${index}:`, choice);
-                    throw new Error(`Item with missing/invalid string properties at index ${index} for allData mapping.`);
-                }
-                const majorArea = getMajorArea(choice.major);
-                return {
-                    ...choice,
-                    displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
-                    originalIndex: index,
-                    isVisible: true, // Set initial visibility; will be refined by filters
-                    majorArea: majorArea
-                };
-            });
-            console.log(`[DEBUG] allData initialized. Length: ${allData.length}`);
-
-            if (!allData || !Array.isArray(allData)) {
-                console.error("[DEBUG] allData is not a valid array after mapping.");
-                throw new Error("allData initialization failed: result is not an array.");
-            }
-            console.log(`[DEBUG] Global: allData initialized successfully with ${allData.length} items.`);
-            window.isDataReadyForMap = true;
-
-        } catch (error) {
-            console.error("CRITICAL ERROR during global data initialization:", error.message, error.stack);
-
-            // More graceful error display that doesn't destroy the body
-            // This ensures the rest of the script (including initMap definition) can try to run.
-            const criticalErrorDiv = document.createElement('div');
-            criticalErrorDiv.id = "critical-initialization-error-message";
-            criticalErrorDiv.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background-color: #ffdddd; border-bottom: 2px solid red; padding: 15px; text-align: center; z-index: 10000; color: black; font-family: sans-serif;";
-            criticalErrorDiv.innerHTML = `
-                <h2 style="margin-top:0; color: red;">Application Initialization Error</h2>
-                <p>There was a critical error while preparing the application's core data. The map functionality will be severely limited or unavailable.</p>
-                <p><strong>Error details:</strong> ${error.message}</p>
-                <p>Please check the browser's developer console for more technical information (specifically, look for errors logged *before* any 'initMap' errors).</p>`;
-
-            // Prepend to body if body exists, otherwise alert as a last resort.
-            if (document.body) {
-                document.body.prepend(criticalErrorDiv);
-            } else {
-                // This case is less likely if script is at the end of body, but good for robustness.
-                window.addEventListener('DOMContentLoaded', () => {
-                    if (document.body && !document.getElementById("critical-initialization-error-message")) {
-                        document.body.prepend(criticalErrorDiv);
-                    }
-                });
-                // Fallback alert if DOMContentLoaded doesn't work out
-                setTimeout(() => {
-                     if (!document.getElementById("critical-initialization-error-message")) {
-                        alert("CRITICAL ERROR during global data initialization: " + error.message + ". Check console.");
-                     }
-                }, 500);
-            }
-
-            window.isDataReadyForMap = false;
-            // DO NOT DO: document.body.innerHTML = ...;
-        }
+        
 
 
         function getMarkerIcon(seniorChoice, isHighlighted = false, currentIsDarkMode) {
@@ -1341,66 +1420,85 @@ function getNextChartColor() {
     }
 
 
-      function getChartJsConfigOptions(titleText, currentIsDarkMode) {
-    const gridColor = currentIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-    const ticksColor = currentIsDarkMode ? '#ccc' : '#666';
+           // ==> utils for Chart.js styling
+function getChartJsConfigOptions(
+    titleText,
+    currentIsDarkMode,
+    isMobile = false,
+    isMajorAreaChart = false
+) {
+    const gridColor   = currentIsDarkMode ? 'rgba(255, 255, 255, 0.1)'
+                                          : 'rgba(0, 0, 0, 0.1)';
+    const ticksColor  = currentIsDarkMode ? '#ccc' : '#666';
     const legendColor = currentIsDarkMode ? '#eee' : '#333';
-    const titleColor = currentIsDarkMode ? '#eee' : '#333';
+
+    /*  ─────────────────────────────────────────────────────────
+        Legend & padding logic
+    ────────────────────────────────────────────────────────── */
+
+    // Default (desktop or non-major-area chart)
+    let legendPosition     = 'top';
+    let legendAlign        = 'start';
+    let layoutPaddingTop   = 10;
+
+    // Special handling: major-area chart on mobile
+    if (isMobile && isMajorAreaChart) {
+        legendPosition   = 'bottom';     // move legend below the plot
+        legendAlign      = 'center';     // center the lines
+        layoutPaddingTop = 10;           // no extra top padding needed now
+    } else if (isMobile) {
+        // other mobile charts keep legend on top but need more air
+        layoutPaddingTop = 25;
+    }
+
+    /*  Font / box sizes get a gentle nudge down on mobile  */
+    const legendFontSize     = isMobile ? 9.5 : Chart.defaults.font.size;
+    const legendBoxWidth     = isMobile ? 9   : 12;
+    const legendItemsPadding = isMobile ? 4   : 8;
 
     return {
         responsive: true,
-        maintainAspectRatio: false, // Crucial for CSS height to take effect
+        maintainAspectRatio: false,
         layout: {
             padding: {
-                top: 10,    // Increased padding at the top for the legend
-                right: 10,   // Added some padding to the right
-                bottom: 20,  // Increased padding at the bottom for x-axis labels
-                left: 10     // Added some padding to the left for y-axis labels
+                top  : layoutPaddingTop,
+                right: isMobile ? 5  : 10,
+                bottom: isMobile ? 15 : 20,
+                left : isMobile ? 5  : 10
             }
         },
         plugins: {
             legend: {
-                position: 'top',
-                labels: {
-                    color: legendColor,
-                    boxWidth: 12, // Slightly smaller color boxes for legend items
-                    padding: 8    // Adjust padding between legend items
+                position: legendPosition,
+                align   : legendAlign,
+                labels  : {
+                    color   : legendColor,
+                    boxWidth: legendBoxWidth,
+                    padding : legendItemsPadding,
+                    font    : { size: legendFontSize }
                 }
             },
-            title: { // This is for chart title, but we use h5 externally
-                display: false, // Set to true if you want Chart.js to manage title
-                text: titleText,
-                color: titleColor,
-                font: { size: 14 }
-            },
+            // we still suppress the built-in title (h5 is used externally)
+            title: { display: false, text: titleText, font: { size: 14 } },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.parsed.y !== null) {
-                            label += context.parsed.y.toFixed(1) + '%';
-                        }
-                        return label;
+                    label: (ctx) => {
+                        let l = ctx.dataset.label ? `${ctx.dataset.label}: ` : '';
+                        if (ctx.parsed.y != null) l += `${ctx.parsed.y.toFixed(1)}%`;
+                        return l;
                     }
                 }
             }
         },
         scales: {
-            x: {
-                grid: { color: gridColor },
-                ticks: { color: ticksColor }
-            },
+            x: { grid: { color: gridColor }, ticks: { color: ticksColor } },
             y: {
                 beginAtZero: true,
-                max: 100, // For percentages
-                grid: { color: gridColor },
+                grid : { color: gridColor },
                 ticks: {
                     color: ticksColor,
                     precision: 0,
-                    callback: function(value) { return value + "%"; }
+                    callback: (v) => `${v}%`
                 }
             }
         }
@@ -1408,83 +1506,174 @@ function getNextChartColor() {
 }
 
 
-function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
-    const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
-    if (majorAreaChartInstance) majorAreaChartInstance.destroy();
-    chartColorIndex = 0; // Reset color index for this chart
+        function calculateDynamicYAxisMax(datasets) {
+            let maxValue = 0;
+            datasets.forEach(dataset => {
+                if (dataset.data && Array.isArray(dataset.data)) {
+                    dataset.data.forEach(value => {
+                        if (typeof value === 'number' && value > maxValue) {
+                            maxValue = value;
+                        }
+                    });
+                }
+            });
 
-    const datasets = majorAreasList.map(area => {
-        const areaData = years.map(year => data[year][area] || 0);
-        return {
-            label: area,
-            data: areaData,
-            borderColor: getNextChartColor(),
-            tension: 0.1,
-            fill: false
-        };
-    });
+            if (maxValue === 0) {
+                return 10; // Default max if all data is zero, to give some visual space and avoid flat line at 0
+            }
 
-    majorAreaChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: datasets
-        },
-        options: getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode)
-    });
-}
+            // Add ~20% headroom, then round up to the nearest 5
+            let yMaxWithHeadroom = maxValue * 1.2;
+            let yMax = Math.ceil(yMaxWithHeadroom / 5) * 5;
+            
+            return Math.min(100, yMax); // Cap at 100%
+        }
 
-function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
-    const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
-    if (locationFocusChartInstance) locationFocusChartInstance.destroy();
-    chartColorIndex = 0; // Reset color index
 
-    const datasets = locationFocusesList.map(focus => {
-        const focusData = years.map(year => data[year][focus] || 0);
-        return {
-            label: focus,
-            data: focusData,
-            borderColor: getNextChartColor(),
-            tension: 0.1,
-            fill: false
-        };
-    });
 
-    locationFocusChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: datasets
-        },
-        options: getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode)
-    });
-}
 
-function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
-    const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
-    if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
-    chartColorIndex = 0; // Reset color index
+        function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+            const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
+            if (majorAreaChartInstance) majorAreaChartInstance.destroy();
+            chartColorIndex = 0;
 
-    const datasets = popularCollegesList.map(college => {
-        const collegeData = years.map(year => data[year][college] || 0);
-        return {
-            label: college,
-            data: collegeData,
-            borderColor: getNextChartColor(),
-            tension: 0.1,
-            fill: false
-        };
-    });
+            const datasets = majorAreasList.map(area => { /* ... */ });
 
-    popularCollegesChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: datasets
-        },
-        options: getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode)
-    });
-}
+            const isMobile = window.innerWidth <= 768;
+            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); // true for isMajorAreaChart
+            
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            majorAreaChartInstance = new Chart(ctx, { /* ... */ options: chartOptions });
+        }
+
+        // In renderLocationFocusTrendChart:
+        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
+            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
+            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
+            chartColorIndex = 0;
+
+            const datasets = locationFocusesList.map(focus => { /* ... */ });
+
+            const isMobile = window.innerWidth <= 768;
+            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode, isMobile, false); // false for isMajorAreaChart
+
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            locationFocusChartInstance = new Chart(ctx, { /* ... */ options: chartOptions });
+        }
+
+        // In renderPopularCollegesTrendChart:
+               function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+            const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
+            if (majorAreaChartInstance) majorAreaChartInstance.destroy();
+            chartColorIndex = 0; // Reset color index for this chart
+
+            const datasets = majorAreasList.map(area => {
+                const areaData = years.map(year => data[year][area] || 0);
+                return {
+                    label: area,
+                    data: areaData,
+                    borderColor: getNextChartColor(),
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            const isMobile = window.innerWidth <= 768;
+            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); // true for isMajorAreaChart
+            
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            majorAreaChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: chartOptions
+            });
+        }
+
+        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
+            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
+            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
+            chartColorIndex = 0; // Reset color index
+
+            const datasets = locationFocusesList.map(focus => {
+                const focusData = years.map(year => data[year][focus] || 0);
+                return {
+                    label: focus,
+                    data: focusData,
+                    borderColor: getNextChartColor(),
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
+            // Ensure scales.y exists before setting max
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            locationFocusChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: chartOptions // Use the modified options
+            });
+        }
+
+        function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
+            const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
+            if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
+            chartColorIndex = 0; // Reset color index
+
+            const datasets = popularCollegesList.map(college => {
+                const collegeData = years.map(year => data[year][college] || 0);
+                return {
+                    label: college,
+                    data: collegeData,
+                    borderColor: getNextChartColor(),
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
+            // Ensure scales.y exists before setting max
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            popularCollegesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: chartOptions // Use the modified options
+            });
+        }
 
               function getMajorArea(specificMajor) {
             if (!specificMajor) return "Unknown";
@@ -1581,33 +1770,28 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             return "Other"; // Final fallback for single major
         }
 
-        function parseRawData(rawData) {
-            const lines = rawData.trim().split('\n');
+       function parseRawData(jsonData) { // jsonData will be the rawDataJSON array
+            if (!Array.isArray(jsonData)) {
+                console.error("Error: Input to parseRawData is not a JSON array.", jsonData);
+                return [];
+            }
+
             const rawEntries = [];
-            let currentGradClass = null;
 
-            for (const line of lines) {
-                const trimmedLine = line.trim();
-                if (trimmedLine.startsWith("Class of ")) {
-                    currentGradClass = trimmedLine.substring("Class of ".length).trim();
-                    continue;
-                }
-                if (!currentGradClass || !trimmedLine.includes(" - ") || trimmedLine === "") {
+            for (const entry of jsonData) {
+                if (!entry || typeof entry.name !== 'string' || typeof entry.classYear !== 'string' || typeof entry.college !== 'string') {
+                    console.warn("Skipping malformed entry in JSON data:", entry);
                     continue;
                 }
 
-                const parts = trimmedLine.split(" - ");
-                if (parts.length < 2) {
-                    console.warn("Skipping malformed line in rawData:", trimmedLine);
-                    continue;
-                }
-                const seniorName = parts[0].trim();
-                const collegeNameRaw = parts[1].trim();
-                let major = "Undecided Major";
-                if (parts.length > 2) {
-                    major = parts[2].trim();
-                    if (major === "") major = "Undecided Major";
-                }
+                const seniorName = entry.name.trim();
+                const collegeNameRaw = entry.college.trim();
+                const major = (entry.major && entry.major.trim() !== "") ? entry.major.trim() : "Undecided Major";
+                const gradClass = entry.classYear.trim(); // Expecting "21", "22", etc.
+                
+                const linkedInUrl = (entry.linkedin && entry.linkedin.trim() !== "") ? entry.linkedin.trim() : null;
+                const instagramUrl = (entry.instagram && entry.instagram.trim() !== "") ? entry.instagram.trim() : null;
+                const bioCaption = (entry.congratsCaption && entry.congratsCaption.trim() !== "") ? entry.congratsCaption.trim() : null;
 
                 const originalFirstName = seniorName.split(' ')[0];
 
@@ -1615,13 +1799,20 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     seniorName,
                     collegeNameRaw,
                     major,
-                    gradClass: currentGradClass,
-                    originalFirstName
+                    gradClass: `'${gradClass}`, // Add the apostrophe back for consistency with old format if needed
+                    originalFirstName,
+                    linkedInUrl,
+                    instagramUrl,
+                    bioCaption
                 });
             }
 
+            // The rest of the logic for photo filenames and creating the final 'choices' array
+            // remains similar, but it now consumes the processed 'rawEntries'.
+
             const firstNameCountsByClass = new Map();
             for (const entry of rawEntries) {
+                // gradClass already has the apostrophe from the step above
                 if (!firstNameCountsByClass.has(entry.gradClass)) {
                     firstNameCountsByClass.set(entry.gradClass, new Map());
                 }
@@ -1632,13 +1823,17 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
             const choices = [];
             for (const entry of rawEntries) {
-                const { seniorName, collegeNameRaw, major, gradClass, originalFirstName } = entry;
-                const photoYear = gradClass.replace("'", "");
+                const { seniorName, collegeNameRaw, major, gradClass, originalFirstName, linkedInUrl, instagramUrl, bioCaption } = entry;
+                
+                // gradClass here is like "'21"
+                const photoYear = gradClass.replace("'", ""); // Results in "21"
                 let photoFilename;
 
                 const normalizedFirstNameForLookup = normalizeForFilename(originalFirstName.split(' ')[0]);
 
-                if (firstNameCountsByClass.get(gradClass).get(normalizedFirstNameForLookup) > 1) {
+                // Ensure gradClass used for map lookup is the one with the apostrophe
+                const classCountsMap = firstNameCountsByClass.get(gradClass);
+                if (classCountsMap && classCountsMap.get(normalizedFirstNameForLookup) > 1) {
                     photoFilename = normalizeForFilename(seniorName);
                 } else {
                     photoFilename = normalizedFirstNameForLookup;
@@ -1663,7 +1858,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                 choices.push({
                     seniorName: seniorName,
-                    gradClass: gradClass,
+                    gradClass: gradClass, // Already in format like "'21"
                     collegeName: finalCollegeName,
                     collegeKey: normalizedNameKey,
                     collegeNameRaw: collegeNameRaw,
@@ -1678,6 +1873,9 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     stateOrCountry: collegeDetails.stateOrCountry,
                     seniorPhotoUrl: `${seniorPhotoUrlBase}.jpg`,
                     seniorPhotoUrlPng: `${seniorPhotoUrlBase}.png`,
+                    linkedInUrl: linkedInUrl,
+                    instagramUrl: instagramUrl,
+                    bioCaption: bioCaption,
                 });
             }
             return choices;
@@ -1959,7 +2157,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
                  return Array.from(listUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'))
                             .filter(li => li.style.display !== 'none' && !li.classList.contains('college-group-header'));
-            }
+            } 
             // For grouped list view (primary sort target is 'colleges' and not gallery)
             else {
                 const items = [];
@@ -2184,173 +2382,213 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
         }
 
-        function showSeniorPhotoPopup(listItem, schoolData) {
-    if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
-        console.error("[DEBUG] Senior photo popup elements not initialized properly.");
-        return;
-    }
-    currentlyZoomedSeniorOriginalIndex = schoolData.originalIndex;
+                      function showSeniorPhotoPopup(listItem, schoolData) {
+         if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
+             console.error("[DEBUG] Senior photo popup elements not initialized properly.");
+             return;
+         }
+         currentlyZoomedSeniorOriginalIndex = schoolData.originalIndex;
 
-    seniorPopupImage.style.display = 'block';
-    seniorPopupImage.src = schoolData.seniorPhotoUrl;
+         seniorPopupImage.style.display = 'block';
+         seniorPopupImage.src = schoolData.seniorPhotoUrl;
 
-    seniorPopupImage.onerror = function() {
-        this.src = schoolData.seniorPhotoUrlPng;
-        this.onerror = function() {
-            if (schoolData.collegeImageUrl && schoolData.collegeImageUrl !== 'x' && !schoolData.collegeImageUrl.startsWith('placeholder')) {
-                this.src = schoolData.collegeImageUrl;
-                this.onerror = function() {
-                    this.style.display = 'none';
-                    this.onerror = null;
-                };
-            } else {
-                this.style.display = 'none';
-                this.onerror = null;
-            }
-        };
-    };
+         seniorPopupImage.onerror = function() {
+             this.src = schoolData.seniorPhotoUrlPng;
+             this.onerror = function() {
+                 if (schoolData.collegeImageUrl && schoolData.collegeImageUrl !== 'x' && !schoolData.collegeImageUrl.startsWith('placeholder')) {
+                     this.src = schoolData.collegeImageUrl;
+                     this.onerror = function() {
+                         this.style.display = 'none';
+                         this.onerror = null;
+                     };
+                 } else {
+                     this.style.display = 'none';
+                     this.onerror = null;
+                 }
+             };
+         };
 
-    seniorPopupImage.alt = `${schoolData.seniorName}'s Photo / ${schoolData.collegeName} Logo`;
-    seniorPopupCaption.textContent = `Congrats, ${schoolData.seniorName}!`;
-    // seniorPhotoPopup.classList.add('visible'); // Add this at the end after positioning
+         seniorPopupImage.alt = `${schoolData.seniorName}'s Photo / ${schoolData.collegeName} Logo`;
 
-    const controlsPanel = document.getElementById('controls-and-list-container');
-    const isDesktopView = window.innerWidth > 768;
-    const isPanelClosedDesktop = isDesktopView && controlsPanel.classList.contains('panel-desktop-hidden');
-
-    let popupFinalWidth, popupLeft, popupTop;
-
-    if (isPanelClosedDesktop) {
-        // Panel is closed on desktop: Make popup larger and position it in the top-left area
-        popupFinalWidth = 350; // Desired larger width
-        seniorPhotoPopup.style.width = `${popupFinalWidth}px`;
-        seniorPopupImage.style.maxHeight = '450px'; // Allow image to be taller
-
-        popupLeft = 20; // px from left edge of viewport
-        popupTop = 70;  // px from top edge of viewport (e.g., below where hamburger might be)
-
-        // Ensure it doesn't go off-screen (basic checks)
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        // Calculate actual height after image potentially loads/resizes
-        // For simplicity, we'll position first, then check if it needs adjustment, though this can cause a flicker.
-        // A better way would be to measure image/content once loaded if exact fitting is needed.
-        
-        // Temporarily make it visible to measure offsetHeight if needed, then hide if calculation fails
-        // Or, set a reasonable max-height on the popup itself for this mode.
-        // Let's assume the image's max-height constraint is sufficient for now.
-
-        if (popupLeft + popupFinalWidth > viewportWidth - 10) {
-            popupLeft = Math.max(10, viewportWidth - popupFinalWidth - 10);
-        }
-         // Approximate height for check, actual height depends on image aspect ratio up to maxHeight
-        let approxPopupHeight = Math.min(seniorPopupImage.naturalHeight || 450, 450) + (seniorPopupCaption.offsetHeight || 20) + 20; // content + padding
-
-        if (popupTop + approxPopupHeight > viewportHeight - 10) {
-            popupTop = Math.max(10, viewportHeight - approxPopupHeight - 10);
-        }
-        popupTop = Math.max(10, popupTop); // Ensure it's not off the top
-
-    } else {
-        // Panel is open, or mobile view: Use existing logic
-        seniorPhotoPopup.style.width = '200px'; // Reset to default width
-        seniorPopupImage.style.maxHeight = '';   // Reset image max-height to CSS default
-
-        popupFinalWidth = seniorPhotoPopup.offsetWidth; // Get actual width for positioning
-        let popupCurrentHeight = seniorPhotoPopup.offsetHeight; // Get actual height
-        
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const marginFromPanel = 15;
-        const paddingFromViewportEdge = 10;
-
-        const leftPanelRect = controlsPanel.getBoundingClientRect();
-
-        if (listItem) {
-            const listItemRect = listItem.getBoundingClientRect();
-            popupTop = listItemRect.top;
-        } else {
-            popupTop = (viewportHeight - popupCurrentHeight) / 2;
-        }
-
-        popupTop = Math.max(paddingFromViewportEdge, popupTop);
-        if (popupTop + popupCurrentHeight > viewportHeight - paddingFromViewportEdge) {
-            popupTop = viewportHeight - popupCurrentHeight - paddingFromViewportEdge;
-        }
-        popupTop = Math.max(paddingFromViewportEdge, popupTop);
-
-        popupLeft = leftPanelRect.right + marginFromPanel;
-
-        if ((popupLeft + popupFinalWidth > viewportWidth - paddingFromViewportEdge) ||
-            (leftPanelRect.width > viewportWidth * 0.6 && leftPanelRect.left < viewportWidth / 2)) {
-            popupLeft = leftPanelRect.left - popupFinalWidth - marginFromPanel;
-            if (popupLeft < paddingFromViewportEdge || leftPanelRect.width >= viewportWidth - (2 * paddingFromViewportEdge)) {
-                const mapElement = document.getElementById('map');
-                if (mapElement && mapElement.offsetWidth > popupFinalWidth / 2) {
-                    popupLeft = leftPanelRect.right + marginFromPanel;
-                    if (popupLeft + popupFinalWidth > viewportWidth - paddingFromViewportEdge) {
-                        const mapRect = mapElement.getBoundingClientRect();
-                        popupLeft = mapRect.left + (mapRect.width - popupFinalWidth) / 2;
-                    }
-                } else {
-                    popupLeft = (viewportWidth - popupFinalWidth) / 2;
-                }
-            }
-        }
-        popupLeft = Math.max(paddingFromViewportEdge, popupLeft);
-        popupLeft = Math.min(popupLeft, viewportWidth - popupFinalWidth - paddingFromViewportEdge);
-    }
-
-    seniorPhotoPopup.style.left = `${popupLeft}px`;
-    seniorPhotoPopup.style.top = `${popupTop}px`;
-    seniorPhotoPopup.classList.add('visible');
-}
-
-        function exitZoomMode(hideSmallPopupAfter = true) {
-            if (!seniorPhotoPopup || !seniorPopupImage) return;
-
-            const parentPopup = seniorPhotoPopup;
-             if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'none';
-             if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'none';
-             parentPopup.classList.remove('zoomed-state');
+         const isImageFullyZoomed = seniorPopupImage && seniorPopupImage.classList.contains('zoomed');
+         const isPopupContainerInZoomedState = seniorPhotoPopup && seniorPhotoPopup.classList.contains('zoomed-state');
+         const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
+         const zoomedBioCaptionEl = document.getElementById('zoomed-bio-caption-content');
+         const zoomedSocialLinksEl = document.getElementById('zoomed-social-links-container');
+         // --- Ensure new global vars are accessible or re-fetch if needed (though global should be fine) ---
+         // const zoomedGradClassInfoDiv = document.getElementById('zoomed-grad-class-info'); 
+         // const zoomedGradClassValueSpan = document.getElementById('zoomed-grad-class-value');
 
 
-            if (seniorPopupImage.classList.contains('zoomed')) {
-                seniorPopupImage.classList.remove('zoomed');
+         if (isImageFullyZoomed && isPopupContainerInZoomedState && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
+             // Mode: Image is fully zoomed, update side panel caption
+             
+             // --- NEW: Populate Graduating Class Info ---
+             if (zoomedGradClassInfoDiv && zoomedGradClassValueSpan) {
+                 zoomedGradClassValueSpan.textContent = schoolData.gradClass;
+                 zoomedGradClassValueSpan.style.color = gradClassColors[schoolData.gradClass] || (isDarkMode ? '#EEE' : '#111'); // Fallback color
+                 zoomedGradClassInfoDiv.style.display = 'block';
+             }
+             // --- END NEW ---
 
-                if (photoZoomOverlay) photoZoomOverlay.style.display = 'none';
-                if (zoomExitNote) zoomExitNote.style.display = 'none';
+             zoomedBioCaptionEl.innerHTML = schoolData.bioCaption || `Congrats, ${schoolData.seniorName}!`;
 
-                parentPopup.style.transform = parentPopup.dataset.originalTransform || '';
-                parentPopup.style.left = parentPopup.dataset.originalLeft || '';
-                parentPopup.style.top = parentPopup.dataset.originalTop || '';
-                parentPopup.style.width = parentPopup.dataset.originalWidth || '';
-                parentPopup.style.height = parentPopup.dataset.originalHeight || '';
-                parentPopup.style.backgroundColor = parentPopup.dataset.originalBg || '';
-                parentPopup.style.border = parentPopup.dataset.originalBorder || '';
-                parentPopup.style.boxShadow = parentPopup.dataset.originalBoxShadow || '';
-                parentPopup.style.padding = parentPopup.dataset.originalPadding || '';
-                parentPopup.style.pointerEvents = parentPopup.dataset.originalPointerEvents || 'auto';
+             zoomedSocialLinksEl.innerHTML = ''; 
+             if (schoolData.linkedInUrl) { 
+                 const liLink = document.createElement('a');
+                 liLink.href = schoolData.linkedInUrl;
+                 liLink.target = "_blank";
+                 liLink.title = "LinkedIn Profile";
+                 liLink.innerHTML = createSocialLinkSVG('linkedin', 28, isDarkMode, true);
+                 zoomedSocialLinksEl.appendChild(liLink);
+             }
+             if (schoolData.instagramUrl) { 
+                 const igLink = document.createElement('a');
+                 igLink.href = schoolData.instagramUrl;
+                 igLink.target = "_blank";
+                 igLink.title = "Instagram Profile";
+                 igLink.innerHTML = createSocialLinkSVG('instagram', 28, isDarkMode, true);
+                 zoomedSocialLinksEl.appendChild(igLink);
+             }
 
-                delete parentPopup.dataset.originalTransform;
-                delete parentPopup.dataset.originalLeft;
-                delete parentPopup.dataset.originalTop;
-                delete parentPopup.dataset.originalWidth;
-                delete parentPopup.dataset.originalHeight;
-                delete parentPopup.dataset.originalBg;
-                delete parentPopup.dataset.originalBorder;
-                delete parentPopup.dataset.originalBoxShadow;
-                delete parentPopup.dataset.originalPadding;
-                delete parentPopup.dataset.originalPointerEvents;
+             zoomedInfoPanel.style.display = 'block';
+             seniorPhotoPopup.classList.add('with-side-panel');
+             if (seniorPopupCaption) seniorPopupCaption.style.display = 'none'; 
+
+         } else {
+             // Mode: Small hover/click popup
+             if (schoolData.bioCaption && schoolData.bioCaption.trim() !== "") {
+                 seniorPopupCaption.innerHTML = schoolData.bioCaption;
+             } else {
+                 seniorPopupCaption.textContent = `Congrats, ${schoolData.seniorName}!`;
+             }
+             if (seniorPopupCaption) seniorPopupCaption.style.display = ''; 
+
+             if (zoomedInfoPanel) zoomedInfoPanel.style.display = 'none'; 
+             // --- NEW: Hide Graduating Class Info for small popup ---
+             if (zoomedGradClassInfoDiv) zoomedGradClassInfoDiv.style.display = 'none';
+             // --- END NEW ---
+             seniorPhotoPopup.classList.remove('with-side-panel'); 
+         }
 
 
-                if (hideSmallPopupAfter) {
-                     hideSeniorPhotoPopup();
-                }
-            } else if (hideSmallPopupAfter) {
-                hideSeniorPhotoPopup();
-            }
-        }
+         const controlsPanel = document.getElementById('controls-and-list-container');
+         const isDesktopView = window.innerWidth > 768;
+         const isPanelClosedDesktop = isDesktopView && controlsPanel.classList.contains('panel-desktop-hidden');
+
+         let popupFinalWidth, popupLeft, popupTop;
+
+         if (isPanelClosedDesktop && !(isImageFullyZoomed && isPopupContainerInZoomedState) ) { 
+             popupFinalWidth = 350;
+             seniorPhotoPopup.style.width = `${popupFinalWidth}px`;
+             seniorPopupImage.style.maxHeight = '450px';
+             popupLeft = 20;
+             popupTop = 70;
+              if (popupLeft + popupFinalWidth > window.innerWidth - 10) {
+                 popupLeft = Math.max(10, window.innerWidth - popupFinalWidth - 10);
+             }
+             let approxPopupHeight = Math.min(seniorPopupImage.naturalHeight || 450, 450) + (seniorPopupCaption.offsetHeight || 20) + 20;
+             if (popupTop + approxPopupHeight > window.innerHeight - 10) {
+                 popupTop = Math.max(10, window.innerHeight - approxPopupHeight - 10);
+             }
+             popupTop = Math.max(10, popupTop);
+
+
+         } else if (!(isImageFullyZoomed && isPopupContainerInZoomedState)) { 
+             seniorPhotoPopup.style.width = '200px';
+             seniorPopupImage.style.maxHeight = '';
+             popupFinalWidth = seniorPhotoPopup.offsetWidth;
+             let popupCurrentHeight = seniorPhotoPopup.offsetHeight;
+             const viewportWidth = window.innerWidth;
+             const viewportHeight = window.innerHeight;
+             const marginFromPanel = 15;
+             const paddingFromViewportEdge = 10;
+             const leftPanelRect = controlsPanel.getBoundingClientRect();
+
+             if (listItem) {
+                 const listItemRect = listItem.getBoundingClientRect();
+                 popupTop = listItemRect.top;
+             } else {
+                 popupTop = (viewportHeight - popupCurrentHeight) / 2;
+             }
+             popupTop = Math.max(paddingFromViewportEdge, popupTop);
+             if (popupTop + popupCurrentHeight > viewportHeight - paddingFromViewportEdge) {
+                 popupTop = viewportHeight - popupCurrentHeight - paddingFromViewportEdge;
+             }
+             popupTop = Math.max(paddingFromViewportEdge, popupTop);
+             popupLeft = leftPanelRect.right + marginFromPanel;
+             if ((popupLeft + popupFinalWidth > viewportWidth - paddingFromViewportEdge) ||
+                 (leftPanelRect.width > viewportWidth * 0.6 && leftPanelRect.left < viewportWidth / 2)) {
+                 popupLeft = leftPanelRect.left - popupFinalWidth - marginFromPanel;
+                 if (popupLeft < paddingFromViewportEdge || leftPanelRect.width >= viewportWidth - (2 * paddingFromViewportEdge)) {
+                     const mapElement = document.getElementById('map');
+                     if (mapElement && mapElement.offsetWidth > popupFinalWidth / 2) {
+                         popupLeft = leftPanelRect.right + marginFromPanel;
+                         if (popupLeft + popupFinalWidth > viewportWidth - paddingFromViewportEdge) {
+                             const mapRect = mapElement.getBoundingClientRect();
+                             popupLeft = mapRect.left + (mapRect.width - popupFinalWidth) / 2;
+                         }
+                     } else {
+                         popupLeft = (viewportWidth - popupFinalWidth) / 2;
+                     }
+                 }
+             }
+             popupLeft = Math.max(paddingFromViewportEdge, popupLeft);
+             popupLeft = Math.min(popupLeft, viewportWidth - popupFinalWidth - paddingFromViewportEdge);
+         }
+
+         if (!(isImageFullyZoomed && isPopupContainerInZoomedState)) {
+              seniorPhotoPopup.style.left = `${popupLeft}px`;
+              seniorPhotoPopup.style.top = `${popupTop}px`;
+         }
+         seniorPhotoPopup.classList.add('visible');
+     }
+
+            function exitZoomMode(hideSmallPopupAfter = true) {
+         if (!seniorPhotoPopup || !seniorPopupImage) return;
+
+         const parentPopup = seniorPhotoPopup;
+          if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'none';
+          if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'none';
+          parentPopup.classList.remove('zoomed-state');
+
+           const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
+         if (zoomedInfoPanel) zoomedInfoPanel.style.display = 'none';
+         // --- NEW: Hide Graduating Class Info ---
+         if (zoomedGradClassInfoDiv) zoomedGradClassInfoDiv.style.display = 'none';
+         // --- END NEW ---
+         parentPopup.classList.remove('with-side-panel');
+
+         if (seniorPopupImage.classList.contains('zoomed')) {
+             seniorPopupImage.classList.remove('zoomed');
+
+             if (photoZoomOverlay) photoZoomOverlay.style.display = 'none';
+             if (zoomExitNote) zoomExitNote.style.display = 'none';
+
+             parentPopup.style.transform = parentPopup.dataset.originalTransform || '';
+             parentPopup.style.left = parentPopup.dataset.originalLeft || '';
+             parentPopup.style.top = parentPopup.dataset.originalTop || '';
+             parentPopup.style.width = parentPopup.dataset.originalWidth || '';
+             parentPopup.style.height = parentPopup.dataset.originalHeight || '';
+             parentPopup.style.backgroundColor = parentPopup.dataset.originalBg || '';
+             parentPopup.style.border = parentPopup.dataset.originalBorder || '';
+             parentPopup.style.boxShadow = parentPopup.dataset.originalBoxShadow || '';
+             parentPopup.style.padding = parentPopup.dataset.originalPadding || '';
+             parentPopup.style.pointerEvents = parentPopup.dataset.originalPointerEvents || 'auto';
+
+             delete parentPopup.dataset.originalTransform;
+             delete parentPopup.dataset.originalLeft;
+             // ... (rest of delete dataset properties)
+             delete parentPopup.dataset.originalPointerEvents;
+
+
+             if (hideSmallPopupAfter) {
+                  hideSeniorPhotoPopup();
+             }
+         } else if (hideSmallPopupAfter) {
+             hideSeniorPhotoPopup();
+         }
+     }
 
 
         function getHonorarySuffixHTML(rawCollegeName) {
@@ -2475,35 +2713,53 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
              }
         }
 
-        function navigateToSeniorPhoto(direction) {
-            const visibleListItems = getVisibleListItemsDOM();
-            if (visibleListItems.length === 0) return;
+               function navigateToSeniorPhoto(direction) {
+                console.log(`%c[NAV_DEBUG] NAVIGATE START (${direction}) ==================`, "color: blue; font-weight: bold;");
+            console.log(`[NAV_DEBUG] Initial currentlyZoomedSeniorOriginalIndex: ${currentlyZoomedSeniorOriginalIndex}`);
 
+
+            const visibleListItems = getVisibleListItemsDOM();
+            console.log(`[NAV_DEBUG] Found ${visibleListItems.length} visible list items.`);
+             if (visibleListItems.length > 0) {
+                // Log first few to check order (optional, can be noisy)
+                // console.log('[NAV_DEBUG] First 5 visible items (originalIndex):', visibleListItems.slice(0, 5).map(li => li.dataset.originalIndex));
+            }
+            if (visibleListItems.length === 0) {
+                 console.warn("[NAV_DEBUG] No visible list items. Navigation aborted.");
+                return;
+            }
             let currentIndexInVisibleList = -1;
             if (currentlyZoomedSeniorOriginalIndex !== null) {
                 currentIndexInVisibleList = visibleListItems.findIndex(li =>
                     parseInt(li.dataset.originalIndex) === currentlyZoomedSeniorOriginalIndex
                 );
             }
+             console.log(`[NAV_DEBUG] currentIndexInVisibleList (index in visibleListItems for current photo): ${currentIndexInVisibleList}`);
 
             let newIndexInVisibleList;
             if (currentIndexInVisibleList === -1) {
                 newIndexInVisibleList = (direction === 'next') ? 0 : visibleListItems.length - 1;
+                console.log(`[NAV_DEBUG] current index was -1, defaulting newIndexInVisibleList to: ${newIndexInVisibleList}`);
             } else {
                 if (direction === 'next') {
                     newIndexInVisibleList = (currentIndexInVisibleList + 1) % visibleListItems.length;
                 } else {
                     newIndexInVisibleList = (currentIndexInVisibleList - 1 + visibleListItems.length) % visibleListItems.length;
                 }
+                console.log(`[NAV_DEBUG] Calculated newIndexInVisibleList (0-based in visibleListItems): ${newIndexInVisibleList}`);
             }
 
             const newListItem = visibleListItems[newIndexInVisibleList];
             if (newListItem) {
                 const newOriginalIndex = parseInt(newListItem.dataset.originalIndex);
+                console.log(`[NAV_DEBUG] Target newListItem found. Its originalIndex: ${newOriginalIndex}`);
                 const newSeniorData = allData[newOriginalIndex];
 
                 if (newSeniorData) {
-                    currentlyZoomedSeniorOriginalIndex = newOriginalIndex;
+                      console.log(`[NAV_DEBUG] Navigating to senior: ${newSeniorData.seniorName} (originalIndex: ${newOriginalIndex})`);
+                    currentlyZoomedSeniorOriginalIndex = newOriginalIndex; // Keep this for tracking
+                    
+                    // Update the main zoomed image
                     seniorPopupImage.src = newSeniorData.seniorPhotoUrl;
                      seniorPopupImage.onerror = function() {
                         this.src = newSeniorData.seniorPhotoUrlPng;
@@ -2515,16 +2771,29 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                         };
                     };
                     seniorPopupImage.alt = `${newSeniorData.seniorName}'s Photo / ${newSeniorData.collegeName} Logo`;
-                    seniorPopupCaption.textContent = `Congrats, ${newSeniorData.seniorName}!`;
+                    
+                    // --- REMOVED THIS LINE ---
+                    // seniorPopupCaption.textContent = `Congrats, ${newSeniorData.seniorName}!`; 
+                    // The showSeniorPhotoPopup (called via handleListItemInteraction) will now handle caption placement.
 
                     currentListSelectionIndex = newIndexInVisibleList;
-                    updateCurrentSelectionHighlight();
+                    updateCurrentSelectionHighlight(); // Visually select in list
                     newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                     newListItem.focus();
+                     newListItem.focus(); // For keyboard accessibility
 
 
+                    // This call will trigger showSeniorPhotoPopup, which now correctly handles caption
+                    // placement based on whether the image is fully zoomed or not.
+                      console.log(`[NAV_DEBUG] Calling handleListItemInteraction for originalIndex: ${newOriginalIndex}. This should update currentlyZoomedSeniorOriginalIndex.`);
                     handleListItemInteraction({ currentTarget: newListItem, target: newListItem, ctrlKey: false, metaKey: false }, newOriginalIndex, false);
 
+                     console.log(`[NAV_DEBUG] currentlyZoomedSeniorOriginalIndex *after* handleListItemInteraction: ${currentlyZoomedSeniorOriginalIndex}`);
+                    if (currentlyZoomedSeniorOriginalIndex !== newOriginalIndex) {
+                        console.error(`[NAV_DEBUG] CRITICAL MISMATCH! Expected currentlyZoomedSeniorOriginalIndex to be ${newOriginalIndex}, but it is ${currentlyZoomedSeniorOriginalIndex}. This is the cause of skipping!`);
+                        // If this error appears, the problem is that showSeniorPhotoPopup isn't correctly setting the global, or there's an async issue.
+                    }
+
+                    // Marker highlighting logic
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                         allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                         allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
@@ -2534,8 +2803,13 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                          allMarkers[newOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                          activeHoverMarkerIndex = newOriginalIndex;
                     }
+                } else {
+                    console.warn(`[NAV_DEBUG] WARN: No senior data found for newOriginalIndex: ${newOriginalIndex}`);
                 }
+            } else {
+                console.warn(`[NAV_DEBUG] WARN: newListItem is undefined for newIndexInVisibleList: ${newIndexInVisibleList}. This might happen if visibleListItems is unexpectedly empty or index is out of bounds.`);
             }
+            console.log(`%c[NAV_DEBUG] NAVIGATE END (${direction}) ====================`, "color: blue; font-weight: bold;");
         }
 
 
@@ -2891,36 +3165,55 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
         // Helper function to create a student LI (used in both flat and grouped lists)
                        // This function is nested within rebuildSchoolListHTML
+                // Helper function to create a student LI (used in both flat and grouped lists)
         function createStudentListItem(seniorChoice) {
             const studentLi = document.createElement('li');
             const originalIndex = seniorChoice.originalIndex;
             studentLi.setAttribute('data-original-index', originalIndex);
             studentLi.setAttribute('tabindex', '0');
-            studentLi.setAttribute('title', `Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo. Shift+Click checkbox: Group Zoom.`);
+
+            // Updated title to be conditional based on gallery view
+            let liTitle = "Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo.";
+            if (isGalleryViewEnabled) {
+                liTitle += " Shift+Click checkbox: Group Zoom.";
+            }
+            studentLi.setAttribute('title', liTitle);
+
 
             const schoolCheckbox = document.createElement('input');
             schoolCheckbox.type = 'checkbox';
             schoolCheckbox.id = `school-checkbox-${originalIndex}`;
-            schoolCheckbox.setAttribute('aria-label', `Toggle visibility for ${seniorChoice.displayName}`);
-            schoolCheckbox.checked = schoolsSelectedForZoom.has(originalIndex) || seniorChoice.isVisible; // Default to checked if visible
+            schoolCheckbox.className = 'school-select-checkbox';
+            schoolCheckbox.checked = schoolsSelectedForZoom.has(originalIndex);
+            schoolCheckbox.title = `Select for Group Zoom (Shift+Click to toggle all for '${seniorChoice.collegeName}')`;
+
             schoolCheckbox.addEventListener('change', (event) => {
                 const isChecked = event.target.checked;
-                if (event.shiftKey) {
-                    event.preventDefault(); // Prevent default checkbox behavior
-                    // Toggle selection for group zoom
-                    if (isChecked && allData[originalIndex]?.isVisible) { // Only add if the item is generally visible by filters
-                        schoolsSelectedForZoom.add(originalIndex);
-                    } else {
-                        schoolsSelectedForZoom.delete(originalIndex);
-                    }
-                    zoomToSelectedSchools(); // Perform zoom
-                } else if (!isChecked) { // If not shift-key and unchecked, remove from group zoom
+                if (isChecked) {
+                    schoolsSelectedForZoom.add(originalIndex);
+                } else {
                     schoolsSelectedForZoom.delete(originalIndex);
                 }
-                // Note: Simple check/uncheck for individual visibility is handled by filters, not this checkbox directly.
-                // This checkbox primarily reflects and controls 'schoolsSelectedForZoom'.
-                // If you want it to also control 'isVisible', that would be a different logic.
+
+                if (event.shiftKey && seniorChoice.collegeName !== "Undecided") {
+                    const allStudentsAtThisCollege = allData.filter(s =>
+                        s.isVisible &&
+                        s.collegeName === seniorChoice.collegeName
+                    );
+                    allStudentsAtThisCollege.forEach(student => {
+                        const studentCheckboxInDOM = document.getElementById(`school-checkbox-${student.originalIndex}`);
+                        if (isChecked) {
+                            schoolsSelectedForZoom.add(student.originalIndex);
+                            if (studentCheckboxInDOM) studentCheckboxInDOM.checked = true;
+                        } else {
+                            schoolsSelectedForZoom.delete(student.originalIndex);
+                            if (studentCheckboxInDOM) studentCheckboxInDOM.checked = false;
+                        }
+                    });
+                    zoomToSelectedSchools();
+                }
             });
+
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'school-name';
@@ -2928,18 +3221,34 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             let studentDisplayText = `${seniorChoice.seniorName} <span style="color: ${gradClassColors[seniorChoice.gradClass] || '#ccc'}; font-weight: bold;">(${seniorChoice.gradClass})</span>`;
             const individualSuffixHtml = getHonorarySuffixHTML(seniorChoice.collegeNameRaw);
 
-            // Show "-> College Name" if in gallery view OR if sorting by students (flat list)
             if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
                 studentDisplayText += ` → ${seniorChoice.collegeName}`;
             }
-            // When currentPrimarySortTarget === 'colleges' (and not gallery), college name is in the header.
-
             studentDisplayText += ` <span class="list-item-major">(${(seniorChoice.major || 'Undecided Major')})</span>`;
-
             if (individualSuffixHtml) {
                  studentDisplayText += individualSuffixHtml;
             }
-            nameSpan.innerHTML = studentDisplayText;
+            nameSpan.innerHTML = studentDisplayText; // Set base text
+
+            // Add social media icons to nameSpan
+            if (seniorChoice.linkedInUrl) {
+                const linkedInLink = document.createElement('a');
+                linkedInLink.href = seniorChoice.linkedInUrl;
+                linkedInLink.target = "_blank";
+                linkedInLink.title = "LinkedIn Profile";
+                linkedInLink.classList.add("social-icon-link");
+                linkedInLink.innerHTML = createSocialLinkSVG('linkedin', 16, isDarkMode);
+                nameSpan.appendChild(linkedInLink);
+            }
+            if (seniorChoice.instagramUrl) {
+                const instagramLink = document.createElement('a');
+                instagramLink.href = seniorChoice.instagramUrl;
+                instagramLink.target = "_blank";
+                instagramLink.title = "Instagram Profile";
+                instagramLink.classList.add("social-icon-link");
+                instagramLink.innerHTML = createSocialLinkSVG('instagram', 16, isDarkMode);
+                nameSpan.appendChild(instagramLink);
+            }
 
             if (isGalleryViewEnabled) {
                 studentLi.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
@@ -2977,21 +3286,20 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 studentLi.appendChild(galleryPhotoDiv);
                 // nameSpan is not appended in gallery view as per original CSS (display: none !important;)
             } else { // Default List View (either flat student list or grouped under college)
-                studentLi.appendChild(schoolCheckbox);
+                // studentLi.appendChild(schoolCheckbox); // <<< THIS LINE IS REMOVED TO HIDE CHECKBOX IN LIST VIEW
                 studentLi.appendChild(nameSpan);
             }
 
-                        studentLi.addEventListener('mouseenter', (event) => {
-                if (panelJustToggledOpen) return; // ADD THIS CHECK
+            studentLi.addEventListener('mouseenter', (event) => {
+                if (panelJustToggledOpen) return;
 
-                const currentOriginalIndex = originalIndex; 
+                const currentOriginalIndex = originalIndex;
                 const schoolData = allData[currentOriginalIndex];
                 const markerInfo = allMarkers[currentOriginalIndex];
-                if (markerInfo?.marker && schoolData?.isVisible) { 
+                if (markerInfo?.marker && schoolData?.isVisible) {
                     markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
                     markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                    // Call handleListItemInteraction for hover logic which includes showing popup
-                    handleListItemInteraction(event, currentOriginalIndex, true); 
+                    handleListItemInteraction(event, currentOriginalIndex, true);
                 }
                 studentLi.classList.add('list-item-highlight');
             });
@@ -3000,7 +3308,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 const schoolData = allData[currentOriginalIndex];
                 const markerInfo = allMarkers[currentOriginalIndex];
 
-                let isKeyboardSelected = false; // Check if this item is the current keyboard-selected one
+                let isKeyboardSelected = false;
                 if (currentListSelectionIndex !== -1) {
                     const visibleLIs = getVisibleListItemsDOM();
                     if (currentListSelectionIndex < visibleLIs.length) {
@@ -3011,26 +3319,24 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     }
                 }
 
-                // Only revert icon if not keyboard selected AND not the globally active hovered marker
                 if (!isKeyboardSelected && markerInfo?.marker && schoolData && activeHoverMarkerIndex !== currentOriginalIndex) {
                     markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                     markerInfo.marker.setZIndex(null);
                 }
-                 if (!isKeyboardSelected) { // Remove hover visual style if not keyboard selected
+                 if (!isKeyboardSelected) {
                     studentLi.classList.remove('list-item-highlight');
                 }
             });
             studentLi.addEventListener('click', (event) => {
-                if (event.target.type === 'checkbox') return; // Checkbox click is handled by its own listener
+                // If a checkbox is part of the list item (e.g., in gallery view) and is clicked, let its own event handler manage it.
+                if (event.target.type === 'checkbox' && studentLi.contains(event.target)) return;
 
                 const clickedOriginalIndex = originalIndex;
-                handleListItemInteraction(event, clickedOriginalIndex, false); // false for click
+                handleListItemInteraction(event, clickedOriginalIndex, false);
 
-                // Update current keyboard selection index
                 const visibleListItems = getVisibleListItemsDOM();
                 currentListSelectionIndex = visibleListItems.findIndex(li => li === studentLi);
 
-                // Manage marker highlighting
                 if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                     allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                     allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
@@ -3038,7 +3344,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
                      allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
                      allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-                     activeHoverMarkerIndex = clickedOriginalIndex; // Set this as the active marker
+                     activeHoverMarkerIndex = clickedOriginalIndex;
                 }
                 updateCurrentSelectionHighlight();
             });
@@ -3139,6 +3445,103 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
         }
 
 
+        async function initializeApp() {
+    try {
+        const response = await fetch('jsonData.json'); // Fetch the new JSON file
+        if (!response.ok) {
+            throw new Error(`Failed to fetch jsonData.json: ${response.status} ${response.statusText}`);
+        }
+        const jsonDataFromFile = await response.json(); // Parse it
+
+        console.log("[DEBUG] Attempting to initialize seniorCollegeChoices and allData from jsonData.json...");
+        // Use jsonDataFromFile with parseRawData
+        seniorCollegeChoices = parseRawData(jsonDataFromFile);
+        
+        if (!Array.isArray(seniorCollegeChoices)) {
+            console.error("[DEBUG] parseRawData did not return an array. Value:", seniorCollegeChoices);
+            throw new Error("Data parsing failed: seniorCollegeChoices is not an array.");
+        }
+        console.log(`[DEBUG] seniorCollegeChoices initialized. Length: ${seniorCollegeChoices.length}`);
+
+        console.log("[DEBUG] Initializing allData by mapping seniorCollegeChoices...");
+        allData = seniorCollegeChoices.map((choice, index) => {
+            if (!choice || typeof choice !== 'object') {
+                console.error(`[DEBUG] Malformed item in seniorCollegeChoices at index ${index}:`, choice);
+                // Return a dummy object or skip to prevent further errors
+                return { 
+                    displayName: `Error - Malformed Data (Index ${index})`, 
+                    originalIndex: index, 
+                    isVisible: false, 
+                    majorArea: "Unknown" 
+                };
+            }
+            // Ensure essential properties exist for the mapping logic
+            if (typeof choice.seniorName !== 'string' || typeof choice.gradClass !== 'string' || typeof choice.collegeName !== 'string') {
+                console.warn(`[DEBUG] Item with missing/invalid essential string properties in seniorCollegeChoices at index ${index}. Item:`, choice);
+                return { 
+                    ...choice, 
+                    displayName: `Error - Missing Properties (Index ${index})`, 
+                    originalIndex: index, 
+                    isVisible: false,
+                    majorArea: getMajorArea(choice.major) // Attempt to get majorArea even if other fields are problematic
+                };
+            }
+            const majorArea = getMajorArea(choice.major); // getMajorArea should handle undefined major
+            return {
+                ...choice,
+                displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
+                originalIndex: index,
+                isVisible: true, 
+                majorArea: majorArea
+            };
+            // Filter out items that became problematic during mapping
+        }).filter(item => item && item.displayName && !item.displayName.startsWith("Error -")); 
+
+        console.log(`[DEBUG] allData initialized. Length: ${allData.length}`);
+
+        if (!allData || !Array.isArray(allData)) { 
+            console.error("[DEBUG] allData is not a valid array after mapping.");
+            throw new Error("allData initialization failed: result is not an array.");
+        }
+        console.log(`[DEBUG] Global: allData initialized successfully with ${allData.length} items.`);
+        window.isDataReadyForMap = true;
+
+    } catch (error) {
+        console.error("CRITICAL ERROR during application data initialization:", error.message, error.stack);
+        const criticalErrorDiv = document.createElement('div');
+        criticalErrorDiv.id = "critical-initialization-error-message";
+        criticalErrorDiv.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background-color: #ffdddd; border-bottom: 2px solid red; padding: 15px; text-align: center; z-index: 10000; color: black; font-family: sans-serif;";
+        criticalErrorDiv.innerHTML = `
+            <h2 style="margin-top:0; color: red;">Application Initialization Error</h2>
+            <p>There was a critical error while preparing the application's core data. The map functionality will be severely limited or unavailable.</p>
+            <p><strong>Error details:</strong> ${error.message}</p>
+            <p>Please check the browser's developer console for more technical information (specifically, look for errors logged *before* any 'initMap' errors).</p>`;
+        
+        // Prepend to body if body exists, otherwise alert as a last resort.
+        if (document.body) {
+            if (!document.getElementById("critical-initialization-error-message")) {
+                 document.body.prepend(criticalErrorDiv);
+            }
+        } else {
+            window.addEventListener('DOMContentLoaded', () => {
+                if (document.body && !document.getElementById("critical-initialization-error-message")) {
+                    document.body.prepend(criticalErrorDiv);
+                }
+            });
+             setTimeout(() => { // Fallback alert
+                 if (!document.getElementById("critical-initialization-error-message")) {
+                    alert("CRITICAL ERROR during application data initialization: " + error.message + ". Check console.");
+                 }
+            }, 500);
+        }
+        window.isDataReadyForMap = false;
+    }
+
+    // Call initMap AFTER data processing attempt. 
+    // initMap itself should check window.isDataReadyForMap.
+    initMap();
+}
+
                       function initMap() {
             console.log("[DEBUG] initMap function called.");
 
@@ -3187,7 +3590,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 });
 
                 const fragmentStateCountryFilters = document.createDocumentFragment();
-                sortedStateCountries.forEach(scName => {
+                                sortedStateCountries.forEach(scName => {
                     stateCountryFilterState[scName] = true; // Default to checked
 
                     const filterId = `filter-sc-${scName.replace(/\W+/g, '-')}`;
@@ -3207,13 +3610,18 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
+                    
+                    // Corrected logic for studentCountForSC:
                     const studentCountForSC = allData.filter(s => {
-                        const currentSchoolSCKey = (s.stateOrCountry && s.stateOrCountry.trim() !== "" && s.stateOrCountry !== "N/A") ? s.stateOrCountry.trim() : UNKNOWN_STATE_COUNTRY_KEY;
-                        if (s.collegeName === "Undecided") { // Count undecided under "Unknown/Not Applicable"
-                            return scName === UNKNOWN_STATE_COUNTRY_KEY;
-                        }
-                        return currentSchoolSCKey === scName;
+                        const studentActualSCKey = (s.stateOrCountry && s.stateOrCountry.trim() !== "" && s.stateOrCountry !== "N/A") 
+                                                 ? s.stateOrCountry.trim() 
+                                                 : UNKNOWN_STATE_COUNTRY_KEY;
+                        // A student 's' contributes to the count of 'scName' if their actual SC key matches scName.
+                        // This covers "Undecided" students correctly because their s.stateOrCountry will often be "N/A"
+                        // (or missing) from collegeCoordsAndInfo, leading to studentActualSCKey being UNKNOWN_STATE_COUNTRY_KEY.
+                        return studentActualSCKey === scName;
                     }).length;
+
                     label.appendChild(document.createTextNode(` ${scName} (${studentCountForSC})`));
 
                     itemDiv.appendChild(checkbox);
@@ -3305,6 +3713,10 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             zoomExitNote = document.getElementById('zoom-exit-note');
             prevSeniorPhotoBtn = document.getElementById('prev-senior-photo');
             nextSeniorPhotoBtn = document.getElementById('next-senior-photo');
+            zoomedGradClassInfoDiv = document.getElementById('zoomed-grad-class-info');
+         zoomedGradClassValueSpan = document.getElementById('zoomed-grad-class-value');
+
+         if (!zoomedGradClassInfoDiv || !zoomedGradClassValueSpan) console.error("[DEBUG] CRITICAL: Zoomed grad class info elements not found!");
 
 
             if (!seniorPopupImage) console.error("[DEBUG] CRITICAL: senior-photo-popup img element not found!");
@@ -3335,18 +3747,11 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 }
             }
 
-            if (seniorPopupImage) {
+                        if (seniorPopupImage) {
                 seniorPopupImage.addEventListener('click', function(e) {
                     if (e.target === seniorPopupImage && !this.classList.contains('zoomed')) {
                         const parentPopup = this.closest('#senior-photo-popup');
                         parentPopup.classList.add('zoomed-state');
-
-                        this.classList.add('zoomed');
-                        if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
-                        if (zoomExitNote) zoomExitNote.style.display = 'block';
-                        if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'block';
-                        if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'block';
-
 
                         parentPopup.dataset.originalTransform = getComputedStyle(parentPopup).transform;
                         parentPopup.dataset.originalLeft = parentPopup.style.left;
@@ -3366,6 +3771,60 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                         parentPopup.style.backgroundColor = 'transparent';
                         parentPopup.style.border = 'none'; parentPopup.style.boxShadow = 'none';
                         parentPopup.style.pointerEvents = 'none';
+
+                        this.style.maxWidth = '';
+                        this.style.maxHeight = '';
+
+                        if (infowindow && infowindow.getMap()) {
+                            infowindow.close();
+                        }
+                        
+                        this.classList.add('zoomed');
+                        if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
+                        if (zoomExitNote) zoomExitNote.style.display = 'block';
+                        if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'block';
+                        if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'block';
+
+                        const seniorData = allData[currentlyZoomedSeniorOriginalIndex];
+                        const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
+                        const zoomedBioCaptionEl = document.getElementById('zoomed-bio-caption-content');
+                        const zoomedSocialLinksEl = document.getElementById('zoomed-social-links-container');
+                        // Note: zoomedGradClassInfoDiv and zoomedGradClassValueSpan are global and already defined
+
+                          if (seniorData && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
+                            
+                            // --- MODIFICATION START: Populate Grad Class Info on initial zoom ---
+                            if (zoomedGradClassInfoDiv && zoomedGradClassValueSpan) {
+                                zoomedGradClassValueSpan.textContent = seniorData.gradClass;
+                                zoomedGradClassValueSpan.style.color = gradClassColors[seniorData.gradClass] || (isDarkMode ? '#EEE' : '#111'); // Fallback color
+                                zoomedGradClassInfoDiv.style.display = 'block';
+                            }
+                            // --- MODIFICATION END ---
+
+                            zoomedBioCaptionEl.innerHTML = seniorData.bioCaption || `Congrats, ${seniorData.seniorName}!`; // Default if bio is empty
+
+                             zoomedSocialLinksEl.innerHTML = ''; // Clear previous links
+                            if (seniorData.linkedInUrl) {
+                                const liLink = document.createElement('a');
+                                liLink.href = seniorData.linkedInUrl;
+                                liLink.target = "_blank";
+                                liLink.title = "LinkedIn Profile";
+                                liLink.innerHTML = createSocialLinkSVG('linkedin', 28, isDarkMode, true); 
+                                zoomedSocialLinksEl.appendChild(liLink);
+                            }
+                            if (seniorData.instagramUrl) {
+                                const igLink = document.createElement('a');
+                                igLink.href = seniorData.instagramUrl;
+                                igLink.target = "_blank";
+                                igLink.title = "Instagram Profile";
+                                igLink.innerHTML = createSocialLinkSVG('instagram', 28, isDarkMode, true); 
+                                zoomedSocialLinksEl.appendChild(igLink);
+                            }
+                            zoomedInfoPanel.style.display = 'block';
+                            
+                            if(seniorPopupCaption) seniorPopupCaption.style.display = 'none';
+                            parentPopup.classList.add('with-side-panel');
+                        }
 
                         this.style.pointerEvents = 'auto';
                         if(seniorPopupCaption) seniorPopupCaption.style.pointerEvents = 'auto';
@@ -3694,13 +4153,22 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                             contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
                             studentsAtSameCollege.forEach(student => {
                                 const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
-                                let studentEntry = `<li>`;
-                                if (student.originalIndex === clickedOriginalIndex) studentEntry += `<b>`;
-                                studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
-                                if (student.originalIndex === clickedOriginalIndex) studentEntry += `</b>`;
-                                studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
-                                studentEntry += `</li>`;
-                                contentString += studentEntry;
+                                 let studentEntry = `<li>`;
+            if (student.originalIndex === originalIndex) studentEntry += `<b>`;
+            studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
+            
+            // Add social links
+            if (student.linkedInUrl) {
+                studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
+            }
+            if (student.instagramUrl) {
+                studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
+            }
+
+            if (student.originalIndex === originalIndex) studentEntry += `</b>`;
+            studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
+            studentEntry += `</li>`;
+            contentString += studentEntry;
                             });
                             contentString += `</ul>`;
                         } else {
@@ -3851,6 +4319,14 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                  darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
                  darkModeToggle.title = isDarkMode ? 'Light Mode' : 'Dark Mode';
 
+
+                  rebuildSchoolListHTML(); 
+
+                   if (infowindow && infowindow.getMap()) {
+                    // Simple approach: close it. User can reopen.
+                    infowindow.close(); 
+                }
+
                   if (allData && allData.length > 0) { 
                     const majorAreaData = aggregateMajorAreaTrends(allData);
                     if (document.getElementById('majorAreaTrendChart') && majorAreaData.categories.length > 0) {
@@ -3975,35 +4451,46 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
             // --- End Resizer Logic ---
 
-            document.addEventListener('keydown', (event) => {
+           document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
                 if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
-                    if (event.key === 'ArrowLeft') {
-                        navigateToSeniorPhoto('prev');
-                        event.preventDefault();
-                    } else if (event.key === 'ArrowRight') {
-                        navigateToSeniorPhoto('next');
-                        event.preventDefault();
-                    } else if (event.key === 'Escape') {
-                         exitZoomMode(true);
-                         event.preventDefault();
-                    }
-                } else if (event.key === 'Escape') {
-                    if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
-                        hideSeniorPhotoPopup();
-                    } else if (infowindow && infowindow.getMap()) {
-                        infowindow.close();
-                    }
+                    exitZoomMode(true);
                     event.preventDefault();
-                } else if (document.activeElement !== schoolSearchInput && ! (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) ) {
-                    if (event.key === 'ArrowDown') {
-                        navigateList('down');
-                        event.preventDefault();
-                    } else if (event.key === 'ArrowUp') {
-                        navigateList('up');
-                        event.preventDefault();
-                    }
+                } else if (faqPopup && faqPopup.style.display !== 'none') { // Check if FAQ is visible
+                    const closeFaqFunc = () => { // Re-declare or make accessible
+                        if (faqPopup) faqPopup.style.display = 'none';
+                        if (faqOverlay) faqOverlay.style.display = 'none';
+                        // document.body.style.overflow = '';
+                    };
+                    closeFaqFunc();
+                    event.preventDefault();
+                } else if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
+                    hideSeniorPhotoPopup();
+                    event.preventDefault();
+                } else if (infowindow && infowindow.getMap()) {
+                    infowindow.close();
+                    event.preventDefault();
                 }
-            });
+            } else if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
+                if (event.key === 'ArrowLeft') {
+                    navigateToSeniorPhoto('prev');
+                    event.preventDefault();
+                } else if (event.key === 'ArrowRight') {
+                    navigateToSeniorPhoto('next');
+                    event.preventDefault();
+                }
+            } else if (document.activeElement !== schoolSearchInput && 
+                       !(faqPopup && faqPopup.style.display !== 'none') && // Don't navigate list if FAQ is open
+                       !(seniorPopupImage && seniorPopupImage.classList.contains('zoomed'))) {
+                if (event.key === 'ArrowDown') {
+                    navigateList('down');
+                    event.preventDefault();
+                } else if (event.key === 'ArrowUp') {
+                    navigateList('up');
+                    event.preventDefault();
+                }
+            }
+        });
             if (allData && allData.length > 0) {
                 const majorAreaData = aggregateMajorAreaTrends(allData);
                 if (document.getElementById('majorAreaTrendChart') && majorAreaData.categories.length > 0) {
@@ -4068,119 +4555,184 @@ const panelResizer   = document.getElementById('panel-resizer');
 
 
 function handleMenuToggle() {
-    const isMobileView = window.innerWidth <= 768;
-    const menuToggleBtn = document.getElementById('menu-toggle');
-    // panelJustToggledOpen = false; // Resetting here might be too early if a hover happens mid-transition.
-                                 // Better to reset it specifically after the timeout.
+    const isMobileView      = window.innerWidth <= 768;
+    const menuToggleBtn     = document.getElementById('menu-toggle');
+    const controlsPanelEl   = document.getElementById('controls-and-list-container');
+    const panelResizerEl    = document.getElementById('panel-resizer');
 
+    panelJustToggledOpen = false;
+    if (panelToggleTimeout) clearTimeout(panelToggleTimeout);
+
+    /* ----------  MOBILE (≤ 768 px)  ---------- */
     if (isMobileView) {
-        // Mobile behavior: Toggle overlay drawer
-        controlsPanel.classList.toggle('panel-mobile-open');
-        controlsPanel.classList.remove('panel-desktop-hidden');
-        if (panelResizer) panelResizer.classList.add('resizer-desktop-hidden'); 
+        // Toggle the slide-in drawer
+        controlsPanelEl.classList.toggle('panel-mobile-open');
+        controlsPanelEl.classList.remove('panel-desktop-hidden');
+
+        if (controlsPanelEl.classList.contains('panel-mobile-open')) {           // now OPEN
+            panelResizerEl.style.display  = 'flex';
+            panelResizerEl.style.position = 'absolute';
+            const panelWidth = controlsPanelEl.offsetWidth;
+            panelResizerEl.style.left   = `${panelWidth}px`;
+            panelResizerEl.style.top    = '0';
+            panelResizerEl.style.height = `${controlsPanelEl.offsetHeight}px`;
+            panelResizerEl.style.zIndex =
+                (parseInt(window.getComputedStyle(controlsPanelEl).zIndex) || 0) + 1;
+        } else {                                                                 // now CLOSED
+            panelResizerEl.style.display = 'none';
+        }
 
         if (menuToggleBtn) menuToggleBtn.style.left = '.75rem';
-        
-        // If popup was visible and panel is now open on mobile, ensure it's hidden.
-        if (controlsPanel.classList.contains('panel-mobile-open') && seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
+
+        // Close any open photo pop-up when drawer opens
+        if (controlsPanelEl.classList.contains('panel-mobile-open') &&
+            seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
             hideSeniorPhotoPopup();
         }
-    } else { // Desktop behavior
-        const wasPanelHidden = controlsPanel.classList.contains('panel-desktop-hidden'); // Check state *before* toggle
 
-        controlsPanel.classList.toggle('panel-desktop-hidden');
-        const isPanelNowHidden = controlsPanel.classList.contains('panel-desktop-hidden');
+    /* ----------  DESKTOP (> 768 px)  ---------- */
+    } else {
+        controlsPanelEl.classList.toggle('panel-desktop-hidden');
+        const panelIsHidden = controlsPanelEl.classList.contains('panel-desktop-hidden');
 
-        if (panelResizer) {
-            panelResizer.classList.toggle('resizer-desktop-hidden', isPanelNowHidden);
-        }
+        /* ---- Panel just CLOSED ---- */
+        if (panelIsHidden) {
+            panelResizerEl.style.display = 'none';
+            panelResizerEl.classList.add('resizer-desktop-hidden');
+            if (menuToggleBtn) menuToggleBtn.style.left = '.75rem';
 
-        if (menuToggleBtn) {
-            if (isPanelNowHidden) { // Panel just got hidden (closed)
-                menuToggleBtn.style.left = '.75rem';
-                // If a photo popup was associated with a senior and the popup was visible before closing panel,
-                // or if we want to show it based on a hovered item when closing:
-                if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') && currentlyZoomedSeniorOriginalIndex !== null) {
-                    const seniorData = allData[currentlyZoomedSeniorOriginalIndex];
-                    const listItem = document.querySelector(`.list-content li[data-original-index="${currentlyZoomedSeniorOriginalIndex}"]`);
-                    if (seniorData) {
-                         showSeniorPhotoPopup(listItem, seniorData); // Re-show to apply large styling
-                    }
-                }
-            } else { // Panel just got shown (opened) - wasPanelHidden would be true
-                menuToggleBtn.style.left = '36rem';
-                if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
-                    hideSeniorPhotoPopup();
-                    panelJustToggledOpen = true; // Set the flag
-                    if (panelToggleTimeout) clearTimeout(panelToggleTimeout);
-                    panelToggleTimeout = setTimeout(() => { panelJustToggledOpen = false; }, 300); // Reset flag after a short delay (longer than transition)
-                } else {
-                    // Ensure flag is false if popup wasn't visible to begin with when panel opened
-                    panelJustToggledOpen = false; 
-                    if (panelToggleTimeout) clearTimeout(panelToggleTimeout);
-                }
+            // If a small popup is showing, reposition it for the closed-panel state
+            if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') &&
+                currentlyZoomedSeniorOriginalIndex !== null &&
+                seniorPopupImage && !seniorPopupImage.classList.contains('zoomed')) {
+                const item = document.querySelector(
+                  `.list-content li[data-original-index="${currentlyZoomedSeniorOriginalIndex}"]`);
+                if (item) showSeniorPhotoPopup(item, allData[currentlyZoomedSeniorOriginalIndex]);
+            }
+
+        /* ---- Panel just OPENED ---- */
+        } else {
+            panelResizerEl.style.display = 'flex';
+            panelResizerEl.style.position = '';
+            panelResizerEl.style.left   = '';
+            panelResizerEl.style.top    = '';
+            panelResizerEl.style.height = '100%';
+            panelResizerEl.classList.remove('resizer-desktop-hidden');
+
+            if (menuToggleBtn) {
+                const panelWidth = controlsPanelEl.offsetWidth;
+
+                /* -------------- NEW SAFETY PATCH --------------
+                   getComputedStyle can return "auto" or "0px" before the
+                   browser repaints, so we fall back to the default 14 px. */
+                const cs = window.getComputedStyle(panelResizerEl);
+                let resizerWidth = parseFloat(cs.width);
+                if (isNaN(resizerWidth) || resizerWidth === 0) resizerWidth = 14;
+                /* --------------------------------------------- */
+
+                menuToggleBtn.style.left = `${panelWidth + resizerWidth + 12}px`;
+            }
+
+            // Hide the photo pop-up as the panel opens
+            if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
+                hideSeniorPhotoPopup();
+                panelJustToggledOpen = true;
+                panelToggleTimeout   = setTimeout(() => { panelJustToggledOpen = false; }, 300);
             }
         }
+
+        // Force a map resize once the CSS transition is done
         setTimeout(() => {
-            if (window.map && typeof google !== 'undefined' && google.maps && google.maps.event) {
+            if (window.map && google?.maps?.event) {
                 google.maps.event.trigger(window.map, 'resize');
             }
-        }, 310); 
+        }, 310); // slightly longer than the 300 ms panel transition
     }
 }
+
 
 if (menuToggleBtn && controlsPanel && panelResizer) {
     menuToggleBtn.addEventListener('click', handleMenuToggle);
 }
+function initPhotoNavArrows() {
+  if (!prevSeniorPhotoBtn.dataset.listenerAdded) {
+    prevSeniorPhotoBtn.addEventListener('click', () => navigateToSeniorPhoto('prev'));
+    prevSeniorPhotoBtn.dataset.listenerAdded = 'true';
+  }
+  if (!nextSeniorPhotoBtn.dataset.listenerAdded) {
+    nextSeniorPhotoBtn.addEventListener('click', () => navigateToSeniorPhoto('next'));
+    nextSeniorPhotoBtn.dataset.listenerAdded = 'true';
+  }
+}
+
 
 function adjustLayoutOnResize() {
     const isMobileView = window.innerWidth <= 768;
     const menuToggleBtn = document.getElementById('menu-toggle');
-    const mapDisplayPanel = document.getElementById('map'); // Get map panel
-    const controlPanel = document.getElementById('controls-and-list-container'); // Get control panel
+    const mapDisplayPanel = document.getElementById('map');
+    const controlPanel = document.getElementById('controls-and-list-container');
+    const panelResizerEl = document.getElementById('panel-resizer');
 
     if (isMobileView) {
         // Mobile specific adjustments
-        controlsPanel.classList.remove('panel-desktop-hidden'); 
-        if (panelResizer) {
-             panelResizer.classList.add('resizer-desktop-hidden'); 
+        controlPanel.classList.remove('panel-desktop-hidden'); 
+
+        if (controlPanel.classList.contains('panel-mobile-open')) {
+            panelResizerEl.style.display = 'flex'; 
+            panelResizerEl.style.position = 'absolute'; 
+            const panelWidth = controlPanel.offsetWidth;
+            panelResizerEl.style.left = `${panelWidth}px`; 
+            panelResizerEl.style.top = '0px'; 
+            panelResizerEl.style.height = controlPanel.offsetHeight + 'px'; 
+            panelResizerEl.style.zIndex = (parseInt(window.getComputedStyle(controlPanel).zIndex) || 1000) + 1; // Ensure zIndex is higher
+        } else {
+            panelResizerEl.style.display = 'none'; 
         }
+
         if (menuToggleBtn) {
-            menuToggleBtn.style.left = '.75rem'; 
+            menuToggleBtn.style.left = '.75rem'; // Hamburger ALWAYS stays top-left on mobile
+            // REMOVED the setTimeout block that was here, which moved the hamburger
+            // next to the opened mobile drawer. This ensures it stays fixed at .75rem.
         }
-        // Ensure map and panel (drawer) take full appropriate height on mobile
         if (mapDisplayPanel) mapDisplayPanel.style.height = '100%';
         if (controlPanel) {
             controlPanel.style.height = '100%';
-            controlPanel.style.width = ''; // Let CSS media query define width for drawer
+            controlPanel.style.width = ''; 
         }
 
     } else { // Desktop specific adjustments
-        if (controlsPanel.classList.contains('panel-mobile-open')) {
-            controlsPanel.classList.remove('panel-desktop-hidden'); 
-             if (panelResizer) panelResizer.classList.remove('resizer-desktop-hidden');
+        if (controlPanel.classList.contains('panel-desktop-hidden')) {
+            panelResizerEl.style.display = 'none';
+            if (panelResizerEl) panelResizerEl.classList.add('resizer-desktop-hidden'); // panelResizer typo corrected to panelResizerEl
         } else {
-             if (!controlsPanel.classList.contains('panel-desktop-hidden')) { 
-                if (panelResizer) panelResizer.classList.remove('resizer-desktop-hidden');
-             } else { 
-                if (panelResizer) panelResizer.classList.add('resizer-desktop-hidden');
-             }
+            panelResizerEl.style.display = 'flex';
+            panelResizerEl.style.position = ''; 
+            panelResizerEl.style.left = '';     
+            panelResizerEl.style.top = '';      
+            panelResizerEl.style.height = '100%';
+             if (panelResizerEl) panelResizerEl.classList.remove('resizer-desktop-hidden'); // panelResizer typo corrected to panelResizerEl
         }
-        controlsPanel.classList.remove('panel-mobile-open'); 
+
+        controlPanel.classList.remove('panel-mobile-open'); 
 
         if (menuToggleBtn) {
-            if (controlsPanel.classList.contains('panel-desktop-hidden')) {
-                menuToggleBtn.style.left = '.75rem'; 
+            if (controlPanel.classList.contains('panel-desktop-hidden')) {
+                menuToggleBtn.style.left = '.75rem';
             } else {
-                menuToggleBtn.style.left = '36rem'; 
+                const panelWidth = controlPanel.offsetWidth;
+                const resizerCurrentDisplay = window.getComputedStyle(panelResizerEl).display;
+                // Fallback for resizerWidth is 14px (its CSS default width) if it's hidden or offsetWidth is 0
+                const resizerWidth = (resizerCurrentDisplay !== 'none' && panelResizerEl.offsetWidth) ? panelResizerEl.offsetWidth : 14; 
+
+                menuToggleBtn.style.left = `${panelWidth + resizerWidth + 12}px`; 
             }
         }
-        // Ensure map and panel (sidebar) take full appropriate height on desktop
         if (mapDisplayPanel) mapDisplayPanel.style.height = '100%';
-        if (controlPanel) controlPanel.style.height = '100%';
-        // Control panel width on desktop is handled by resizer or defaults, not here.
+        if (controlPanel) {
+            controlPanel.style.height = '100%';
+        }
     }
-    
+
     setTimeout(() => {
         if (window.map && typeof google !== 'undefined' && google.maps && google.maps.event) {
             google.maps.event.trigger(window.map, 'resize');
@@ -4204,64 +4756,37 @@ function debounce(func, wait) {
 window.addEventListener('resize', debounce(adjustLayoutOnResize, 200));
 
 // Initial setup on load (can be at the end of initMap or DOMContentLoaded)
+// Initial setup on load
 document.addEventListener('DOMContentLoaded', () => {
-    // Call adjustLayoutOnResize once at the beginning to set initial state based on width
-    adjustLayoutOnResize();
+    // Defer initial layout adjustment slightly to ensure DOM dimensions are stable.
+    // setTimeout with 0ms delay pushes this to the end of the event queue,
+    // after the browser has finished its current rendering and layout pass.
+    setTimeout(() => {
+        adjustLayoutOnResize();
+        
+    }, 0);
 
-    // For the resizer mousedown, ensure it only works on desktop when panel is visible
-    if (panelResizer) {
-        panelResizer.addEventListener('mousedown', function(e) {
+    // Get element references safely within DOMContentLoaded
+    const panelResizerElement = document.getElementById('panel-resizer');
+    const controlsPanelElement = document.getElementById('controls-and-list-container');
+
+    if (panelResizerElement && controlsPanelElement) {
+        panelResizerElement.addEventListener('mousedown', function(e) {
             const isMobileView = window.innerWidth <= 768;
-            const isPanelDesktopHidden = controlsPanel.classList.contains('panel-desktop-hidden');
+            const isPanelDesktopHidden = controlsPanelElement.classList.contains('panel-desktop-hidden');
 
             if (isMobileView || isPanelDesktopHidden) {
-                return; // Don't allow resizing on mobile or if desktop panel is hidden
+                return;
             }
-             });
+            // The rest of your mousedown logic (startX, startWidth, add/remove event listeners for doDrag/stopDrag)
+            // should be here. Assuming it's correctly defined elsewhere or within this block.
+            // For brevity, not repeating the full mousedown handler from your original code.
+        });
     }
 });
 
 
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
-                    exitZoomMode(true);
-                    event.preventDefault();
-                } else if (faqPopup && faqPopup.style.display !== 'none') { // Check if FAQ is visible
-                    const closeFaqFunc = () => { // Re-declare or make accessible
-                        if (faqPopup) faqPopup.style.display = 'none';
-                        if (faqOverlay) faqOverlay.style.display = 'none';
-                        // document.body.style.overflow = '';
-                    };
-                    closeFaqFunc();
-                    event.preventDefault();
-                } else if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
-                    hideSeniorPhotoPopup();
-                    event.preventDefault();
-                } else if (infowindow && infowindow.getMap()) {
-                    infowindow.close();
-                    event.preventDefault();
-                }
-            } else if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
-                if (event.key === 'ArrowLeft') {
-                    navigateToSeniorPhoto('prev');
-                    event.preventDefault();
-                } else if (event.key === 'ArrowRight') {
-                    navigateToSeniorPhoto('next');
-                    event.preventDefault();
-                }
-            } else if (document.activeElement !== schoolSearchInput && 
-                       !(faqPopup && faqPopup.style.display !== 'none') && // Don't navigate list if FAQ is open
-                       !(seniorPopupImage && seniorPopupImage.classList.contains('zoomed'))) {
-                if (event.key === 'ArrowDown') {
-                    navigateList('down');
-                    event.preventDefault();
-                } else if (event.key === 'ArrowUp') {
-                    navigateList('up');
-                    event.preventDefault();
-                }
-            }
-        });
+        
 
         function updateCheckAllLocationFocusButtonState() {
             const checkAllBtn = document.getElementById('checkAllLocationFocusBtn');
@@ -4333,12 +4858,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initMap&onerror=gmLoadError&v=weekly"
+   <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly"
+    defer
+></script>
 
-        defer
-    ></script> <!-- IMPORTANT: Remember to replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key -->
-
+ <div id="zoomed-info-panel" style="display: none;">
+    <!-- NEW GRAD CLASS INFO BOX -->
+    <div id="zoomed-grad-class-info" style="display: none;">
+        <span class="grad-class-label">Graduating Class:</span>
+        <span id="zoomed-grad-class-value"></span>
+    </div>
+    <!-- END NEW GRAD CLASS INFO BOX -->
+    <p id="zoomed-bio-caption-content"></p>
+    <div id="zoomed-social-links-container">
+        <!-- Links will be added here by JS -->
+    </div>
+</div>
 
 </body>
 </html>
