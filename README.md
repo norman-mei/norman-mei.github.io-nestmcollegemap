@@ -80,15 +80,6 @@ gh-pages -d .
 
 ---
 
-## 🗺️ Roadmap
-
-* Import data automatically from a Google Sheet
-* Export filtered lists as CSV
-* Internationalisation (i18n)
-* Additional charts (acceptance rates, merit aid, …)
-
----
-
 ## 🤝 Contributing
 
 Pull requests and issues are welcome!  Please open an issue first to discuss major changes.
