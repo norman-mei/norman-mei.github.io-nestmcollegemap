@@ -21,7 +21,7 @@ An interactive web application that visualizes where NEST+m seniors choose to at
 ## 📁 Project Structure
 
 ```
-├─ collegemap25.html          # Main page + UI logic
+├─ index.html          # Main page + UI logic
 ├─ collegeCoordsAndInfo.js    # Coordinates & metadata for every college
 ├─ majortoareamapping.js      # Maps raw majors -> major‑area buckets
 ├─ normalizecollegename.js    # Cleans nicknames to canonical college names
@@ -42,7 +42,7 @@ An interactive web application that visualizes where NEST+m seniors choose to at
 2. **Add a Google Maps API key**
 
    * Create a key in the *Google Cloud Console* with the **Maps JavaScript API** enabled.
-   * Open `collegemap25.html` and replace the placeholder in the `<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=initializeApp">` tag.
+   * Open `index.html` and replace the placeholder in the `<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=initializeApp">` tag.
 3. **Serve the site**
    Any static HTTP server works; for example with `serve`:
 
