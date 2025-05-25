@@ -44,7 +44,7 @@ function normalizeCollegeName(name) {
             if (originalNameLower.includes("barnard")) return "Barnard College";
             if (originalNameLower.includes("ithaca")) return "Ithaca College";
             if (originalNameLower.includes("vassar")) return "Vassar College";
-            if (originalNameLower.includes("union")) return "Union College";
+            if (originalNameLower === "union") return "Union College";
             if (originalNameLower.includes("haverford")) return "Haverford College";
             if (originalNameLower === "smith") return "Smith College";
             if (originalNameLower.includes("oberlin")) return "Oberlin College";
