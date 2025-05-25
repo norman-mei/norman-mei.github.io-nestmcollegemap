@@ -21,7 +21,7 @@ An interactive web application that visualizes where NEST+m seniors choose to at
 ## 📁 Project Structure
 
 ```
-├─ index.html          # Main page + UI logic
+├─ index.html                 # Main page + UI logic
 ├─ collegeCoordsAndInfo.js    # Coordinates & metadata for every college
 ├─ majortoareamapping.js      # Maps raw majors -> major‑area buckets
 ├─ normalizecollegename.js    # Cleans nicknames to canonical college names
