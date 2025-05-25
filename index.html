@@ -13,65 +13,59 @@
     <title>NEST+m Senior College Destinations Map 🦅</title>
     <style>
 
-    
-
-/* when the panel is collapsed, go back to the very corner */
 body .panel-desktop-hidden ~ .hamburger {
   left: .75rem;
 }
 
 .list-content li .social-icon-link svg,
 .info-window-content .social-icon-link svg {
-    width: 16px; /* Small size */
+    width: 16px; 
     height: 16px;
     vertical-align: middle;
     margin-left: 4px;
 }
 .list-content li .social-icon-link {
-    text-decoration: none; /* Remove underline from link */
+    text-decoration: none; 
 }
 
-/* New Grad Class Info Box Styling */
 #zoomed-grad-class-info {
     padding: 8px 12px;
-    margin-bottom: 12px; /* Space below this box, before bio */
+    margin-bottom: 12px; 
     border-radius: 5px;
     text-align: center;
     font-size: 1.05em;
-    border: 1px solid #ddd; /* Light mode border */
-    background-color: #111; /* Dark background for light mode */
+    border: 1px solid #ddd; 
+    background-color: #111; 
     transition: background-color 0.3s, border-color 0.3s;
 }
 
 #zoomed-grad-class-info .grad-class-label {
     font-weight: bold;
-    color: #f0f0f0; /* Light text for light mode (on dark background) */
+    color: #f0f0f0; 
     margin-right: 6px;
     transition: color 0.3s;
 }
 
 #zoomed-grad-class-info #zoomed-grad-class-value {
     font-weight: bold;
-    /* Color will be set by JS using gradClassColors */
+
 }
 
-/* Dark Mode for Grad Class Info Box */
 body.dark-mode #zoomed-grad-class-info {
-    background-color: #f8f9fa; /* Light background for dark mode */
+    background-color: #f8f9fa; 
     border-color: #555;
 }
 
 body.dark-mode #zoomed-grad-class-info .grad-class-label {
-    color: #222; /* Dark text for dark mode (on light background) */
+    color: #222; 
 }
 
-/* Zoomed Info Panel for Senior Photo */
 #zoomed-info-panel {
     position: fixed;
-    right: 100px; /* Stays the same, ensures clearance from right arrow */
+    right: 100px; 
     top: 50%;
     transform: translateY(-50%);
-    width: 500px; /* MODIFIED: Increased width from 280px */
+    width: 500px; 
     max-height: 80vh;
     overflow-y: auto;
     background-color: rgba(255, 255, 255, 0.92);
@@ -83,55 +77,51 @@ body.dark-mode #zoomed-grad-class-info .grad-class-label {
     font-size: 0.9em;
     line-height: 1.5;
     border: 1px solid #ccc;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s, right .25s ease, width .25s ease; /* ADDED width to transition */
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, right .25s ease, width .25s ease; 
 }
 #zoomed-bio-caption-content {
     margin-top: 0;
     margin-bottom: 12px;
-    white-space: pre-wrap; /* Respect line breaks in the caption */
+    white-space: pre-wrap; 
 }
 
 #zoomed-social-links-container a {
-    margin-right: 10px; /* Spacing between social icons */
+    margin-right: 10px; 
     text-decoration: none;
-    display: inline-block; /* Allows margin to work properly */
+    display: inline-block; 
 }
 #zoomed-social-links-container svg {
-    width: 28px; /* Medium size */
+    width: 28px; 
     height: 28px;
     vertical-align: middle;
 }
 
 body.dark-mode #zoomed-info-panel {
-    background-color: rgba(40, 40, 40, 0.95); /* Darker background for dark mode */
+    background-color: rgba(40, 40, 40, 0.95); 
     color: #e0e0e0;
     border-color: #555;
 }
 
-
-/* Ensure the main bottom caption is hidden when zoomed info panel is active */
 #senior-photo-popup.zoomed-state.with-side-panel p#senior-photo-caption {
     display: none !important;
 }
 
-
-    /* Credits Section Styling */
     #credits {
         text-align: center;
         font-size: 0.8em;
         padding: 6px 15px;
-        margin-top: -10px; /* Sits closely under the description-control */
-        margin-bottom: 10px; /* Space before the next control */
+        margin-top: -10px; 
+        margin-bottom: 10px; 
         border-top: 1px solid #eee;
         position: relative;
-        background-color: #f8f9fa; /* Light mode panel background default */
-        color: #555; /* Subtler text color for light mode */
+        background-color: #f8f9fa; 
+        color: #555; 
         transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
     #credits a {
         text-decoration: none;
         vertical-align: middle;
-        color: #007bff; /* Standard link color for light mode */
+        color: #007bff; 
         font-weight: bold;
         transition: color 0.3s;
     }
@@ -140,7 +130,7 @@ body.dark-mode #zoomed-info-panel {
     }
     #credits svg {
         vertical-align: middle;
-        fill: currentColor; /* Inherits color from the <a> tag */
+        fill: currentColor; 
         margin-right: 3px;
     }
     body.dark-mode #credits {
@@ -191,15 +181,14 @@ body.dark-mode #zoomed-info-panel {
     }
     #map-container {
         display: flex; height: 100%; width: 100%;
-        position: relative; /* Context for absolute positioned hamburger */
+        position: relative; 
     }
 
-    /* CONTROLS PANEL / SIDEBAR / DRAWER */
     #controls-and-list-container {
-        /* Desktop Default: Visible Sidebar */
+
         width: 30%;
-        min-width: 250px; /* Minimum width it can be resized to */
-        max-width: 60%;   /* Maximum width it can be resized to */
+        min-width: 250px; 
+        max-width: 60%;   
         height: 100%;
         background-color: #f8f9fa;
         border-right: 1px solid #ccc;
@@ -208,32 +197,30 @@ body.dark-mode #zoomed-info-panel {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        position: relative; /* In normal flow on desktop by default */
-        transform: translateX(0); /* Visible by default */
+        position: relative; 
+        transform: translateX(0); 
         transition: transform 0.3s ease, background-color 0.3s, border-color 0.3s;
-        z-index: 500; /* Below hamburger if it ever overlaps */
+        z-index: 500; 
     }
 
-    /* State for when hamburger hides the panel on DESKTOP */
     #controls-and-list-container.panel-desktop-hidden{
     transform: translateX(-100%);
-    position: absolute;   /* remove from flex layout      */
-    left: 0;              /* anchor for the slide-out     */
+    position: absolute;   
+    left: 0;              
     top: 0;
     height: 100%;
 }
 
-    /* PANEL RESIZER (Desktop) */
     #panel-resizer {
         width: 14px;
         height: 100%;
         background-color: #ddd;
         cursor: col-resize;
-        z-index: 501; /* Above panel content, below hamburger */
-        display: flex; /* Visible by default on desktop */
+        z-index: 501; 
+        display: flex; 
         align-items: center;
         justify-content: center;
-        transition: background-color 0.3s, display 0s; /* Added display for smooth transition */
+        transition: background-color 0.3s, display 0s; 
     }
     #panel-resizer::before {
         content: ""; display: block; width: 4px; height: 35px;
@@ -241,26 +228,22 @@ body.dark-mode #zoomed-info-panel {
         opacity: 0.5; transition: opacity 0.3s;
     }
     #panel-resizer:hover { background-color: #bbb; }
-    /* State for when resizer is hidden because panel is hidden by hamburger on DESKTOP */
+
     #panel-resizer.resizer-desktop-hidden {
         display: none;
     }
 
-
     #map {
-        flex-grow: 1; /* Takes remaining space */
+        flex-grow: 1; 
         height: 100%;
         background-color: grey;
         position: relative;
     }
 
-    /* HAMBURGER MENU ICON (Visible on all screen sizes) */
-     /* HAMBURGER MENU ICON (Visible on all screen sizes) */
-    /* HAMBURGER MENU ICON (Visible on all screen sizes) */
       .hamburger{
     position: absolute;
     top: .75rem;
-    left: .75rem;           /* Default position (panel closed or mobile) */
+    left: .75rem;           
     right: auto;
     width: 44px;
     height: 44px;
@@ -276,17 +259,14 @@ body.dark-mode #zoomed-info-panel {
     justify-content: center;
     box-shadow: 0 2px 5px rgba(0,0,0,.1);
     transition: background-color .3s, border-color .3s, color .3s, left .3s ease-out;
-    /* margin-left: calc(var(--panel-width) + 14px + 12px); */ /* REMOVED THIS LINE */
+
 }
 
 body:not(.panel-desktop-hidden) .hamburger {
   left: .75rem !important;
-  right: auto !important;   /* just in case another rule tries to set it */
+  right: auto !important;   
 }
 
-
-
-    /* INFO WINDOW & GENERAL CONTROLS */
     .info-window-content { line-height: 1.4; max-width: 250px; }
     .info-window-content b { font-size: 1.1em; display: block; margin-bottom: 4px; }
     .info-window-content img { max-width: 100%; height: auto; display: block; margin-bottom: 8px; border-radius: 4px; border: none; }
@@ -309,12 +289,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     #description-control {
     font-size: 1.0em;
     cursor: default;
-    overflow: hidden; /* Keep an eye on this if hamburger overflows, but should be fine */
+    overflow: hidden; 
     padding: 10px 15px;
     text-align: center;
     background-color: purple;
     color: white;
-    position: relative; /* Added for hamburger positioning */
+    position: relative; 
 }
     #description-control span { display: inline-block; line-height: 28px; vertical-align: middle; }
 
@@ -392,7 +372,6 @@ body:not(.panel-desktop-hidden) .hamburger {
     #no-results-message { padding: 10px; text-align: center; font-style: italic; color: #777; display: none; }
     body.dark-mode #no-results-message { color: #aaa; }
 
-    /* GALLERY VIEW STYLES */
     .list-content.gallery-view ul { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; padding-top: 5px; }
     .list-content.gallery-view li:not(.grad-class-separator) {
         flex-direction: column; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 4px;
@@ -418,8 +397,6 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .list-content.gallery-view li .gallery-photo { border-color: #555; }
     .list-content.gallery-view li span.school-name { display: none !important; }
 
-
-    /* SENIOR PHOTO POPUP */
     #senior-photo-popup {
     position: fixed;
     background-color: white;
@@ -429,12 +406,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     border-radius: 5px;
     z-index: 2000;
     display: none;
-    width: 200px; /* Default width, can be overridden by JS for panel-closed-desktop state */
+    width: 200px; 
     transition: opacity 0.2s, transform 0.2s;
     opacity: 0;
     transform: scale(0.95);
-    max-height: 75vh; /* MODIFIED: Added max-height to constrain popup height */
-    overflow-y: auto;  /* MODIFIED: Added overflow-y to enable scrollbar when content exceeds max-height */
+    max-height: 75vh; 
+    overflow-y: auto;  
 }
     #senior-photo-popup.visible { display: block; opacity: 1; transform: scale(1); }
     #close-senior-photo-popup { position: absolute; top: 2px; right: 5px; font-size: 18px; line-height: 1; padding: 2px 5px; z-index: 2001; pointer-events: auto; }
@@ -442,45 +419,32 @@ body:not(.panel-desktop-hidden) .hamburger {
        #senior-photo-popup img.zoomed {
      position: fixed;
     top: 50%;
-    left: 50%; /* Default centering */
-    transform: translate(-50%, -50%); /* Default centering */
+    left: 50%; 
+    transform: translate(-50%, -50%); 
     max-width: 95vw;
     max-height: 95vh;
-    object-fit: contain;    /* Preserves aspect ratio within the max bounds */
+    object-fit: contain;    
     z-index: 2000;
-    cursor: default; /* Changed from zoom-in as per user's existing hover style */
+    cursor: default; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    border: 2px solid white; /* Border will now be around the actual scaled image */
+    border: 2px solid white; 
     background: #fff; 
-    transition: transform .25s ease, left .25s ease, max-width .25s ease; /* ADDED left and max-width to transition */
+    transition: transform .25s ease, left .25s ease, max-width .25s ease; 
     pointer-events: auto;
 }
 
 #senior-photo-popup.with-side-panel img.zoomed {
-    /*
-      Panel width: 340px (new)
-      Panel's new right offset: 100px
-      Gap between image and panel: 20px
-      Left arrow area width (approx): 65px (15px offset + 50px width)
-      Total horizontal space NOT for image = 100px (panel right) + 340px (panel width) + 20px (gap) + 65px (left arrow) = 525px
-    */
-    max-width: calc(100vw - 525px); /* MODIFIED: Adjusted from 465px */
-    /*
-      Center the image in the available space.
-      Available space starts after the left arrow (65px).
-    */
-    left: calc(65px + ( (100vw - 525px) / 2 ) ); /* MODIFIED: Adjusted from 465px */
-    /* transform: translate(-50%, -50%); is still needed to center based on the new 'left' and 'max-width' */
+
+    max-width: calc(100vw - 525px); 
+
+    left: calc(65px + ( (100vw - 525px) / 2 ) ); 
+
 }
 
-
-
-/* Extra magnification while you hover over the zoomed photo */
 #senior-photo-popup img.zoomed:hover {
-    /* transform: translate(-50%, -50%) scale(1.25); /* 1.25× while hovered */
+
     cursor: default;
 }
-
 
     body.dark-mode #senior-photo-popup img.zoomed { border-color: #333; background-color: #282828; }
     #senior-photo-popup p#senior-photo-caption { margin: 5px 0 0 0; font-size: 0.9em; text-align: center; pointer-events: auto; }
@@ -515,7 +479,6 @@ body:not(.panel-desktop-hidden) .hamburger {
         z-index: 2001; padding: 8px 12px; border-radius: 4px;
     }
 
-    /* COLLEGE GROUPING IN LIST */
     .college-group-header {
         font-weight: bold; padding: 6px 3px; background-color: #e9ecef;
         border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;
@@ -532,7 +495,6 @@ body:not(.panel-desktop-hidden) .hamburger {
     .student-sublist li.list-item-highlight, .student-sublist li.current-selection-highlight { background-color: #d6eaff; }
     body.dark-mode .student-sublist li.list-item-highlight, body.dark-mode .student-sublist li.current-selection-highlight { background-color: #2a3950; }
 
-    /* DARK MODE SPECIFIC STYLES (General) */
     body.dark-mode { background-color: #121212; color: #e0e0e0; }
     body.dark-mode #description-control { background-color: purple; color: white; }
     body.dark-mode #controls-and-list-container { background-color: #1a1a1a; border-right-color: #444; }
@@ -595,7 +557,6 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #zoom-exit-note .dismiss-button { color: #888;}
     body.dark-mode #zoom-exit-note .dismiss-button:hover { color: #ddd; background-color: #444; }
 
-    /* TRENDS CHARTS */
     #trends-control { font-size: 0.9em; margin-top: 10px; }
     #trends-control h4 { margin-bottom: 10px; }
     #trends-control h5 { margin-top: 0; margin-bottom: 8px; font-size: 1em; font-weight: bold; text-align: center; }
@@ -608,7 +569,6 @@ body:not(.panel-desktop-hidden) .hamburger {
     #trends-control .chart-container p { font-size: 0.8em; text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.3; color: black; }
     body.dark-mode #trends-control .chart-container p { color: #aaa; }
 
-    /* FAQ POPUP */
     #faq-overlay {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
@@ -621,17 +581,17 @@ body:not(.panel-desktop-hidden) .hamburger {
         padding: 20px; z-index: 3000; display: none; flex-direction: column;
     }
     #faq-popup h2 { margin-top: 0; margin-bottom: 15px; text-align: center; font-size: 1.5em; color: #333; }
-    #close-faq-popup { position: absolute; top: 10px; right: 15px; font-size: 24px; /* Inherits .dismiss-button styles */ }
+    #close-faq-popup { position: absolute; top: 10px; right: 15px; font-size: 24px;  }
     #faq-content { overflow-y: auto; flex-grow: 1; line-height: 1.6; padding-right: 10px; }
-    #faq-content h4 { margin-top: 15px; margin-bottom: 5px; color: #555; font-size: 1.1em; } /* Questions */
+    #faq-content h4 { margin-top: 15px; margin-bottom: 5px; color: #555; font-size: 1.1em; } 
     #faq-content h4:first-child { margin-top: 0; }
     #faq-content p,
-    #faq-content li { /* Combined rule for p and li */
+    #faq-content li { 
         margin-top: 0;
         margin-bottom: 10px;
         color: #444;
-        font-size: 0.95em; /* Answers and list items */
-        font-weight: normal; /* Explicitly set font-weight */
+        font-size: 0.95em; 
+        font-weight: normal; 
     }
     #faq-content ol {
         margin-top: 0; 
@@ -648,49 +608,41 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #faq-popup h2 { color: #e8e8e8; }
     body.dark-mode #faq-content h4 { color: #bbbec3; }
     body.dark-mode #faq-content p,
-    body.dark-mode #faq-content li { /* Combined rule for dark mode p and li */
+    body.dark-mode #faq-content li { 
         color: #afb3b8;
-        font-weight: normal; /* Explicitly set font-weight for dark mode as well */
+        font-weight: normal; 
     }
 
-
-    /* MOBILE RESPONSIVENESS & DRAWER OVERRIDES */
     @media (max-width: 768px) {
   #trends-control .chart-container {
-        height: 300px; /* General default for all charts on mobile */
+        height: 300px; 
     }
-    #trends-control .chart-container:first-child { /* Specific for Major Area Popularity chart */
-        height: 360px; /* Increased from 340px to give more vertical room for the chart + legend */
+    #trends-control .chart-container:first-child { 
+        height: 360px; 
     }
 
         #controls-and-list-container {
-            /* Drawer specific styles for mobile */
+
             position: absolute;
             inset: 0 auto 0 0;
-            width: 85%; /* Adjust width for mobile drawer */
-            max-width: 320px; /* Max width for mobile drawer */
-            transform: translateX(-100%); /* Hidden by default on mobile */
-            border-right: none; /* Overlay drawer typically doesn't have a right border */
+            width: 85%; 
+            max-width: 320px; 
+            transform: translateX(-100%); 
+            border-right: none; 
             box-shadow: 2px 0 10px rgba(0,0,0,.25);
-            z-index: 1000; /* Ensure it's above map, below hamburger */
+            z-index: 1000; 
         }
 
-        /* This class is toggled by JS for mobile drawer */
         #controls-and-list-container.panel-mobile-open {
             transform: translateX(0);
             border-top-right-radius: 12px;
             border-bottom-right-radius: 12px;
         }
 
-        /* Desktop hiding class should still work if viewport becomes mobile */
         #controls-and-list-container.panel-desktop-hidden {
-            transform: translateX(-100%) !important; /* Ensure it stays hidden */
+            transform: translateX(-100%) !important; 
         }
 
-
-        
-
-        /* General mobile font/button size adjustments */
         .map-control h4 { font-size: 1em; }
         .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
             font-size: 0.8em; padding: 4px 8px;
@@ -702,85 +654,74 @@ body:not(.panel-desktop-hidden) .hamburger {
             flex-basis: calc((100% - 1 * 10px) / 2); min-width: 120px;
         }
 
-        /* Finger-friendly list items & buttons on mobile, can be more specific */
         #controls-and-list-container button,
         #controls-and-list-container input[type="checkbox"] + label {
-            font-size: 1.0rem; /* Slightly smaller than 1.05 for general buttons if needed */
-            /* padding-block: 0.65rem; */
+            font-size: 1.0rem; 
+
         }
-        .list-content li, /* For list items */
-        .filter-item label { /* For filter labels */
+        .list-content li, 
+        .filter-item label { 
              font-size: 1.0rem;
         }
 
          #senior-photo-popup img.zoomed {
-        max-width: 85vw;  /* MODIFIED: Reduced for mobile */
-        max-height: 85vh; /* MODIFIED: Reduced for mobile */
-        /* The :hover scale can also be reduced if it's too aggressive on mobile */
+        max-width: 85vw;  
+        max-height: 85vh; 
+
     }
 
         #senior-photo-popup.zoomed-state p#senior-photo-caption {
-        bottom: 45px; /* Lower the caption slightly from 65px */
-        font-size: 0.8em; /* Make caption font smaller */
-        padding: 5px 10px; /* Reduce padding for the caption */
+        bottom: 45px; 
+        font-size: 0.8em; 
+        padding: 5px 10px; 
     }
 
     .photo-nav-arrow {
-        font-size: 1.8em;    /* Make arrow icons smaller */
-        width: 38px;       /* Reduce button size */
+        font-size: 1.8em;    
+        width: 38px;       
         height: 38px;
-        line-height: 1;    /* Adjust line height for smaller button */
-        padding: 6px;      /* Reduce padding inside arrow button */
+        line-height: 1;    
+        padding: 6px;      
     }
     .photo-nav-arrow.prev {
-        left: 8px;        /* Bring arrows slightly closer to the edge if needed */
+        left: 8px;        
     }
     .photo-nav-arrow.next {
         right: 8px;
     }
 
     #zoom-exit-note {
-        /* The "To exit zooming..." note is already at bottom: 10px. 
-           Its general font-size is controlled by .tip-message. 
-           If it still feels too large or wide on very small mobile, you could add: */
-        font-size: 0.8em; /* Optional: Further reduce font size for this specific note on mobile zoom */
-        padding: 6px 10px; /* Optional: Reduce padding */
-        /* Consider if max-width is needed if it wraps awkwardly: */
-        /* max-width: 90%; */ 
+
+        font-size: 0.8em; 
+        padding: 6px 10px; 
+
     }
 
     }
 
     @media (max-width: 480px) {
-        /* For very small screens, drawer might take full width or a bit less */
+
         #controls-and-list-container {
-             /* width: 90%; max-width: 280px; */ /* Example adjustment */
+
         }
         .list-content.gallery-view li:not(.grad-class-separator) {
             min-width: 100px;
         }
     }
 
-
-    
 </style>
-
 
 </head>
 
-
 <body>
-   
 
    <div id="map-container">
-        <!-- Hamburger button MOVED HERE, as a direct child of map-container -->
+
         <button id="menu-toggle" aria-label="Toggle list" class="hamburger">
           ☰
         </button>
         <div id="controls-and-list-container">
-            <!-- The comment "Only visible on screens ≤ 768 px" was misleading for the button's previous placement;
-                 The button itself is styled to be generally visible.
-                 The hamburger button is NO LONGER here. -->
+
             <div id="description-control" class="map-control">
                 <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
             </div>
@@ -788,13 +729,13 @@ body:not(.panel-desktop-hidden) .hamburger {
                         <div id="credits">
     <span>Created by: </span>
     <a href="https://github.com/norman-mei" target="_blank" title="GitHub Profile">
-        Norman Mei ('25) <!-- Name first -->
-        <svg height="18" viewBox="0 0 16 16" version="1.1" width="18" aria-hidden="true" style="margin-left: 4px;"> <!-- GitHub Icon, with small left margin to space from name. It will get margin-right from existing CSS -->
+        Norman Mei ('25) 
+        <svg height="18" viewBox="0 0 16 16" version="1.1" width="18" aria-hidden="true" style="margin-left: 4px;"> 
             <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
         </svg>
     </a>
-    <a href="https://www.instagram.com/normanmei_/" target="_blank" title="Instagram Profile" style="vertical-align: middle;"> <!-- Instagram icon link. Spacing will come from GitHub SVG's margin-right -->
-        <svg height="18" viewBox="0 0 24 24" width="18" aria-hidden="true"> <!-- This SVG will also get margin-right from existing CSS -->
+    <a href="https://www.instagram.com/normanmei_/" target="_blank" title="Instagram Profile" style="vertical-align: middle;"> 
+        <svg height="18" viewBox="0 0 24 24" width="18" aria-hidden="true"> 
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
         </svg>
     </a>
@@ -850,7 +791,7 @@ body:not(.panel-desktop-hidden) .hamburger {
                     </div>
                      <div style="clear: both;"></div>
                      <div id="grad-class-filters-container">
-                         {} <!-- Grad class filters will be populated here -->
+                         {} 
                      </div>
 
                       <h4 class="filter-header" style="margin-top: 15px;">Filter by State/Country</h4>
@@ -860,10 +801,10 @@ body:not(.panel-desktop-hidden) .hamburger {
                              <button id="uncheckAllStateCountryBtn" title="Uncheck all state/country filters">Uncheck All</button>
                          </div>
                          <div id="state-country-filters-container" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin-top: 5px; font-size: 0.9em;">
-                             <!-- State/Country filters will be populated here by JavaScript -->
+
                          </div>
-                     </div> <!-- Closing control-content for State/Country -->
-                 </div> <!-- Closing control-content for Grad Class -->
+                     </div> 
+                 </div> 
             </div>
             <div id="stats-table-control" class="map-control">
                 <h4>College Attendance Statistics</h4>
@@ -918,10 +859,8 @@ body:not(.panel-desktop-hidden) .hamburger {
                             </tr>
                         </tfoot>
                     </table>
-                </div> <!-- Closing control-content for Stats Table -->
+                </div> 
             </div>
-
-
 
             <div id="major-summary-control" class="map-control">
                 <h4>Major Area Summary</h4>
@@ -935,10 +874,10 @@ body:not(.panel-desktop-hidden) .hamburger {
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Rows will be populated by JavaScript -->
+
                         </tbody>
                     </table>
-                </div> <!-- Closing control-content for Major Summary -->
+                </div> 
             </div>
 
              <div id="trends-control" class="map-control">
@@ -956,11 +895,11 @@ body:not(.panel-desktop-hidden) .hamburger {
                         <h5>Top 5 Colleges By Overall Attendance (% of Grads/Year)</h5>
                         <canvas id="popularCollegesTrendChart"></canvas>
                     </div>
-                </div><!-- Closing control-content for Trends -->
+                </div>
             </div>
 
             <div id="school-list-control" class="map-control">
-                <div class="list-header-container"> <!-- This h4 is not part of the general .map-control h4 collapsibility -->
+                <div class="list-header-container"> 
                     <h4>College List & Seniors</h4>
                      <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
                     <div id="schoolSearchContainer">
@@ -986,7 +925,7 @@ body:not(.panel-desktop-hidden) .hamburger {
                             <option value="count_asc">Student Count (Least)</option>
                         </select>
                     </div>
-                    <div id="studentSortOptionsContainer" style="margin-top: 8px;"> <!-- Default shown -->
+                    <div id="studentSortOptionsContainer" style="margin-top: 8px;"> 
                         <label for="studentSortSelect" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Students by:</label>
                         <select id="studentSortSelect" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
                             <option value="grad_first" selected>Grad Class, First Name</option>
@@ -999,7 +938,7 @@ body:not(.panel-desktop-hidden) .hamburger {
 
                  <div class="list-content">
                      <div class="school-list-collapsible-content">
-                         <!-- School list ul will be populated here -->
+
                           <div id="no-results-message">No seniors match your current filters.</div>
                      </div>
                  </div>
@@ -1021,18 +960,16 @@ body:not(.panel-desktop-hidden) .hamburger {
         <span>To exit zooming, click out of the picture or press Esc.</span>
         <span class="dismiss-button" onclick="this.parentElement.style.display='none';">×</span>
     </div>
-    <!-- Overlay div for senior photo will be created and appended by JavaScript -->
 
-    <!-- FAQ Popup and Overlay -->
     <div id="faq-overlay"></div>
     <div id="faq-popup">
         <span id="close-faq-popup" class="dismiss-button" title="Close FAQ">×</span>
         <h2>Frequently Asked Questions</h2>
         <div id="faq-content">
-            
+
              <h4>Q: How can I contact you about this project / Q: How can I contribute or suggest improvements?</h4>
             <p> If you spot any bug (big or small) or want me to add a feature that hasn't been already added, please message me on Instagram: @normanmei_</p>
-            
+
             <h4>Q: How is the data collected?</h4>
             <p>A: Data is pulled / sourced all done manually from publicly available Instagram posts (e.g., "college decisions" accounts for NEST+m graduating classes) and voluntarily submitted information. All data aims to be respectful of privacy and focuses on publicly shared commitments.</p>
 
@@ -1076,58 +1013,48 @@ body:not(.panel-desktop-hidden) .hamburger {
 
             <h4>Q: How can I use the list navigation with keyboard?</h4>
             <p>A: When the list has focus (and you're not typing in the search bar), use the Up and Down arrow keys to navigate between seniors. If a senior's photo is zoomed in, use Left and Right arrow keys to navigate to the previous/next senior's photo. Press 'Escape' to close popups or zoomed photos.</p>
-            
-            
 
             <h4>Q: When at some point when you stop maintaining this project or let someone else take over?</h4>
             <p>A: Probably whenever I am in college and preferably it has someone that my school's college counselor recommended me to let them take over the project.</p>
-        
+
             <h4>Q: Is my personal information shared publicly?</h4>
 <p>A: Only your first and last name, graduating class, the school you commmited to, Instagram profile, Linked profile, and college choice are displayed. No other personal details (e.g., home address, email) are collected or shown, to respect privacy.</p>
-      
 
-        
         </div>
     </div>
-    <!-- Overlay div will be created and appended by JavaScript -->
-
-
 
      <script>
 
-        // Global Variable Declarations
         let map;
         let infowindow;
         let isDarkMode = false;
-        let allMarkers = []; // Stores { marker: google.maps.Marker, school: SeniorChoiceData }
+        let allMarkers = []; 
         let gradClassFilterState = {};
         let schoolsSelectedForZoom = new Set();
-        let zoomedGradClassInfoDiv, zoomedGradClassValueSpan; // NEW
+        let zoomedGradClassInfoDiv, zoomedGradClassValueSpan; 
      let panelJustToggledOpen = false;
-        let activeHoverMarkerIndex = null; // Stores originalIndex of hovered/keyboard-selected item's marker
+        let activeHoverMarkerIndex = null; 
         let seniorPhotoPopup, seniorPopupImage, seniorPopupCaption, closeSeniorPhotoBtn, zoomExitNote, photoZoomOverlay;
-        let prevSeniorPhotoBtn, nextSeniorPhotoBtn; // For zoomed photo navigation
+        let prevSeniorPhotoBtn, nextSeniorPhotoBtn; 
         let faqPopup, faqOverlay;
-        let currentlyZoomedSeniorOriginalIndex = null; // Tracks originalIndex of the currently zoomed senior
-       
+        let currentlyZoomedSeniorOriginalIndex = null; 
+
 let panelToggleTimeout = null;
         let transitLayer;
-           let currentPrimarySortTarget = 'students'; // 'students' or 'colleges'
-let currentCollegeSortValue = 'name_asc'; // Default college sort
-let currentStudentSortValue = 'grad_first'; // Default student sort
+           let currentPrimarySortTarget = 'students'; 
+let currentCollegeSortValue = 'name_asc'; 
+let currentStudentSortValue = 'grad_first'; 
         let isSatelliteViewEnabled = false;
         let transitLayerEnabled = false;
-        let locationFocusFilterState = {}; // Stores true/false for each location focus key
-        let majorAreaFilterState = {}; // Stores true/false for each major area key
+        let locationFocusFilterState = {}; 
+        let majorAreaFilterState = {}; 
          let stateCountryFilterState = {};
         let isGalleryViewEnabled = false;
-        let currentListSelectionIndex = -1; // Index within the *visible* list items. -1 means nothing selected
+        let currentListSelectionIndex = -1; 
 
-        // NEW: Add a global variable for the MarkerClusterer
         let markerClustererInstance;
 
         let majorAreaChartInstance, locationFocusChartInstance, popularCollegesChartInstance;
-
 
 const LINKEDIN_SVG_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.776 13.019H3.561V9h3.552v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z";
         const INSTAGRAM_SVG_PATH = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z";
@@ -1137,10 +1064,10 @@ const LINKEDIN_SVG_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852
             let fillColor;
             if (type === 'linkedin') {
                 fillColor = currentIsDarkMode ? (forZoomedPanel ? '#88C5F6' : '#70B4F0') : (forZoomedPanel ? '#0A66C2' : '#0077B5');
-            } else { // instagram
+            } else { 
                 fillColor = currentIsDarkMode ? (forZoomedPanel ? '#F56040' :'#E1306C') : (forZoomedPanel ? '#E1306C' : '#C13584');
             }
-            const marginStyle = forZoomedPanel ? 'margin: 5px;' : 'margin-left: 4px; margin-right: 1px;'; // More margin for zoomed panel
+            const marginStyle = forZoomedPanel ? 'margin: 5px;' : 'margin-left: 4px; margin-right: 1px;'; 
             return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fillColor}" style="vertical-align: middle; ${marginStyle}"><path d="${path}"></path></svg>`;
         }
         const CHART_COLORS_LIST = [
@@ -1155,30 +1082,26 @@ function getNextChartColor() {
     return color;
 }
 
-
-        // Constants - Defer Google Maps dependent constants to initMap
         let baseMarkerIcon;
         let highlightedMarkerIcon;
 
         const gradClassColors = {
-            "'21": "#AA66CC", // Purple
-            "'22": "#FF0000", // Red
-            "'23": "#99CC00", // Green
-            "'24": "#FFBB33", // Orange
-            "'25": "#007FFF"  // Blue
+            "'21": "#AA66CC", 
+            "'22": "#FF0000", 
+            "'23": "#99CC00", 
+            "'24": "#FFBB33", 
+            "'25": "#007FFF"  
         };
         const gradClassNames = Object.keys(gradClassColors);
 
-
-
         const NYC_BOUNDS = { north: 40.92, south: 40.47, west: -74.26, east: -73.70 };
                 const PREDEFINED_MAJOR_AREAS = [
-             "Engineering", "Physical Sciences", "Life Sciences", // STEM-related
+             "Engineering", "Physical Sciences", "Life Sciences", 
             "Business/Economics",
-            "Humanities", "Social Sciences",  // HSS-related
+            "Humanities", "Social Sciences",  
             "Arts/Design", "Health Sciences", "Education",
             "Undecided/Other", "Other", 
-        ].sort((a,b) => { // Sort, but keep "Undecided/Other", "Other", "Unknown" at the end
+        ].sort((a,b) => { 
             const special = ["Undecided/Other", "Other", "Unknown"];
             if (special.includes(a) && !special.includes(b)) return 1;
             if (!special.includes(a) && special.includes(b)) return -1;
@@ -1186,10 +1109,6 @@ function getNextChartColor() {
             return a.localeCompare(b);
         });
 
-
-
-
-        // Add derived properties to collegeCoordsAndInfo
         for (const collegeName in collegeCoordsAndInfo) {
             if (collegeCoordsAndInfo.hasOwnProperty(collegeName)) {
                 const properties = getCollegeProperties(collegeCoordsAndInfo[collegeName]);
@@ -1204,10 +1123,6 @@ function getNextChartColor() {
             "Undecided": TYPE_UNDECIDED,
         };
 
-
-
-
-        // Google Maps Dark Style
         const darkMapStyle = [
             { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -1233,9 +1148,6 @@ function getNextChartColor() {
         let allData;
         window.isDataReadyForMap = false;
 
-        
-
-
         function getMarkerIcon(seniorChoice, isHighlighted = false, currentIsDarkMode) {
             let displayColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
             if (seniorChoice.collegeName === "Undecided") displayColor = '#999999';
@@ -1243,45 +1155,41 @@ function getNextChartColor() {
             const currentBaseIcon = baseMarkerIcon || { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
             const currentHighlightedIcon = highlightedMarkerIcon || { ...currentBaseIcon, scale: 10, strokeWeight: 2.0 };
 
-
             const iconConfig = isHighlighted ? currentHighlightedIcon : currentBaseIcon;
             return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? '#111111' : '#ffffff' };
         }
 
                function getCollegeProperties(collegeEntry) {
             let isCampusPublic = false;
-            // Determine isCampusPublic (same as before)
+
             if ([TYPE_SUNY, TYPE_CUNY, TYPE_OTHER_PUBLIC, TYPE_PURDUE].includes(collegeEntry.type)) {
                 isCampusPublic = true;
             } else if ([TYPE_IVY_LEAGUE, TYPE_OTHER_PRIVATE].includes(collegeEntry.type)) {
                 isCampusPublic = false;
             }
-            // Ensure Purdue is always public if it's a distinct type check elsewhere
+
             if (collegeEntry.type === "Purdue University System" || collegeEntry.name === "Purdue University") isCampusPublic = true;
 
-
-            let locationFocus = "N/A"; // Default for Undecided or 0,0 coords
+            let locationFocus = "N/A"; 
             const stateOrCountryUpper = collegeEntry.stateOrCountry ? collegeEntry.stateOrCountry.trim().toUpperCase() : null;
 
             if (collegeEntry.name === "Undecided" || (collegeEntry.lat === 0 && collegeEntry.lng === 0)) {
-                // locationFocus remains "N/A" as set by default
+
             } else {
                 let isInternationallyFlagged = false;
 
-                // Explicit name checks for international campuses can override state/country logic
                 if (collegeEntry.name) {
                     const lowerName = collegeEntry.name.toLowerCase();
                     if (lowerName.includes("shanghai") || 
-                        lowerName.includes("london") || // Catches NYU London
+                        lowerName.includes("london") || 
                         lowerName.includes("edinburgh") || 
                         lowerName.includes("mcgill") ||
                         lowerName.includes("st andrews") ||
-                        lowerName.includes("maastricht university")) { // Specifically check for Maastricht
+                        lowerName.includes("maastricht university")) { 
                         isInternationallyFlagged = true;
                     }
                 }
 
-                // If not flagged by specific name, check by stateOrCountry code
                 if (!isInternationallyFlagged && stateOrCountryUpper) {
                     const US_STATES_ABBR = [
                         "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", 
@@ -1290,8 +1198,7 @@ function getNextChartColor() {
                         "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
                         "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
                     ];
-                    // If stateOrCountryUpper is not "USA" and not in the list of US states,
-                    // it's considered international.
+
                     if (stateOrCountryUpper !== "USA" && !US_STATES_ABBR.includes(stateOrCountryUpper)) {
                         isInternationallyFlagged = true;
                     }
@@ -1300,14 +1207,14 @@ function getNextChartColor() {
                 if (isInternationallyFlagged) {
                     locationFocus = "International";
                 } else {
-                    // Domestic (US) classification
+
                     if (collegeEntry.lat >= NYC_BOUNDS.south && collegeEntry.lat <= NYC_BOUNDS.north &&
                         collegeEntry.lng >= NYC_BOUNDS.west && collegeEntry.lng <= NYC_BOUNDS.east) {
                         locationFocus = "InCityNYC";
                     } else if (stateOrCountryUpper === "NY") {
                         locationFocus = "InStateNYOther";
                     } else {
-                        // This will correctly catch "CA" (California) and other US states
+
                         locationFocus = "OutOfStateUS"; 
                     }
                 }
@@ -1336,10 +1243,9 @@ function getNextChartColor() {
             return parts.length > 1 ? parts[parts.length - 1] : parts[0];
         }
 
-
     function aggregateTrendsBase(data, categoryExtractor, itemValidator, categoryFilter) {
-        const rawCounts = {}; // { 'Year': { 'Category': count, ... }, ... }
-        const studentsPerYear = {}; // { 'Year': count_of_relevant_students }
+        const rawCounts = {}; 
+        const studentsPerYear = {}; 
         const allCategories = new Set();
         const years = [...new Set(data.map(item => item.gradClass))].sort();
 
@@ -1368,7 +1274,7 @@ function getNextChartColor() {
 
         years.forEach(year => {
             const totalRelevantStudents = studentsPerYear[year];
-            allCategories.forEach(cat => { // Initialize all categories for the year
+            allCategories.forEach(cat => { 
                  trendsInPercentage[year][cat] = 0;
             });
             if (totalRelevantStudents > 0) {
@@ -1382,17 +1288,17 @@ function getNextChartColor() {
 
     function aggregateMajorAreaTrends(data) {
         return aggregateTrendsBase(data,
-            item => item.majorArea.split(' & ').map(s => s.trim()), // categoryExtractor
-            item => item.collegeName !== "Undecided", // itemValidator
-            area => area && area !== "Unknown" && area !== "Undecided/Other" // categoryFilter
+            item => item.majorArea.split(' & ').map(s => s.trim()), 
+            item => item.collegeName !== "Undecided", 
+            area => area && area !== "Unknown" && area !== "Undecided/Other" 
         );
     }
 
     function aggregateLocationFocusTrends(data) {
         return aggregateTrendsBase(data,
-            item => [item.locationFocus], // categoryExtractor
-            item => item.collegeName !== "Undecided" && item.locationFocus !== "N/A", // itemValidator
-            focus => focus // categoryFilter (all valid focuses are kept)
+            item => [item.locationFocus], 
+            item => item.collegeName !== "Undecided" && item.locationFocus !== "N/A", 
+            focus => focus 
         );
     }
 
@@ -1410,17 +1316,15 @@ function getNextChartColor() {
             .map(([name]) => name);
 
         const result = aggregateTrendsBase(data,
-            item => [item.collegeName], // categoryExtractor
-            item => item.collegeName !== "Undecided" && popularCollegesOverall.includes(item.collegeName), // itemValidator
-            collegeName => collegeName // categoryFilter
+            item => [item.collegeName], 
+            item => item.collegeName !== "Undecided" && popularCollegesOverall.includes(item.collegeName), 
+            collegeName => collegeName 
         );
-        // Ensure `categories` in result is `popularCollegesOverall` in the correct order
+
         result.categories = popularCollegesOverall;
         return result;
     }
 
-
-           // ==> utils for Chart.js styling
 function getChartJsConfigOptions(
     titleText,
     currentIsDarkMode,
@@ -1432,26 +1336,19 @@ function getChartJsConfigOptions(
     const ticksColor  = currentIsDarkMode ? '#ccc' : '#666';
     const legendColor = currentIsDarkMode ? '#eee' : '#333';
 
-    /*  ─────────────────────────────────────────────────────────
-        Legend & padding logic
-    ────────────────────────────────────────────────────────── */
-
-    // Default (desktop or non-major-area chart)
     let legendPosition     = 'top';
     let legendAlign        = 'start';
     let layoutPaddingTop   = 10;
 
-    // Special handling: major-area chart on mobile
     if (isMobile && isMajorAreaChart) {
-        legendPosition   = 'bottom';     // move legend below the plot
-        legendAlign      = 'center';     // center the lines
-        layoutPaddingTop = 10;           // no extra top padding needed now
+        legendPosition   = 'bottom';     
+        legendAlign      = 'center';     
+        layoutPaddingTop = 10;           
     } else if (isMobile) {
-        // other mobile charts keep legend on top but need more air
+
         layoutPaddingTop = 25;
     }
 
-    /*  Font / box sizes get a gentle nudge down on mobile  */
     const legendFontSize     = isMobile ? 9.5 : Chart.defaults.font.size;
     const legendBoxWidth     = isMobile ? 9   : 12;
     const legendItemsPadding = isMobile ? 4   : 8;
@@ -1478,7 +1375,7 @@ function getChartJsConfigOptions(
                     font    : { size: legendFontSize }
                 }
             },
-            // we still suppress the built-in title (h5 is used externally)
+
             title: { display: false, text: titleText, font: { size: 14 } },
             tooltip: {
                 callbacks: {
@@ -1505,7 +1402,6 @@ function getChartJsConfigOptions(
     };
 }
 
-
         function calculateDynamicYAxisMax(datasets) {
             let maxValue = 0;
             datasets.forEach(dataset => {
@@ -1519,48 +1415,43 @@ function getChartJsConfigOptions(
             });
 
             if (maxValue === 0) {
-                return 10; // Default max if all data is zero, to give some visual space and avoid flat line at 0
+                return 10; 
             }
 
-            // Add ~20% headroom, then round up to the nearest 5
             let yMaxWithHeadroom = maxValue * 1.2;
             let yMax = Math.ceil(yMaxWithHeadroom / 5) * 5;
-            
-            return Math.min(100, yMax); // Cap at 100%
+
+            return Math.min(100, yMax); 
         }
-
-
-
 
         function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
             const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
             if (majorAreaChartInstance) majorAreaChartInstance.destroy();
             chartColorIndex = 0;
 
-            const datasets = majorAreasList.map(area => { /* ... */ });
+            const datasets = majorAreasList.map(area => {  });
 
             const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); // true for isMajorAreaChart
-            
+            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); 
+
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             if (!chartOptions.scales) chartOptions.scales = {};
             if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
             else chartOptions.scales.y.beginAtZero = true;
             chartOptions.scales.y.max = yAxisMax;
 
-            majorAreaChartInstance = new Chart(ctx, { /* ... */ options: chartOptions });
+            majorAreaChartInstance = new Chart(ctx, {  options: chartOptions });
         }
 
-        // In renderLocationFocusTrendChart:
         function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
             const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
             if (locationFocusChartInstance) locationFocusChartInstance.destroy();
             chartColorIndex = 0;
 
-            const datasets = locationFocusesList.map(focus => { /* ... */ });
+            const datasets = locationFocusesList.map(focus => {  });
 
             const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode, isMobile, false); // false for isMajorAreaChart
+            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode, isMobile, false); 
 
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             if (!chartOptions.scales) chartOptions.scales = {};
@@ -1568,14 +1459,13 @@ function getChartJsConfigOptions(
             else chartOptions.scales.y.beginAtZero = true;
             chartOptions.scales.y.max = yAxisMax;
 
-            locationFocusChartInstance = new Chart(ctx, { /* ... */ options: chartOptions });
+            locationFocusChartInstance = new Chart(ctx, {  options: chartOptions });
         }
 
-        // In renderPopularCollegesTrendChart:
                function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
             const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
             if (majorAreaChartInstance) majorAreaChartInstance.destroy();
-            chartColorIndex = 0; // Reset color index for this chart
+            chartColorIndex = 0; 
 
             const datasets = majorAreasList.map(area => {
                 const areaData = years.map(year => data[year][area] || 0);
@@ -1589,8 +1479,8 @@ function getChartJsConfigOptions(
             });
 
             const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); // true for isMajorAreaChart
-            
+            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); 
+
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             if (!chartOptions.scales) chartOptions.scales = {};
             if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
@@ -1610,7 +1500,7 @@ function getChartJsConfigOptions(
         function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
             const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
             if (locationFocusChartInstance) locationFocusChartInstance.destroy();
-            chartColorIndex = 0; // Reset color index
+            chartColorIndex = 0; 
 
             const datasets = locationFocusesList.map(focus => {
                 const focusData = years.map(year => data[year][focus] || 0);
@@ -1625,7 +1515,7 @@ function getChartJsConfigOptions(
 
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
-            // Ensure scales.y exists before setting max
+
             if (!chartOptions.scales) chartOptions.scales = {};
             if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
             else chartOptions.scales.y.beginAtZero = true;
@@ -1637,14 +1527,14 @@ function getChartJsConfigOptions(
                     labels: years,
                     datasets: datasets
                 },
-                options: chartOptions // Use the modified options
+                options: chartOptions 
             });
         }
 
         function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
             const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
             if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
-            chartColorIndex = 0; // Reset color index
+            chartColorIndex = 0; 
 
             const datasets = popularCollegesList.map(college => {
                 const collegeData = years.map(year => data[year][college] || 0);
@@ -1659,7 +1549,7 @@ function getChartJsConfigOptions(
 
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
-            // Ensure scales.y exists before setting max
+
             if (!chartOptions.scales) chartOptions.scales = {};
             if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
             else chartOptions.scales.y.beginAtZero = true;
@@ -1671,7 +1561,7 @@ function getChartJsConfigOptions(
                     labels: years,
                     datasets: datasets
                 },
-                options: chartOptions // Use the modified options
+                options: chartOptions 
             });
         }
 
@@ -1683,23 +1573,20 @@ function getChartJsConfigOptions(
                 return "Undecided/Other";
             }
 
-            // Attempt to use majorToAreaMapping first (user needs to update this file)
             for (const keyInMap in majorToAreaMapping) {
                 if (keyInMap.toLowerCase() === lowerSpecificMajor) {
-                    return majorToAreaMapping[keyInMap]; // This should map to the new granular areas
+                    return majorToAreaMapping[keyInMap]; 
                 }
             }
 
-            // Handle combined majors like "Computer Science & Economics"
             if (lowerSpecificMajor.includes('&') || lowerSpecificMajor.includes(' and ')) {
                 const rawParts = lowerSpecificMajor.split(/\s*&\s*|\s+and\s+/);
                 const areas = rawParts.map(part => {
                     part = part.trim();
                     if (part === "") return "Unknown";
 
-                    let mappedAreaOfPart = "Other"; // Default for this part
+                    let mappedAreaOfPart = "Other"; 
 
-                    // Check majorToAreaMapping for the part
                     for (const keyInMapForPart in majorToAreaMapping) {
                         if (keyInMapForPart.toLowerCase() === part) {
                             mappedAreaOfPart = majorToAreaMapping[keyInMapForPart];
@@ -1707,10 +1594,9 @@ function getChartJsConfigOptions(
                         }
                     }
 
-                    // Fallback keyword logic for the part if not in majorToAreaMapping
                     if (mappedAreaOfPart === "Other" || !PREDEFINED_MAJOR_AREAS.includes(mappedAreaOfPart)) {
                         if (part.includes("computer sci") || part.includes("information tech") || (part.includes("software eng") && !part.includes("game design"))) mappedAreaOfPart = "Computer Science & IT";
-                        else if (part.includes("engineering") && !part.includes("software eng") && !part.includes("financial eng")) mappedAreaOfPart = "Engineering"; // Ensure "Software Engineering" goes to CS
+                        else if (part.includes("engineering") && !part.includes("software eng") && !part.includes("financial eng")) mappedAreaOfPart = "Engineering"; 
                         else if (part.includes("math") || part.includes("stat")) mappedAreaOfPart = "Mathematics & Statistics";
                         else if (part.includes("physics") || part.includes("chemist") || part.includes("astronomy") || part.includes("earth sci") || (part.includes("environmental sci") && !part.includes("studies") && !part.includes("policy"))) mappedAreaOfPart = "Physical Sciences";
                         else if (part.includes("biolog") || part.includes("neurosci") || part.includes("biochem") || part.includes("molecular bio") || part.includes("genetics") || (part.includes("environmental sci") && (part.includes("studies") || part.includes("policy")) )) mappedAreaOfPart = "Life Sciences";
@@ -1721,7 +1607,7 @@ function getChartJsConfigOptions(
                         else if (part.includes("art") || part.includes("design") || part.includes("music") || part.includes("theat") || part.includes("film") || part.includes("drama") || part.includes("visual") || part.includes("game design")) mappedAreaOfPart = "Arts/Design";
                         else if (part.includes("health") || part.includes("medic") || part.includes("nurs") || part.includes("pre-med") || part.includes("public health") || part.includes("pharmacy")) mappedAreaOfPart = "Health Sciences";
                         else if (part.includes("educat") || part.includes("teach")) mappedAreaOfPart = "Education";
-                        else mappedAreaOfPart = "Other"; // Fallback for the part
+                        else mappedAreaOfPart = "Other"; 
                     }
                     return mappedAreaOfPart;
                 });
@@ -1730,19 +1616,18 @@ function getChartJsConfigOptions(
                 if (finalAreas.length > 0) {
                     const uniqueFinalAreas = [...new Set(finalAreas)];
                     if (uniqueFinalAreas.length === 1) return uniqueFinalAreas[0];
-                    // If multiple distinct valid areas, sort them for consistent combined display.
+
                     return uniqueFinalAreas.sort().join(' & ');
                 } else {
-                    return "Other"; // If all parts were "Other" or "Unknown"
+                    return "Other"; 
                 }
             }
 
-            // Single major - try substring mapping from majorToAreaMapping (if user updates it with keywords)
             let bestContainedKey = null;
             let longestContainedKeyLength = 0;
             for (const keyInMap in majorToAreaMapping) {
                 if (lowerSpecificMajor.includes(keyInMap.toLowerCase())) {
-                    // Prefer longer, more specific keys from the mapping file
+
                     if (keyInMap.length > longestContainedKeyLength) {
                         longestContainedKeyLength = keyInMap.length;
                         bestContainedKey = keyInMap;
@@ -1750,10 +1635,9 @@ function getChartJsConfigOptions(
                 }
             }
             if (bestContainedKey) {
-                return majorToAreaMapping[bestContainedKey]; // Expecting this to be a new granular area
+                return majorToAreaMapping[bestContainedKey]; 
             }
 
-            // Fallback keyword logic for single major
             if (lowerSpecificMajor.includes("computer sci") || lowerSpecificMajor.includes("information tech") || (lowerSpecificMajor.includes("software eng") && !lowerSpecificMajor.includes("game design"))) return "Computer Science & IT";
             if (lowerSpecificMajor.includes("engineering") && !lowerSpecificMajor.includes("software eng") && !lowerSpecificMajor.includes("financial eng")) return "Engineering";
             if (lowerSpecificMajor.includes("math") || lowerSpecificMajor.includes("stat")) return "Mathematics & Statistics";
@@ -1767,10 +1651,10 @@ function getChartJsConfigOptions(
             if (lowerSpecificMajor.includes("health") || lowerSpecificMajor.includes("medic") || lowerSpecificMajor.includes("nurs") || lowerSpecificMajor.includes("pre-med") || lowerSpecificMajor.includes("public health") || lowerSpecificMajor.includes("pharmacy")) return "Health Sciences";
             if (lowerSpecificMajor.includes("educat") || lowerSpecificMajor.includes("teach")) return "Education";
 
-            return "Other"; // Final fallback for single major
+            return "Other"; 
         }
 
-       function parseRawData(jsonData) { // jsonData will be the rawDataJSON array
+       function parseRawData(jsonData) { 
             if (!Array.isArray(jsonData)) {
                 console.error("Error: Input to parseRawData is not a JSON array.", jsonData);
                 return [];
@@ -1787,8 +1671,8 @@ function getChartJsConfigOptions(
                 const seniorName = entry.name.trim();
                 const collegeNameRaw = entry.college.trim();
                 const major = (entry.major && entry.major.trim() !== "") ? entry.major.trim() : "Undecided Major";
-                const gradClass = entry.classYear.trim(); // Expecting "21", "22", etc.
-                
+                const gradClass = entry.classYear.trim(); 
+
                 const linkedInUrl = (entry.linkedin && entry.linkedin.trim() !== "") ? entry.linkedin.trim() : null;
                 const instagramUrl = (entry.instagram && entry.instagram.trim() !== "") ? entry.instagram.trim() : null;
                 const bioCaption = (entry.congratsCaption && entry.congratsCaption.trim() !== "") ? entry.congratsCaption.trim() : null;
@@ -1799,7 +1683,7 @@ function getChartJsConfigOptions(
                     seniorName,
                     collegeNameRaw,
                     major,
-                    gradClass: `'${gradClass}`, // Add the apostrophe back for consistency with old format if needed
+                    gradClass: `'${gradClass}`, 
                     originalFirstName,
                     linkedInUrl,
                     instagramUrl,
@@ -1807,12 +1691,9 @@ function getChartJsConfigOptions(
                 });
             }
 
-            // The rest of the logic for photo filenames and creating the final 'choices' array
-            // remains similar, but it now consumes the processed 'rawEntries'.
-
             const firstNameCountsByClass = new Map();
             for (const entry of rawEntries) {
-                // gradClass already has the apostrophe from the step above
+
                 if (!firstNameCountsByClass.has(entry.gradClass)) {
                     firstNameCountsByClass.set(entry.gradClass, new Map());
                 }
@@ -1824,14 +1705,12 @@ function getChartJsConfigOptions(
             const choices = [];
             for (const entry of rawEntries) {
                 const { seniorName, collegeNameRaw, major, gradClass, originalFirstName, linkedInUrl, instagramUrl, bioCaption } = entry;
-                
-                // gradClass here is like "'21"
-                const photoYear = gradClass.replace("'", ""); // Results in "21"
+
+                const photoYear = gradClass.replace("'", ""); 
                 let photoFilename;
 
                 const normalizedFirstNameForLookup = normalizeForFilename(originalFirstName.split(' ')[0]);
 
-                // Ensure gradClass used for map lookup is the one with the apostrophe
                 const classCountsMap = firstNameCountsByClass.get(gradClass);
                 if (classCountsMap && classCountsMap.get(normalizedFirstNameForLookup) > 1) {
                     photoFilename = normalizeForFilename(seniorName);
@@ -1858,7 +1737,7 @@ function getChartJsConfigOptions(
 
                 choices.push({
                     seniorName: seniorName,
-                    gradClass: gradClass, // Already in format like "'21"
+                    gradClass: gradClass, 
                     collegeName: finalCollegeName,
                     collegeKey: normalizedNameKey,
                     collegeNameRaw: collegeNameRaw,
@@ -1921,12 +1800,10 @@ function getChartJsConfigOptions(
             }
         }
 
-
         function updateMajorSummaryTable() {
             const majorAreaCounts = {};
             PREDEFINED_MAJOR_AREAS.forEach(area => majorAreaCounts[area] = 0);
             const allPresentMajorAreasInFilteredData = new Set(PREDEFINED_MAJOR_AREAS);
-
 
             if (!allData) return;
 
@@ -1940,7 +1817,6 @@ function getChartJsConfigOptions(
                         areasToCount.push(majorAreaResult.trim());
                     }
 
-
                     areasToCount.forEach(area => {
                         if (area && area !== "Unknown") {
                              allPresentMajorAreasInFilteredData.add(area);
@@ -1949,7 +1825,7 @@ function getChartJsConfigOptions(
                             } else {
                                 majorAreaCounts[area] = 1;
                                 if (!PREDEFINED_MAJOR_AREAS.includes(area)) {
-                                     // console.warn(`Unexpected major area encountered: ${area} from major: ${school.major}. Adding to table dynamically.`);
+
                                 }
                             }
                         }
@@ -1965,7 +1841,6 @@ function getChartJsConfigOptions(
                 if ((b === "Undecided/Other" || b === "Other") && (a !== "Undecided/Other" && a !== "Other")) return -1;
                 return a.localeCompare(b);
             });
-
 
             sortedAreasToDisplay.forEach(area => {
                 if (majorAreaCounts[area] > 0 || PREDEFINED_MAJOR_AREAS.includes(area) || majorAreaFilterState.hasOwnProperty(area) ) {
@@ -2017,41 +1892,34 @@ function getChartJsConfigOptions(
             }
         }
 
-
    function updateMarkersVisibility() {
             if (!allMarkers || !allData) return;
 
-            let visibleCount = 0; // Will be used later if needed, or remove if not
+            let visibleCount = 0; 
 
-            // --- Grad Class Filter Logic ---
-            // True if all grad class filters are checked.
             const allGradClassesEffectivelyChecked = gradClassNames.every(gc => gradClassFilterState[gc]);
-            // True if grad class filters exist and all of them are unchecked.
+
             const noGradClassesActuallyChecked = gradClassNames.length > 0 && gradClassNames.every(gc => !gradClassFilterState[gc]);
 
-            // --- Location Focus Filter Logic ---
             const locationFocusFilterKeys = Object.keys(locationFocusFilterState);
             const allLocationFocusEffectivelyChecked = locationFocusFilterKeys.length === 0 || locationFocusFilterKeys.every(key => locationFocusFilterState[key]);
             const noLocationFocusActuallyChecked = locationFocusFilterKeys.length > 0 && locationFocusFilterKeys.every(key => !locationFocusFilterState[key]);
 
-            // --- Major Area Filter Logic ---
             const majorAreaFilterKeys = Object.keys(majorAreaFilterState);
             const allMajorAreasEffectivelyChecked = majorAreaFilterKeys.length === 0 || majorAreaFilterKeys.every(key => majorAreaFilterState[key]);
             const noMajorAreasActuallyChecked = majorAreaFilterKeys.length > 0 && majorAreaFilterKeys.every(key => !majorAreaFilterState[key]);
 
-            // --- State/Country Filter Logic ---
             const UNKNOWN_STATE_COUNTRY_KEY_FOR_CHECK = "Unknown/Not Applicable";
             const stateCountryFilterKeys = Object.keys(stateCountryFilterState);
             const allStateCountryEffectivelyChecked = stateCountryFilterKeys.length === 0 || stateCountryFilterKeys.every(key => stateCountryFilterState[key]);
             const noStateCountryActuallyChecked = stateCountryFilterKeys.length > 0 && stateCountryFilterKeys.every(key => !stateCountryFilterState[key]);
-
 
             allData.forEach((school) => {
                 let meetsGradClassCriteria;
                 if (noGradClassesActuallyChecked) {
                     meetsGradClassCriteria = false;
                 } else {
-                    // School meets criteria if all grad classes are checked OR its specific grad class is checked.
+
                     meetsGradClassCriteria = allGradClassesEffectivelyChecked || (gradClassFilterState[school.gradClass] === true);
                 }
 
@@ -2078,15 +1946,13 @@ function getChartJsConfigOptions(
                     meetsStateCountryCriteria = allStateCountryEffectivelyChecked || (stateCountryFilterState[schoolSCKey] === true);
                 }
 
-                // Special handling for "Undecided" schools regarding Major Area.
-                // Other criteria (Grad Class, Location Focus, State/Country) are handled by the general logic above.
                 if (school.collegeName === "Undecided") {
                     const undecidedMajorAreaKey = "Undecided/Other";
                     let passesUndecidedMajorAreaLogic;
                     if (noMajorAreasActuallyChecked) {
                         passesUndecidedMajorAreaLogic = false;
                     } else {
-                         // Check if all major areas are effectively checked OR if "Undecided/Other" itself is checked.
+
                         passesUndecidedMajorAreaLogic = allMajorAreasEffectivelyChecked || (majorAreaFilterState[undecidedMajorAreaKey] === true);
                     }
                     school.isVisible = meetsGradClassCriteria && passesUndecidedMajorAreaLogic && meetsLocationFocusCriteria && meetsStateCountryCriteria;
@@ -2094,14 +1960,13 @@ function getChartJsConfigOptions(
                     school.isVisible = meetsGradClassCriteria && meetsLocationFocusCriteria && meetsMajorAreaCriteria && meetsStateCountryCriteria;
                 }
 
-
                 if (school.isVisible) {
                     visibleCount++;
                 } else {
-                    // Clean up if item becomes invisible
+
                     if(schoolsSelectedForZoom.has(school.originalIndex)) {
                         schoolsSelectedForZoom.delete(school.originalIndex);
-                        // Potentially update checkbox in list if it reflects schoolsSelectedForZoom
+
                         const checkboxInList = document.getElementById(`school-checkbox-${school.originalIndex}`);
                         if (checkboxInList) checkboxInList.checked = false;
                     }
@@ -2109,15 +1974,14 @@ function getChartJsConfigOptions(
                     if (infowindow && infowindow.getMap() && markerInfo && infowindow.anchor === markerInfo.marker) {
                         infowindow.close();
                     }
-                    // If this item was the one with the active senior photo popup, close it
+
                     if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') && currentlyZoomedSeniorOriginalIndex === school.originalIndex) {
                         hideSeniorPhotoPopup();
                     }
 
-                    // If this item was the one highlighted by keyboard/list-click, reset activeHoverMarkerIndex
                     if (activeHoverMarkerIndex === school.originalIndex) {
                         if (markerInfo && markerInfo.marker) {
-                            markerInfo.marker.setIcon(getMarkerIcon(school, false, isDarkMode)); // Revert icon
+                            markerInfo.marker.setIcon(getMarkerIcon(school, false, isDarkMode)); 
                             markerInfo.marker.setZIndex(null);
                         }
                         activeHoverMarkerIndex = null;
@@ -2125,19 +1989,18 @@ function getChartJsConfigOptions(
                 }
             });
 
-            filterSchoolList(); // Updates list display based on school.isVisible and search
+            filterSchoolList(); 
             updateStatsTable();
             updateMajorSummaryTable();
-            updateCurrentSelectionHighlight(); // Updates list selection visual
+            updateCurrentSelectionHighlight(); 
 
-            // Update MarkerClusterer with only the visible markers
             if (markerClustererInstance && typeof markerClusterer !== 'undefined' && markerClusterer.MarkerClusterer) {
                 markerClustererInstance.clearMarkers();
                 const visibleMapMarkers = [];
                 allData.forEach(schoolDataFromAllData => {
                     if (schoolDataFromAllData.isVisible) {
                         const markerInfo = allMarkers[schoolDataFromAllData.originalIndex];
-                        // Ensure marker exists and is not for an "Undecided" at 0,0 (unless you want to show those)
+
                         if (markerInfo && markerInfo.marker && !(schoolDataFromAllData.lat === 0 && schoolDataFromAllData.lng === 0)) {
                             visibleMapMarkers.push(markerInfo.marker);
                         }
@@ -2147,23 +2010,20 @@ function getChartJsConfigOptions(
             }
         }
 
-        // Helper to get current visible LIs from DOM for selection logic
         function getVisibleListItemsDOM() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
             if (!listUl) return [];
 
-            // For gallery view OR when primary sort target is 'students' (flat list),
-            // visible items are student LIs not hidden by search/filters.
             if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
                  return Array.from(listUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'))
                             .filter(li => li.style.display !== 'none' && !li.classList.contains('college-group-header'));
             } 
-            // For grouped list view (primary sort target is 'colleges' and not gallery)
+
             else {
                 const items = [];
                 const collegeGroupHeaders = listUl.querySelectorAll('li.college-group-header');
                 collegeGroupHeaders.forEach(header => {
-                    // Only process students under visible headers/sublists
+
                     if (header.style.display !== 'none') {
                         const studentSublist = header.nextElementSibling;
                         if (studentSublist && studentSublist.classList.contains('student-sublist') && studentSublist.style.display !== 'none') {
@@ -2177,7 +2037,6 @@ function getChartJsConfigOptions(
             }
         }
 
-
             function filterSchoolList() {
             const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
             const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
@@ -2187,41 +2046,39 @@ function getChartJsConfigOptions(
             const noResultsMessage = document.getElementById('no-results-message');
             let hasVisibleItemsOverall = false;
 
-            // Case 1: Gallery View OR Flat Student List (currentPrimarySortTarget === 'students')
             if (isGalleryViewEnabled || (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled) ) {
-                const listItems = mainUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'); // These are all student LIs
+                const listItems = mainUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'); 
                 listItems.forEach(item => {
                     const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
                     const schoolData = (!isNaN(originalIndex) && allData && allData[originalIndex]) ? allData[originalIndex] : null;
 
-                    if (!schoolData) { // Should not happen if list is built correctly
+                    if (!schoolData) { 
                         item.style.display = 'none';
                         return;
                     }
 
-                    // Visibility is determined by global filters (schoolData.isVisible) AND search term
                     const meetsGlobalFilters = schoolData.isVisible;
                     let matchesSearch = searchTerm === '';
-                    if (!matchesSearch && meetsGlobalFilters) { // Only search if it meets global filters
-                        const itemTextContent = item.textContent.toLowerCase(); // Includes Name, College (if present), Major
+                    if (!matchesSearch && meetsGlobalFilters) { 
+                        const itemTextContent = item.textContent.toLowerCase(); 
                         matchesSearch = itemTextContent.includes(searchTerm);
                     }
 
                     if (meetsGlobalFilters && matchesSearch) {
-                        item.style.display = isGalleryViewEnabled ? 'flex' : 'flex'; // Default display for student LIs
+                        item.style.display = isGalleryViewEnabled ? 'flex' : 'flex'; 
                         hasVisibleItemsOverall = true;
                     } else {
                         item.style.display = 'none';
                     }
                 });
             }
-            // Case 2: Grouped List (currentPrimarySortTarget === 'colleges' AND not isGalleryViewEnabled)
+
             else {
                 const collegeGroupHeaders = mainUl.querySelectorAll('li.college-group-header');
                 collegeGroupHeaders.forEach(header => {
                     let groupHasVisibleStudentsMatchingSearchOrFilter = false;
                     const studentSublist = header.nextElementSibling;
-                    let collegeNameInHeaderText = header.textContent.toLowerCase(); // Text of the college header itself
+                    let collegeNameInHeaderText = header.textContent.toLowerCase(); 
 
                     if (studentSublist && studentSublist.classList.contains('student-sublist')) {
                         const studentItems = studentSublist.querySelectorAll('li[data-original-index]');
@@ -2236,12 +2093,8 @@ function getChartJsConfigOptions(
 
                             if (!matchesSearch && meetsGlobalFilters) {
                                 const nameSpan = item.querySelector('span.school-name');
-                                const studentLiText = nameSpan ? nameSpan.textContent.toLowerCase() : item.textContent.toLowerCase(); // student name, grad, major (no college here)
+                                const studentLiText = nameSpan ? nameSpan.textContent.toLowerCase() : item.textContent.toLowerCase(); 
 
-                                // A student matches search if:
-                                // 1. Their own details (name, major) match the search term
-                                // 2. The college they are attending (schoolData.collegeName) matches the search term
-                                // 3. The text of the college group header itself matches the search term
                                 matchesSearch = studentLiText.includes(searchTerm) ||
                                                 (schoolData.collegeName && schoolData.collegeName.toLowerCase().includes(searchTerm)) ||
                                                 collegeNameInHeaderText.includes(searchTerm);
@@ -2256,10 +2109,6 @@ function getChartJsConfigOptions(
                         });
                     }
 
-                    // A group header is visible if:
-                    // 1. It has at least one student LI that is visible (due to global filters + search)
-                    // OR 2. The search term is not empty AND the college header text itself matches the search term
-                    //    (even if no specific student detail matches, show the group and its filter-passing students)
                     let headerItselfMatchesSearch = searchTerm !== '' && collegeNameInHeaderText.includes(searchTerm);
 
                     if (groupHasVisibleStudentsMatchingSearchOrFilter || headerItselfMatchesSearch) {
@@ -2267,17 +2116,14 @@ function getChartJsConfigOptions(
                         if (studentSublist) studentSublist.style.display = 'block';
                         hasVisibleItemsOverall = true;
 
-                        // If header itself matches, ensure all its filter-passing students are visible
-                        // (they might have been hidden if their individual details didn't match search,
-                        // but now the parent college matches)
                         if (headerItselfMatchesSearch && !groupHasVisibleStudentsMatchingSearchOrFilter && studentSublist) {
                              const studentItems = studentSublist.querySelectorAll('li[data-original-index]');
                              studentItems.forEach(item => {
                                 const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
                                 const schoolData = allData[originalIndex];
-                                if(schoolData && schoolData.isVisible) { // If student passes global filters
-                                    item.style.display = 'flex'; // Show them because the college header matched
-                                    // No need to set groupHasVisibleStudentsMatchingSearchOrFilter = true here, already handled by headerItselfMatchesSearch
+                                if(schoolData && schoolData.isVisible) { 
+                                    item.style.display = 'flex'; 
+
                                 }
                              });
                         }
@@ -2301,16 +2147,14 @@ function getChartJsConfigOptions(
             const mainUl = listContentDiv.querySelector('ul');
             if (!mainUl) return;
 
-            // Helper function to process a given UL (either main UL or a sublist UL)
             const processUlForSeparators = (ulElement, isSubListContext) => {
-                // Remove existing separators within this specific ulElement using :scope to target direct children
+
                 ulElement.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
 
-                // Determine if separators should be added for this context
                 let shouldAddSeparatorsInThisContext = false;
-                if (isSubListContext) { // Separators within a college group's student list
+                if (isSubListContext) { 
                     shouldAddSeparatorsInThisContext = (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last');
-                } else { // Separators in the main list (flat student list or gallery)
+                } else { 
                     shouldAddSeparatorsInThisContext =
                         (isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last')) ||
                         (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last'));
@@ -2320,7 +2164,6 @@ function getChartJsConfigOptions(
                     return;
                 }
 
-                // Get visible LI elements *directly within this ulElement* that represent students
                 const visibleListItemsInUl = Array.from(ulElement.querySelectorAll(':scope > li:not(.grad-class-separator)[data-original-index]'))
                     .filter(li => li.style.display !== 'none' && !li.classList.contains('college-group-header'));
 
@@ -2329,15 +2172,14 @@ function getChartJsConfigOptions(
                 const visibleGradClassesInUl = visibleListItemsInUl.map(li => {
                     const originalIndex = parseInt(li.dataset.originalIndex);
                     return allData[originalIndex]?.gradClass;
-                }).filter(gc => gc); // Filter out undefined if any originalIndex was bad
+                }).filter(gc => gc); 
 
                 const uniqueVisibleGradClassesInUl = new Set(visibleGradClassesInUl);
 
                 if (uniqueVisibleGradClassesInUl.size <= 1) {
-                    return; // No separators if only one (or zero) unique grad class is visible in this specific list/sublist
+                    return; 
                 }
 
-                // Iterate through the visible student LIs and insert separators
                 let previousVisibleGradClass = null;
                 for (let i = 0; i < visibleListItemsInUl.length; i++) {
                     const currentLi = visibleListItemsInUl[i];
@@ -2348,7 +2190,7 @@ function getChartJsConfigOptions(
                         if (previousVisibleGradClass !== null && currentGradClass !== previousVisibleGradClass) {
                             const separatorLi = document.createElement('li');
                             separatorLi.className = 'grad-class-separator';
-                            // The existing CSS for .grad-class-separator and its gallery-view variant will apply
+
                             ulElement.insertBefore(separatorLi, currentLi);
                         }
                         previousVisibleGradClass = currentGradClass;
@@ -2357,25 +2199,25 @@ function getChartJsConfigOptions(
             };
 
             if (currentPrimarySortTarget === 'students' || isGalleryViewEnabled) {
-                // Processing the main UL for flat student list or gallery view
+
                 processUlForSeparators(mainUl, false);
-            } else { // currentPrimarySortTarget === 'colleges' and not gallery view (grouped list)
-                // First, ensure no top-level separators in mainUl from a previous state.
+            } else { 
+
                 mainUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
 
                 const studentSublists = mainUl.querySelectorAll('ul.student-sublist');
                 studentSublists.forEach(sublistUl => {
                     const parentHeader = sublistUl.previousElementSibling;
-                    // Only process sublists whose parent group header is visible and the sublist itself is visible
+
                     if (parentHeader && parentHeader.classList.contains('college-group-header') && parentHeader.style.display !== 'none') {
                         if (sublistUl.style.display !== 'none') {
                            processUlForSeparators(sublistUl, true);
                         } else {
-                           // If sublist is hidden, ensure no separators within it
+
                            sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
                         }
                     } else {
-                         // If parent group is hidden, also clear separators from its sublist
+
                          sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
                     }
                 });
@@ -2415,21 +2257,14 @@ function getChartJsConfigOptions(
          const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
          const zoomedBioCaptionEl = document.getElementById('zoomed-bio-caption-content');
          const zoomedSocialLinksEl = document.getElementById('zoomed-social-links-container');
-         // --- Ensure new global vars are accessible or re-fetch if needed (though global should be fine) ---
-         // const zoomedGradClassInfoDiv = document.getElementById('zoomed-grad-class-info'); 
-         // const zoomedGradClassValueSpan = document.getElementById('zoomed-grad-class-value');
-
 
          if (isImageFullyZoomed && isPopupContainerInZoomedState && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
-             // Mode: Image is fully zoomed, update side panel caption
-             
-             // --- NEW: Populate Graduating Class Info ---
+
              if (zoomedGradClassInfoDiv && zoomedGradClassValueSpan) {
                  zoomedGradClassValueSpan.textContent = schoolData.gradClass;
-                 zoomedGradClassValueSpan.style.color = gradClassColors[schoolData.gradClass] || (isDarkMode ? '#EEE' : '#111'); // Fallback color
+                 zoomedGradClassValueSpan.style.color = gradClassColors[schoolData.gradClass] || (isDarkMode ? '#EEE' : '#111'); 
                  zoomedGradClassInfoDiv.style.display = 'block';
              }
-             // --- END NEW ---
 
              zoomedBioCaptionEl.innerHTML = schoolData.bioCaption || `Congrats, ${schoolData.seniorName}!`;
 
@@ -2456,7 +2291,7 @@ function getChartJsConfigOptions(
              if (seniorPopupCaption) seniorPopupCaption.style.display = 'none'; 
 
          } else {
-             // Mode: Small hover/click popup
+
              if (schoolData.bioCaption && schoolData.bioCaption.trim() !== "") {
                  seniorPopupCaption.innerHTML = schoolData.bioCaption;
              } else {
@@ -2465,12 +2300,11 @@ function getChartJsConfigOptions(
              if (seniorPopupCaption) seniorPopupCaption.style.display = ''; 
 
              if (zoomedInfoPanel) zoomedInfoPanel.style.display = 'none'; 
-             // --- NEW: Hide Graduating Class Info for small popup ---
+
              if (zoomedGradClassInfoDiv) zoomedGradClassInfoDiv.style.display = 'none';
-             // --- END NEW ---
+
              seniorPhotoPopup.classList.remove('with-side-panel'); 
          }
-
 
          const controlsPanel = document.getElementById('controls-and-list-container');
          const isDesktopView = window.innerWidth > 768;
@@ -2492,7 +2326,6 @@ function getChartJsConfigOptions(
                  popupTop = Math.max(10, window.innerHeight - approxPopupHeight - 10);
              }
              popupTop = Math.max(10, popupTop);
-
 
          } else if (!(isImageFullyZoomed && isPopupContainerInZoomedState)) { 
              seniorPhotoPopup.style.width = '200px';
@@ -2554,9 +2387,9 @@ function getChartJsConfigOptions(
 
            const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
          if (zoomedInfoPanel) zoomedInfoPanel.style.display = 'none';
-         // --- NEW: Hide Graduating Class Info ---
+
          if (zoomedGradClassInfoDiv) zoomedGradClassInfoDiv.style.display = 'none';
-         // --- END NEW ---
+
          parentPopup.classList.remove('with-side-panel');
 
          if (seniorPopupImage.classList.contains('zoomed')) {
@@ -2578,9 +2411,8 @@ function getChartJsConfigOptions(
 
              delete parentPopup.dataset.originalTransform;
              delete parentPopup.dataset.originalLeft;
-             // ... (rest of delete dataset properties)
-             delete parentPopup.dataset.originalPointerEvents;
 
+             delete parentPopup.dataset.originalPointerEvents;
 
              if (hideSmallPopupAfter) {
                   hideSeniorPhotoPopup();
@@ -2589,7 +2421,6 @@ function getChartJsConfigOptions(
              hideSeniorPhotoPopup();
          }
      }
-
 
         function getHonorarySuffixHTML(rawCollegeName) {
             let suffixHtml = "";
@@ -2600,7 +2431,6 @@ function getChartJsConfigOptions(
             return suffixHtml;
         }
 
-
                 function handleListItemInteraction(event, originalIndex, isHover) {
              if (event && event.target && event.target.type === 'checkbox') return;
              if (originalIndex === undefined || !allData[originalIndex]) {
@@ -2608,7 +2438,7 @@ function getChartJsConfigOptions(
                 return;
              }
 
-             const schoolData = allData[originalIndex]; // This is the clicked/hovered student
+             const schoolData = allData[originalIndex]; 
              const markerInfo = allMarkers[originalIndex];
 
              if (!schoolData.isVisible) {
@@ -2622,8 +2452,7 @@ function getChartJsConfigOptions(
              }
             const currentTargetListItem = event ? event.currentTarget : document.querySelector(`.list-content li[data-original-index="${originalIndex}"]`);
 
-
-             if (isHover) { // Hover behavior remains largely the same: focus on the individual
+             if (isHover) { 
                 if (panelJustToggledOpen) return;
                 if (markerInfo && markerInfo.marker && (schoolData.lat !== 0 || schoolData.lng !== 0)) {
                     const position = markerInfo.marker.getPosition();
@@ -2632,7 +2461,7 @@ function getChartJsConfigOptions(
                     }
                 }
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
-             } else { // Click behavior
+             } else { 
                 if (infowindow && infowindow.getMap()) {
                     infowindow.close();
                 }
@@ -2643,7 +2472,6 @@ function getChartJsConfigOptions(
                         map.panTo(position);
                         map.setZoom(Math.max(map.getZoom(), 12));
 
-                        // ---- New InfoWindow Content Logic for Grouped Display ----
                         let contentString = `<div class="info-window-content">`;
                         const targetUrl = schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#' ? schoolData.collegeHomepageUrl : '#';
                         const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
@@ -2686,7 +2514,7 @@ function getChartJsConfigOptions(
                                 studentsAtSameCollege.forEach(student => {
                                     const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
                                     let studentEntry = `<li>`;
-                                    if (student.originalIndex === originalIndex) studentEntry += `<b>`; // Highlight the clicked student
+                                    if (student.originalIndex === originalIndex) studentEntry += `<b>`; 
                                     studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
                                     if (student.originalIndex === originalIndex) studentEntry += `</b>`;
                                     studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
@@ -2697,13 +2525,12 @@ function getChartJsConfigOptions(
                             }
                         }
                         contentString += `</div>`;
-                        // ---- End New InfoWindow Content Logic ----
 
                         infowindow.setContent(contentString);
                         infowindow.open({ map: map, anchor: markerInfo.marker });
                     }
                 }
-                // Show senior photo popup for the specific student whose list item was clicked
+
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
 
                  if (event && (event.ctrlKey || event.metaKey) && schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#') {
@@ -2717,12 +2544,10 @@ function getChartJsConfigOptions(
                 console.log(`%c[NAV_DEBUG] NAVIGATE START (${direction}) ==================`, "color: blue; font-weight: bold;");
             console.log(`[NAV_DEBUG] Initial currentlyZoomedSeniorOriginalIndex: ${currentlyZoomedSeniorOriginalIndex}`);
 
-
             const visibleListItems = getVisibleListItemsDOM();
             console.log(`[NAV_DEBUG] Found ${visibleListItems.length} visible list items.`);
              if (visibleListItems.length > 0) {
-                // Log first few to check order (optional, can be noisy)
-                // console.log('[NAV_DEBUG] First 5 visible items (originalIndex):', visibleListItems.slice(0, 5).map(li => li.dataset.originalIndex));
+
             }
             if (visibleListItems.length === 0) {
                  console.warn("[NAV_DEBUG] No visible list items. Navigation aborted.");
@@ -2757,9 +2582,8 @@ function getChartJsConfigOptions(
 
                 if (newSeniorData) {
                       console.log(`[NAV_DEBUG] Navigating to senior: ${newSeniorData.seniorName} (originalIndex: ${newOriginalIndex})`);
-                    currentlyZoomedSeniorOriginalIndex = newOriginalIndex; // Keep this for tracking
-                    
-                    // Update the main zoomed image
+                    currentlyZoomedSeniorOriginalIndex = newOriginalIndex; 
+
                     seniorPopupImage.src = newSeniorData.seniorPhotoUrl;
                      seniorPopupImage.onerror = function() {
                         this.src = newSeniorData.seniorPhotoUrlPng;
@@ -2771,29 +2595,21 @@ function getChartJsConfigOptions(
                         };
                     };
                     seniorPopupImage.alt = `${newSeniorData.seniorName}'s Photo / ${newSeniorData.collegeName} Logo`;
-                    
-                    // --- REMOVED THIS LINE ---
-                    // seniorPopupCaption.textContent = `Congrats, ${newSeniorData.seniorName}!`; 
-                    // The showSeniorPhotoPopup (called via handleListItemInteraction) will now handle caption placement.
 
                     currentListSelectionIndex = newIndexInVisibleList;
-                    updateCurrentSelectionHighlight(); // Visually select in list
+                    updateCurrentSelectionHighlight(); 
                     newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                     newListItem.focus(); // For keyboard accessibility
+                     newListItem.focus(); 
 
-
-                    // This call will trigger showSeniorPhotoPopup, which now correctly handles caption
-                    // placement based on whether the image is fully zoomed or not.
                       console.log(`[NAV_DEBUG] Calling handleListItemInteraction for originalIndex: ${newOriginalIndex}. This should update currentlyZoomedSeniorOriginalIndex.`);
                     handleListItemInteraction({ currentTarget: newListItem, target: newListItem, ctrlKey: false, metaKey: false }, newOriginalIndex, false);
 
                      console.log(`[NAV_DEBUG] currentlyZoomedSeniorOriginalIndex *after* handleListItemInteraction: ${currentlyZoomedSeniorOriginalIndex}`);
                     if (currentlyZoomedSeniorOriginalIndex !== newOriginalIndex) {
                         console.error(`[NAV_DEBUG] CRITICAL MISMATCH! Expected currentlyZoomedSeniorOriginalIndex to be ${newOriginalIndex}, but it is ${currentlyZoomedSeniorOriginalIndex}. This is the cause of skipping!`);
-                        // If this error appears, the problem is that showSeniorPhotoPopup isn't correctly setting the global, or there's an async issue.
+
                     }
 
-                    // Marker highlighting logic
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                         allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                         allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
@@ -2812,7 +2628,6 @@ function getChartJsConfigOptions(
             console.log(`%c[NAV_DEBUG] NAVIGATE END (${direction}) ====================`, "color: blue; font-weight: bold;");
         }
 
-
         function zoomToSelectedSchools() {
             if (!google || !map || !allMarkers) return;
             const bounds = new google.maps.LatLngBounds();
@@ -2824,7 +2639,7 @@ function getChartJsConfigOptions(
 
                 if (schoolData && schoolData.isVisible && markerInfo && markerInfo.marker) {
                     if (schoolData.collegeName === "Undecided" && schoolData.lat === 0 && schoolData.lng === 0) {
-                        // Skip
+
                     } else if (schoolData.lat === 0 && schoolData.lng === 0) {
                         console.warn("Skipping school with 0,0 coordinates from zoom:", schoolData.displayName);
                     }
@@ -2858,9 +2673,9 @@ function getChartJsConfigOptions(
                     const markerInfo = allMarkers[schoolData.originalIndex];
                      if (markerInfo && markerInfo.marker) {
                         if (schoolData.collegeName === "Undecided" && schoolData.lat === 0 && schoolData.lng === 0) {
-                           // skip
+
                         } else if (schoolData.lat === 0 && schoolData.lng === 0) {
-                            // skip
+
                         } else {
                             bounds.extend(markerInfo.marker.getPosition());
                             validVisiblePoints++;
@@ -2881,44 +2696,38 @@ function getChartJsConfigOptions(
             }
         }
 
-
         function hideSeniorPhotoPopup() {
     if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
-        seniorPhotoPopup.classList.remove('visible'); // This makes it display: none via CSS
+        seniorPhotoPopup.classList.remove('visible'); 
 
-        // Reset inline styles that might have been set for the "large" mode
-        // or by the regular positioning logic.
         seniorPhotoPopup.style.width = ''; 
         seniorPhotoPopup.style.maxHeight = '';
         seniorPhotoPopup.style.overflowY = '';
-        seniorPhotoPopup.style.left = ''; // Important to reset positioning
-        seniorPhotoPopup.style.top = '';  // Important to reset positioning
-        
+        seniorPhotoPopup.style.left = ''; 
+        seniorPhotoPopup.style.top = '';  
+
         if (seniorPopupImage) {
-            seniorPopupImage.style.maxHeight = ''; // Reset image specific max-height
+            seniorPopupImage.style.maxHeight = ''; 
             if (seniorPopupImage.classList.contains('zoomed')) {
-                // exitZoomMode will handle restoring the image from its zoomed state
-                // and its `hideSmallPopupAfter = false` prevents re-hiding.
+
                 exitZoomMode(false); 
             }
         }
-        
-        // If the popup being hidden was linked to the activeHoverMarkerIndex, reset that marker's icon
-        // and clear activeHoverMarkerIndex.
+
         if (currentlyZoomedSeniorOriginalIndex !== null && 
-            activeHoverMarkerIndex === currentlyZoomedSeniorOriginalIndex && // check if this was the marker that was hovered
+            activeHoverMarkerIndex === currentlyZoomedSeniorOriginalIndex && 
             allMarkers[activeHoverMarkerIndex] && 
             allMarkers[activeHoverMarkerIndex].marker) {
-            
+
             const schoolData = allData[activeHoverMarkerIndex];
-            if (schoolData) { // Ensure schoolData is valid before using
+            if (schoolData) { 
                 allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                 allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
             }
             activeHoverMarkerIndex = null; 
         }
-        
-        currentlyZoomedSeniorOriginalIndex = null; // Always reset this
+
+        currentlyZoomedSeniorOriginalIndex = null; 
 
         if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.style.display = 'none';
         if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.style.display = 'none';
@@ -2991,7 +2800,6 @@ function getChartJsConfigOptions(
              filterSchoolList();
         }
 
-
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -3005,14 +2813,9 @@ function getChartJsConfigOptions(
         }
 
         function sortAndRebuildList() {
-        // This function now primarily sets the sort options.
-        // The actual sorting of allData for gallery view happens here.
-        // Grouping and sorting for list view happens within rebuildSchoolListHTML.
 
         if (!allData) return;
 
-        // Sort the flat allData array based on currentStudentSortOption.
-        // This is primarily for gallery view or if a flat list is ever needed.
         allData.sort((a, b) => {
             let comparison = 0;
             const gradClassA = parseInt(a.gradClass.substring(1));
@@ -3022,7 +2825,7 @@ function getChartJsConfigOptions(
             const lastNameA = getLastName(a.seniorName);
             const lastNameB = getLastName(b.seniorName);
 
-            switch (currentStudentSortValue) { // MODIFIED from currentStudentSortOption
+            switch (currentStudentSortValue) { 
             case 'grad_first':
                 if (gradClassA !== gradClassB) return gradClassA - gradClassB;
                 comparison = firstNameA.localeCompare(firstNameB);
@@ -3048,7 +2851,7 @@ function getChartJsConfigOptions(
         return comparison;
     });
 
-        rebuildSchoolListHTML(); // This will now handle grouping and its specific sorting
+        rebuildSchoolListHTML(); 
         currentListSelectionIndex = -1;
         updateCurrentSelectionHighlight();
     }
@@ -3066,7 +2869,7 @@ function getChartJsConfigOptions(
             schoolListUl = document.createElement('ul');
             schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage);
         }
-        schoolListUl.innerHTML = ''; // Clear existing list
+        schoolListUl.innerHTML = ''; 
 
         if (!allData) {
             schoolListUl.innerHTML = '<li>Data is not available.</li>';
@@ -3076,14 +2879,14 @@ function getChartJsConfigOptions(
 
         if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
             allData.forEach(seniorChoice => {
-                if (seniorChoice.isVisible) { // Based on global filters, search will refine later
+                if (seniorChoice.isVisible) { 
                     schoolListUl.appendChild(createStudentListItem(seniorChoice));
                 }
             });
-        } else { // GROUPED LIST: Primary Sort Target is "Colleges"
+        } else { 
             const studentGroupsByCollege = new Map();
             allData.forEach(seniorChoice => {
-                if (seniorChoice.isVisible) { // Based on global filters
+                if (seniorChoice.isVisible) { 
                     const groupKey = seniorChoice.collegeKey || seniorChoice.collegeName;
                     if (!studentGroupsByCollege.has(groupKey)) {
                         studentGroupsByCollege.set(groupKey, { students: [], collegeInfo: seniorChoice });
@@ -3121,7 +2924,7 @@ function getChartJsConfigOptions(
                 collegeHeaderLi.innerHTML = `${collegeEntry.displayName} <span style="font-weight:normal;">(Students: ${collegeEntry.students.length})</span>`;
                 schoolListUl.appendChild(collegeHeaderLi);
 
-                collegeEntry.students.sort((a, b) => { // Sort students within the group
+                collegeEntry.students.sort((a, b) => { 
                     let comparison = 0;
                     const gradClassA = parseInt(a.gradClass.substring(1));
                     const gradClassB = parseInt(b.gradClass.substring(1));
@@ -3152,8 +2955,8 @@ function getChartJsConfigOptions(
 
                 const studentSublistUl = document.createElement('ul');
                 studentSublistUl.className = 'student-sublist';
-                collegeEntry.students.forEach(student => { // Iterate and append
-                    studentSublistUl.appendChild(createStudentListItem(student)); // THIS WAS THE MISSING LINE
+                collegeEntry.students.forEach(student => { 
+                    studentSublistUl.appendChild(createStudentListItem(student)); 
                 });
                 schoolListUl.appendChild(studentSublistUl);
             });
@@ -3162,23 +2965,17 @@ function getChartJsConfigOptions(
         updateCurrentSelectionHighlight();
     }
 
-
-        // Helper function to create a student LI (used in both flat and grouped lists)
-                       // This function is nested within rebuildSchoolListHTML
-                // Helper function to create a student LI (used in both flat and grouped lists)
         function createStudentListItem(seniorChoice) {
             const studentLi = document.createElement('li');
             const originalIndex = seniorChoice.originalIndex;
             studentLi.setAttribute('data-original-index', originalIndex);
             studentLi.setAttribute('tabindex', '0');
 
-            // Updated title to be conditional based on gallery view
             let liTitle = "Click: Zoom & Info. Ctrl+Click: Homepage. Hover: Photo.";
             if (isGalleryViewEnabled) {
                 liTitle += " Shift+Click checkbox: Group Zoom.";
             }
             studentLi.setAttribute('title', liTitle);
-
 
             const schoolCheckbox = document.createElement('input');
             schoolCheckbox.type = 'checkbox';
@@ -3214,7 +3011,6 @@ function getChartJsConfigOptions(
                 }
             });
 
-
             const nameSpan = document.createElement('span');
             nameSpan.className = 'school-name';
 
@@ -3228,9 +3024,8 @@ function getChartJsConfigOptions(
             if (individualSuffixHtml) {
                  studentDisplayText += individualSuffixHtml;
             }
-            nameSpan.innerHTML = studentDisplayText; // Set base text
+            nameSpan.innerHTML = studentDisplayText; 
 
-            // Add social media icons to nameSpan
             if (seniorChoice.linkedInUrl) {
                 const linkedInLink = document.createElement('a');
                 linkedInLink.href = seniorChoice.linkedInUrl;
@@ -3252,7 +3047,7 @@ function getChartJsConfigOptions(
 
             if (isGalleryViewEnabled) {
                 studentLi.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
-                studentLi.appendChild(schoolCheckbox); // Checkbox first for gallery
+                studentLi.appendChild(schoolCheckbox); 
 
                 const gradClassTextElement = document.createElement('div');
                 gradClassTextElement.className = 'gallery-grad-class-overlay';
@@ -3265,7 +3060,7 @@ function getChartJsConfigOptions(
                     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
                     gradClassTextElement.style.color = brightness > 135 ? '#1A1A1A' : '#FAFAFA';
                 } else {
-                    gradClassTextElement.style.color = '#FFFFFF'; // Default for non-hex (e.g. named colors)
+                    gradClassTextElement.style.color = '#FFFFFF'; 
                 }
                 studentLi.appendChild(gradClassTextElement);
 
@@ -3276,17 +3071,17 @@ function getChartJsConfigOptions(
                 galleryImg.src = seniorChoice.seniorPhotoUrl;
                 galleryImg.alt = `${seniorChoice.seniorName}'s Photo`;
                 galleryImg.onerror = function() {
-                    this.src = seniorChoice.seniorPhotoUrlPng; // Try PNG version
-                    this.onerror = function() { // If PNG also fails, try college image
-                        this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png'; // Fallback to placeholder if no college image
-                        this.onerror = null; // Prevent infinite loop if placeholder also fails
+                    this.src = seniorChoice.seniorPhotoUrlPng; 
+                    this.onerror = function() { 
+                        this.src = seniorChoice.collegeImageUrl && !seniorChoice.collegeImageUrl.startsWith('placeholder') ? seniorChoice.collegeImageUrl : 'placeholder-logo.png'; 
+                        this.onerror = null; 
                     };
                 };
                 galleryPhotoDiv.appendChild(galleryImg);
                 studentLi.appendChild(galleryPhotoDiv);
-                // nameSpan is not appended in gallery view as per original CSS (display: none !important;)
-            } else { // Default List View (either flat student list or grouped under college)
-                // studentLi.appendChild(schoolCheckbox); // <<< THIS LINE IS REMOVED TO HIDE CHECKBOX IN LIST VIEW
+
+            } else { 
+
                 studentLi.appendChild(nameSpan);
             }
 
@@ -3328,7 +3123,7 @@ function getChartJsConfigOptions(
                 }
             });
             studentLi.addEventListener('click', (event) => {
-                // If a checkbox is part of the list item (e.g., in gallery view) and is clicked, let its own event handler manage it.
+
                 if (event.target.type === 'checkbox' && studentLi.contains(event.target)) return;
 
                 const clickedOriginalIndex = originalIndex;
@@ -3350,10 +3145,6 @@ function getChartJsConfigOptions(
             });
             return studentLi;
         }
-
-
-         // Apply search term filtering to the newly built list
-
 
         function updateCurrentSelectionHighlight() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
@@ -3444,19 +3235,18 @@ function getChartJsConfigOptions(
             updateCurrentSelectionHighlight();
         }
 
-
         async function initializeApp() {
     try {
-        const response = await fetch('jsonData.json'); // Fetch the new JSON file
+        const response = await fetch('jsonData.json'); 
         if (!response.ok) {
             throw new Error(`Failed to fetch jsonData.json: ${response.status} ${response.statusText}`);
         }
-        const jsonDataFromFile = await response.json(); // Parse it
+        const jsonDataFromFile = await response.json(); 
 
         console.log("[DEBUG] Attempting to initialize seniorCollegeChoices and allData from jsonData.json...");
-        // Use jsonDataFromFile with parseRawData
+
         seniorCollegeChoices = parseRawData(jsonDataFromFile);
-        
+
         if (!Array.isArray(seniorCollegeChoices)) {
             console.error("[DEBUG] parseRawData did not return an array. Value:", seniorCollegeChoices);
             throw new Error("Data parsing failed: seniorCollegeChoices is not an array.");
@@ -3467,7 +3257,7 @@ function getChartJsConfigOptions(
         allData = seniorCollegeChoices.map((choice, index) => {
             if (!choice || typeof choice !== 'object') {
                 console.error(`[DEBUG] Malformed item in seniorCollegeChoices at index ${index}:`, choice);
-                // Return a dummy object or skip to prevent further errors
+
                 return { 
                     displayName: `Error - Malformed Data (Index ${index})`, 
                     originalIndex: index, 
@@ -3475,7 +3265,7 @@ function getChartJsConfigOptions(
                     majorArea: "Unknown" 
                 };
             }
-            // Ensure essential properties exist for the mapping logic
+
             if (typeof choice.seniorName !== 'string' || typeof choice.gradClass !== 'string' || typeof choice.collegeName !== 'string') {
                 console.warn(`[DEBUG] Item with missing/invalid essential string properties in seniorCollegeChoices at index ${index}. Item:`, choice);
                 return { 
@@ -3483,10 +3273,10 @@ function getChartJsConfigOptions(
                     displayName: `Error - Missing Properties (Index ${index})`, 
                     originalIndex: index, 
                     isVisible: false,
-                    majorArea: getMajorArea(choice.major) // Attempt to get majorArea even if other fields are problematic
+                    majorArea: getMajorArea(choice.major) 
                 };
             }
-            const majorArea = getMajorArea(choice.major); // getMajorArea should handle undefined major
+            const majorArea = getMajorArea(choice.major); 
             return {
                 ...choice,
                 displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
@@ -3494,7 +3284,7 @@ function getChartJsConfigOptions(
                 isVisible: true, 
                 majorArea: majorArea
             };
-            // Filter out items that became problematic during mapping
+
         }).filter(item => item && item.displayName && !item.displayName.startsWith("Error -")); 
 
         console.log(`[DEBUG] allData initialized. Length: ${allData.length}`);
@@ -3516,8 +3306,7 @@ function getChartJsConfigOptions(
             <p>There was a critical error while preparing the application's core data. The map functionality will be severely limited or unavailable.</p>
             <p><strong>Error details:</strong> ${error.message}</p>
             <p>Please check the browser's developer console for more technical information (specifically, look for errors logged *before* any 'initMap' errors).</p>`;
-        
-        // Prepend to body if body exists, otherwise alert as a last resort.
+
         if (document.body) {
             if (!document.getElementById("critical-initialization-error-message")) {
                  document.body.prepend(criticalErrorDiv);
@@ -3528,7 +3317,7 @@ function getChartJsConfigOptions(
                     document.body.prepend(criticalErrorDiv);
                 }
             });
-             setTimeout(() => { // Fallback alert
+             setTimeout(() => { 
                  if (!document.getElementById("critical-initialization-error-message")) {
                     alert("CRITICAL ERROR during application data initialization: " + error.message + ". Check console.");
                  }
@@ -3537,8 +3326,6 @@ function getChartJsConfigOptions(
         window.isDataReadyForMap = false;
     }
 
-    // Call initMap AFTER data processing attempt. 
-    // initMap itself should check window.isDataReadyForMap.
     initMap();
 }
 
@@ -3560,10 +3347,7 @@ function getChartJsConfigOptions(
             }
             console.log(`[DEBUG] initMap: Data is ready. Proceeding with allData containing ${allData.length} items.`);
 
-
-             
-
-            stateCountryFilterState = {}; // Initialize as empty object
+            stateCountryFilterState = {}; 
 
             const stateCountryFiltersContainer = document.getElementById('state-country-filters-container');
             if (stateCountryFiltersContainer && allData && allData.length > 0) {
@@ -3571,7 +3355,7 @@ function getChartJsConfigOptions(
                 const UNKNOWN_STATE_COUNTRY_KEY = "Unknown/Not Applicable";
 
                 allData.forEach(school => {
-                    if (school.collegeName === "Undecided") { // Include "Undecided" for the "Unknown/Not Applicable" category
+                    if (school.collegeName === "Undecided") { 
                          uniqueStateCountries.add(UNKNOWN_STATE_COUNTRY_KEY);
                          return;
                     }
@@ -3584,18 +3368,18 @@ function getChartJsConfigOptions(
                 });
 
                 const sortedStateCountries = Array.from(uniqueStateCountries).sort((a, b) => {
-                    if (a === UNKNOWN_STATE_COUNTRY_KEY) return 1; // Push "Unknown" to the end
+                    if (a === UNKNOWN_STATE_COUNTRY_KEY) return 1; 
                     if (b === UNKNOWN_STATE_COUNTRY_KEY) return -1;
                     return a.localeCompare(b);
                 });
 
                 const fragmentStateCountryFilters = document.createDocumentFragment();
                                 sortedStateCountries.forEach(scName => {
-                    stateCountryFilterState[scName] = true; // Default to checked
+                    stateCountryFilterState[scName] = true; 
 
                     const filterId = `filter-sc-${scName.replace(/\W+/g, '-')}`;
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'filter-item'; // Re-use existing class for styling consistency
+                    itemDiv.className = 'filter-item'; 
 
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
@@ -3605,20 +3389,17 @@ function getChartJsConfigOptions(
                     checkbox.addEventListener('change', (event) => {
                         stateCountryFilterState[scName] = event.target.checked;
                         updateMarkersVisibility();
-                        // Optional: update a master check/uncheck button for states/countries if you add one
+
                     });
 
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
-                    
-                    // Corrected logic for studentCountForSC:
+
                     const studentCountForSC = allData.filter(s => {
                         const studentActualSCKey = (s.stateOrCountry && s.stateOrCountry.trim() !== "" && s.stateOrCountry !== "N/A") 
                                                  ? s.stateOrCountry.trim() 
                                                  : UNKNOWN_STATE_COUNTRY_KEY;
-                        // A student 's' contributes to the count of 'scName' if their actual SC key matches scName.
-                        // This covers "Undecided" students correctly because their s.stateOrCountry will often be "N/A"
-                        // (or missing) from collegeCoordsAndInfo, leading to studentActualSCKey being UNKNOWN_STATE_COUNTRY_KEY.
+
                         return studentActualSCKey === scName;
                     }).length;
 
@@ -3630,7 +3411,6 @@ function getChartJsConfigOptions(
                 });
                 stateCountryFiltersContainer.appendChild(fragmentStateCountryFilters);
 
-                // Add event listeners for the new Check All/Uncheck All buttons
                 document.getElementById('checkAllStateCountryBtn').addEventListener('click', () => {
                     stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => {
                         stateCountryFilterState[cb.value] = true;
@@ -3650,52 +3430,46 @@ function getChartJsConfigOptions(
                  stateCountryFiltersContainer.innerHTML = "<p style='font-style:italic; font-size:0.9em; padding:5px;'>No state/country data to filter.</p>";
             }
 
-
-            // Collapsible sections for map controls
             document.querySelectorAll('.map-control > h4').forEach(header => {
-                // Exclude the main description header from being collapsible
+
                 if (header.parentElement && header.parentElement.id === 'description-control') {
-                    header.style.cursor = 'default'; // Remove pointer cursor
-                    if (header.querySelector('::after')) header.querySelector('::after').remove(); // Remove indicator if any
+                    header.style.cursor = 'default'; 
+                    if (header.querySelector('::after')) header.querySelector('::after').remove(); 
                     return;
                 }
-                 // Also exclude the school list header itself, as it has its own toggle button
+
                 if (header.parentElement && header.parentElement.classList.contains('list-header-container')) {
                      header.style.cursor = 'default';
                      return;
                 }
 
-
                 const content = header.nextElementSibling;
                 if (content && content.classList.contains('control-content')) {
                     header.addEventListener('click', () => {
                         content.classList.toggle('collapsed');
-                        header.classList.toggle('collapsed'); // For +/- indicator styling
+                        header.classList.toggle('collapsed'); 
                     });
                 } else {
-                    // If h4 is not directly followed by .control-content (e.g. filter headers in #filter-control)
-                    // find the relevant content block if structure is different
+
                     let currentElement = header;
                     let foundContent = null;
                     while(currentElement.nextElementSibling && !foundContent) {
                         currentElement = currentElement.nextElementSibling;
                         if (currentElement.classList.contains('control-content') ||
-                            currentElement.id === 'grad-class-filters-container' || // Specific IDs that act as content blocks
+                            currentElement.id === 'grad-class-filters-container' || 
                             currentElement.id === 'state-country-filters-container' ||
-                            currentElement.tagName === 'TABLE' || // e.g. stats-table, major-summary-table
-                            currentElement.classList.contains('chart-container') // For trends
+                            currentElement.tagName === 'TABLE' || 
+                            currentElement.classList.contains('chart-container') 
                            ) {
                            foundContent = currentElement;
-                           // If multiple chart containers, they need to be wrapped in a single parent .control-content
+
                         }
                     }
-                    if (foundContent && foundContent.parentElement.id !== header.parentElement.id) { // Only if it's a direct child or specific structure
-                         // This simple nextElementSibling might not work for complex layouts within a single .map-control.
-                         // The current structure has .control-content divs for this.
+                    if (foundContent && foundContent.parentElement.id !== header.parentElement.id) { 
+
                     }
                 }
             });
-
 
             baseMarkerIcon = { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
             highlightedMarkerIcon = { ...baseMarkerIcon, scale: 10, strokeWeight: 2.0 };
@@ -3718,13 +3492,11 @@ function getChartJsConfigOptions(
 
          if (!zoomedGradClassInfoDiv || !zoomedGradClassValueSpan) console.error("[DEBUG] CRITICAL: Zoomed grad class info elements not found!");
 
-
             if (!seniorPopupImage) console.error("[DEBUG] CRITICAL: senior-photo-popup img element not found!");
             if (!seniorPopupCaption) console.error("[DEBUG] CRITICAL: senior-photo-caption element not found!");
             if (!closeSeniorPhotoBtn) console.error("[DEBUG] CRITICAL: close-senior-photo-popup element not found!");
             if (!zoomExitNote) console.error("[DEBUG] CRITICAL: zoom-exit-note element not found!");
             if (!prevSeniorPhotoBtn || !nextSeniorPhotoBtn) console.error("[DEBUG] CRITICAL: Photo navigation arrow buttons not found!");
-
 
             photoZoomOverlay = document.createElement('div');
             photoZoomOverlay.id = 'photo-zoom-overlay';
@@ -3734,7 +3506,6 @@ function getChartJsConfigOptions(
             if (photoZoomOverlay) photoZoomOverlay.addEventListener('click', () => exitZoomMode(true));
             if (prevSeniorPhotoBtn) prevSeniorPhotoBtn.addEventListener('click', () => navigateToSeniorPhoto('prev'));
             if (nextSeniorPhotoBtn) nextSeniorPhotoBtn.addEventListener('click', () => navigateToSeniorPhoto('next'));
-
 
             if(zoomExitNote){
                 const zoomExitNoteDismissButton = zoomExitNote.querySelector('.dismiss-button');
@@ -3778,7 +3549,7 @@ function getChartJsConfigOptions(
                         if (infowindow && infowindow.getMap()) {
                             infowindow.close();
                         }
-                        
+
                         this.classList.add('zoomed');
                         if (photoZoomOverlay) photoZoomOverlay.style.display = 'block';
                         if (zoomExitNote) zoomExitNote.style.display = 'block';
@@ -3789,21 +3560,18 @@ function getChartJsConfigOptions(
                         const zoomedInfoPanel = document.getElementById('zoomed-info-panel');
                         const zoomedBioCaptionEl = document.getElementById('zoomed-bio-caption-content');
                         const zoomedSocialLinksEl = document.getElementById('zoomed-social-links-container');
-                        // Note: zoomedGradClassInfoDiv and zoomedGradClassValueSpan are global and already defined
 
                           if (seniorData && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
-                            
-                            // --- MODIFICATION START: Populate Grad Class Info on initial zoom ---
+
                             if (zoomedGradClassInfoDiv && zoomedGradClassValueSpan) {
                                 zoomedGradClassValueSpan.textContent = seniorData.gradClass;
-                                zoomedGradClassValueSpan.style.color = gradClassColors[seniorData.gradClass] || (isDarkMode ? '#EEE' : '#111'); // Fallback color
+                                zoomedGradClassValueSpan.style.color = gradClassColors[seniorData.gradClass] || (isDarkMode ? '#EEE' : '#111'); 
                                 zoomedGradClassInfoDiv.style.display = 'block';
                             }
-                            // --- MODIFICATION END ---
 
-                            zoomedBioCaptionEl.innerHTML = seniorData.bioCaption || `Congrats, ${seniorData.seniorName}!`; // Default if bio is empty
+                            zoomedBioCaptionEl.innerHTML = seniorData.bioCaption || `Congrats, ${seniorData.seniorName}!`; 
 
-                             zoomedSocialLinksEl.innerHTML = ''; // Clear previous links
+                             zoomedSocialLinksEl.innerHTML = ''; 
                             if (seniorData.linkedInUrl) {
                                 const liLink = document.createElement('a');
                                 liLink.href = seniorData.linkedInUrl;
@@ -3821,7 +3589,7 @@ function getChartJsConfigOptions(
                                 zoomedSocialLinksEl.appendChild(igLink);
                             }
                             zoomedInfoPanel.style.display = 'block';
-                            
+
                             if(seniorPopupCaption) seniorPopupCaption.style.display = 'none';
                             parentPopup.classList.add('with-side-panel');
                         }
@@ -3846,7 +3614,6 @@ function getChartJsConfigOptions(
 
             PREDEFINED_MAJOR_AREAS.forEach(area => majorAreaFilterState[area] = true);
 
-
             const mapOptions = {
                 center: { lat: 41.8, lng: -74.5 }, zoom: 7,
                 mapTypeControlOptions: { position: google.maps.ControlPosition.TOP_RIGHT },
@@ -3854,16 +3621,11 @@ function getChartJsConfigOptions(
                 fullscreenControl: true, streetViewControl: true, zoomControl: true, mapTypeControl: true,
                 gestureHandling: 'greedy'
             };
-            map = new google.maps.Map(document.getElementById("map"), mapOptions); // Correctly initialize map. Semicolon ends the statement.
-            
-            // Initialize infowindow, schoolsSelectedForZoom, and transitLayer separately.
+            map = new google.maps.Map(document.getElementById("map"), mapOptions); 
+
             infowindow = new google.maps.InfoWindow();
             schoolsSelectedForZoom = new Set();
             transitLayer = new google.maps.TransitLayer();
-
-            // The erroneous block and its contents have been removed/corrected.
-            
-
 
             const locationFocusCheckboxes = document.querySelectorAll('.location-focus-filter');
             locationFocusCheckboxes.forEach(checkbox => {
@@ -3887,7 +3649,6 @@ function getChartJsConfigOptions(
                 updateMarkersVisibility();
             });
             updateCheckAllLocationFocusButtonState();
-
 
             const gradClassFiltersContainer = document.getElementById('grad-class-filters-container');
             const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
@@ -3950,20 +3711,17 @@ function getChartJsConfigOptions(
 
                         if (closeSeniorPhotoBtn) {
                 closeSeniorPhotoBtn.addEventListener('click', () => {
-                    // This button is for the non-image-zoomed popup (small or large-styled)
-                    // If the image *inside* happens to be zoomed, exit that specific image zoom first.
+
                     if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
-                        exitZoomMode(true); // exitZoomMode(true) will call hideSeniorPhotoPopup
+                        exitZoomMode(true); 
                     } else {
-                        hideSeniorPhotoPopup(); // Just hide the currently styled (small or large) popup
+                        hideSeniorPhotoPopup(); 
                     }
                 });
             }
 
-
-
             clearAllFiltersBtn.addEventListener('click', () => {
-                // ... (existing resets for grad class, location focus, major area) ...
+
                 gradClassNames.forEach(gc => gradClassFilterState[gc] = true);
                 gradClassFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
 
@@ -3972,16 +3730,14 @@ function getChartJsConfigOptions(
                 updateCheckAllLocationFocusButtonState();
 
                 PREDEFINED_MAJOR_AREAS.forEach(area => majorAreaFilterState[area] = true);
-                Object.keys(majorAreaFilterState).forEach(area => majorAreaFilterState[area] = true); // Ensure dynamic areas also reset
+                Object.keys(majorAreaFilterState).forEach(area => majorAreaFilterState[area] = true); 
                 document.querySelectorAll('#major-summary-table tbody input[type="checkbox"]').forEach(cb => cb.checked = true);
                 updateCheckAllMajorAreasButtonState();
 
-                // Reset State/Country filters
                 Object.keys(stateCountryFilterState).forEach(sc => stateCountryFilterState[sc] = true);
                 if (stateCountryFiltersContainer) {
                     stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
                 }
-                // END Reset State/Country filters
 
                 schoolSearchInput.value = '';
                 updateMarkersVisibility();
@@ -4023,7 +3779,6 @@ function getChartJsConfigOptions(
                 updateMarkersVisibility();
             });
 
-
             let schoolListUl = schoolListCollapsibleContentDiv.querySelector('ul');
             if (!schoolListUl) {
                 schoolListUl = document.createElement('ul');
@@ -4031,14 +3786,12 @@ function getChartJsConfigOptions(
             }
             schoolListUl.setAttribute('tabindex', '-1');
 
-
            const primarySortTargetSelect = document.getElementById('primarySortTarget');
             const collegeSortOptionsContainer = document.getElementById('collegeSortOptionsContainer');
             const studentSortOptionsContainer = document.getElementById('studentSortOptionsContainer');
             const collegeSortSelect = document.getElementById('collegeSortSelect');
             const studentSortSelect = document.getElementById('studentSortSelect');
 
-            // Initialize visibility based on default primary target
             if (currentPrimarySortTarget === 'students') {
                 studentSortOptionsContainer.style.display = 'block';
                 collegeSortOptionsContainer.style.display = 'none';
@@ -4052,7 +3805,7 @@ function getChartJsConfigOptions(
                 if (currentPrimarySortTarget === 'students') {
                     studentSortOptionsContainer.style.display = 'block';
                     collegeSortOptionsContainer.style.display = 'none';
-                } else { // 'colleges'
+                } else { 
                     studentSortOptionsContainer.style.display = 'none';
                     collegeSortOptionsContainer.style.display = 'block';
                 }
@@ -4068,19 +3821,18 @@ function getChartJsConfigOptions(
 
             studentSortSelect.addEventListener('change', (event) => {
                 currentStudentSortValue = event.target.value;
-                // Student sort affects both primary student sort and secondary sort within colleges
+
                 sortAndRebuildList();
             });
 
-            // Keep track of coordinates that have been used for a marker to apply offsets
-            const assignedCoordinatesCount = {}; // Key: "lat,lng", Value: count of markers at this exact spot
+            const assignedCoordinatesCount = {}; 
 
             allMarkers = new Array(allData.length).fill(null);
             allData.forEach((seniorChoice) => {
                  const index = seniorChoice.originalIndex;
                  let lat = seniorChoice.lat;
                  let lng = seniorChoice.lng;
-                 const originalCoordKey = `${seniorChoice.lat},${seniorChoice.lng}`; // Use original for counting
+                 const originalCoordKey = `${seniorChoice.lat},${seniorChoice.lng}`; 
 
                  if (seniorChoice.lat !== 0 || seniorChoice.lng !== 0) {
                     if (assignedCoordinatesCount[originalCoordKey]) {
@@ -4130,7 +3882,6 @@ function getChartJsConfigOptions(
                      }
                      contentString += `<hr style="margin: 5px 0;">`;
 
-
                      if (clickedSchoolData.collegeName === "Undecided") {
                         const suffixHtml = getHonorarySuffixHTML(clickedSchoolData.collegeNameRaw);
                         contentString += `<b>${clickedSchoolData.seniorName}</b>${suffixHtml}`;
@@ -4156,8 +3907,7 @@ function getChartJsConfigOptions(
                                  let studentEntry = `<li>`;
             if (student.originalIndex === originalIndex) studentEntry += `<b>`;
             studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
-            
-            // Add social links
+
             if (student.linkedInUrl) {
                 studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
             }
@@ -4198,15 +3948,15 @@ function getChartJsConfigOptions(
                  });
 
                                   marker.addListener('mouseover', () => {
-                     if (panelJustToggledOpen) return; // ADD THIS CHECK
+                     if (panelJustToggledOpen) return; 
 
-                     const schoolData = allData[index]; // 'index' is from the forEach loop context
+                     const schoolData = allData[index]; 
                      if (schoolData.isVisible) {
                         document.getElementById('searchSuggestions').style.display = 'none';
                         const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
-                        // Pass the correct listItem or null to showSeniorPhotoPopup
+
                         showSeniorPhotoPopup(listItem, schoolData); 
-                        
+
                         marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
                         marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                      }
@@ -4253,7 +4003,7 @@ function getChartJsConfigOptions(
                   diameter = 45;
                   labelFontSize = "12px";
                 }
-        
+
                 const svg = window.btoa(`
                   <svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}">
                     <circle cx="${diameter / 2}" cy="${diameter / 2}" r="${diameter / 2 * 0.9}" fill="${color}" stroke="rgba(0,0,0,0.3)" stroke-width="${Math.max(1, diameter * 0.04)}"/>
@@ -4305,7 +4055,6 @@ function getChartJsConfigOptions(
                 });
             }
 
-
             darkModeToggle.addEventListener('click', () => {
                  isDarkMode = !isDarkMode; document.body.classList.toggle('dark-mode', isDarkMode);
                  map.setOptions({ styles: isDarkMode ? darkMapStyle : null });
@@ -4319,11 +4068,10 @@ function getChartJsConfigOptions(
                  darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
                  darkModeToggle.title = isDarkMode ? 'Light Mode' : 'Dark Mode';
 
-
                   rebuildSchoolListHTML(); 
 
                    if (infowindow && infowindow.getMap()) {
-                    // Simple approach: close it. User can reopen.
+
                     infowindow.close(); 
                 }
 
@@ -4366,31 +4114,26 @@ function getChartJsConfigOptions(
                  updateMarkersVisibility();
             });
 
-                       // --- Resizer Logic ---
             const resizer = document.getElementById('panel-resizer');
             const controlPanel = document.getElementById('controls-and-list-container');
             const mapDisplayPanel = document.getElementById('map');
 
-            // Initial setup of panel/map sizes - Primarily for desktop width persistence
             const isDesktopViewInitial = window.innerWidth > 768;
             if (isDesktopViewInitial) {
                 const savedDesktopWidth = localStorage.getItem('controlPanelWidthDesktop');
                 if (savedDesktopWidth) {
                     controlPanel.style.width = savedDesktopWidth;
                 } else {
-                    controlPanel.style.width = '30%'; // Default for desktop
+                    controlPanel.style.width = '30%'; 
                 }
-                // On desktop, both panel and map should be full height of the flex container
+
                 controlPanel.style.height = '100%';
                 mapDisplayPanel.style.height = '100%';
             } else {
-                // Mobile view:
-                // CSS media queries handle panel width, max-width, and absolute positioning.
-                // Panel (drawer) and map should both aim for 100% height of their respective contexts.
-                // Clear any inline width that might have been set by desktop logic.
+
                 controlPanel.style.width = ''; 
-                controlPanel.style.height = '100%'; // Drawer itself is full height
-                mapDisplayPanel.style.height = '100%'; // Map should fill its container
+                controlPanel.style.height = '100%'; 
+                mapDisplayPanel.style.height = '100%'; 
             }
 
             let startX = 0;
@@ -4399,13 +4142,11 @@ function getChartJsConfigOptions(
             resizer.addEventListener('mousedown', function(e) {
                 e.preventDefault();
                 const isMobileViewCurrent = window.innerWidth <= 768;
-                // Resizer is hidden by CSS on mobile, so this event should primarily fire on desktop.
-                // If it somehow fires on mobile, bail out.
+
                 if (isMobileViewCurrent) {
                     return;
                 }
 
-                // Desktop horizontal resizing logic
                 startX = e.clientX;
                 startWidth = parseInt(window.getComputedStyle(controlPanel).width, 10);
 
@@ -4418,10 +4159,9 @@ function getChartJsConfigOptions(
             });
 
             function doDrag(e) {
-                // This function should only execute for desktop horizontal resizing
-                // as mousedown is guarded.
+
                 const isMobileViewCurrent = window.innerWidth <= 768;
-                if (isMobileViewCurrent) return; // Defensive check
+                if (isMobileViewCurrent) return; 
 
                 let newWidth = startWidth + e.clientX - startX;
                 const containerWidth = document.getElementById('map-container').offsetWidth;
@@ -4440,7 +4180,6 @@ function getChartJsConfigOptions(
                 mapDisplayPanel.style.pointerEvents = '';
                 controlPanel.style.pointerEvents = '';
 
-                // Only save width if it's desktop view
                 if (window.innerWidth > 768) {
                     localStorage.setItem('controlPanelWidthDesktop', controlPanel.style.width);
                 }
@@ -4449,18 +4188,17 @@ function getChartJsConfigOptions(
                     google.maps.event.trigger(map, 'resize'); 
                 }
             }
-            // --- End Resizer Logic ---
 
            document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 if (seniorPopupImage && seniorPopupImage.classList.contains('zoomed')) {
                     exitZoomMode(true);
                     event.preventDefault();
-                } else if (faqPopup && faqPopup.style.display !== 'none') { // Check if FAQ is visible
-                    const closeFaqFunc = () => { // Re-declare or make accessible
+                } else if (faqPopup && faqPopup.style.display !== 'none') { 
+                    const closeFaqFunc = () => { 
                         if (faqPopup) faqPopup.style.display = 'none';
                         if (faqOverlay) faqOverlay.style.display = 'none';
-                        // document.body.style.overflow = '';
+
                     };
                     closeFaqFunc();
                     event.preventDefault();
@@ -4480,7 +4218,7 @@ function getChartJsConfigOptions(
                     event.preventDefault();
                 }
             } else if (document.activeElement !== schoolSearchInput && 
-                       !(faqPopup && faqPopup.style.display !== 'none') && // Don't navigate list if FAQ is open
+                       !(faqPopup && faqPopup.style.display !== 'none') && 
                        !(seniorPopupImage && seniorPopupImage.classList.contains('zoomed'))) {
                 if (event.key === 'ArrowDown') {
                     navigateList('down');
@@ -4502,7 +4240,7 @@ function getChartJsConfigOptions(
                     renderLocationFocusTrendChart(locationFocusData.trends, locationFocusData.years, locationFocusData.categories, isDarkMode);
                 }
 
-                const popularCollegesData = aggregatePopularCollegeTrends(allData, 5); // Show top 5
+                const popularCollegesData = aggregatePopularCollegeTrends(allData, 5); 
                 if (document.getElementById('popularCollegesTrendChart') && popularCollegesData.categories.length > 0) {
                     renderPopularCollegesTrendChart(popularCollegesData.trends, popularCollegesData.years, popularCollegesData.categories, isDarkMode);
                 }
@@ -4518,31 +4256,25 @@ function getChartJsConfigOptions(
 
             if (showFaqBtn && faqPopup && faqOverlay && closeFaqPopupBtn) {
                 showFaqBtn.addEventListener('click', () => {
-                    faqPopup.style.display = 'flex'; // Use flex due to flex-direction: column
+                    faqPopup.style.display = 'flex'; 
                     faqOverlay.style.display = 'block';
-                    // Optionally, prevent background scroll when FAQ is open
-                    // document.body.style.overflow = 'hidden'; 
+
                 });
 
                 const closeFaq = () => {
                     faqPopup.style.display = 'none';
                     faqOverlay.style.display = 'none';
-                    // Restore background scroll if it was disabled
-                    // document.body.style.overflow = ''; 
+
                 };
 
                 closeFaqPopupBtn.addEventListener('click', closeFaq);
                 faqOverlay.addEventListener('click', (event) => {
-                    // Only close if the overlay itself is clicked, not content within the popup
+
                     if (event.target === faqOverlay) {
                         closeFaq();
                     }
                 });
 
-                // Also add Escape key listener for FAQ, but ensure it doesn't conflict
-                // with the existing Escape key listener for photo popups.
-                // The existing keydown listener can be modified or this can be added carefully.
-                // For simplicity, adding it to the existing listener:
             } else {
                 console.warn("FAQ popup elements not found. FAQ functionality will be disabled.");
             }
@@ -4551,8 +4283,6 @@ function getChartJsConfigOptions(
       const menuToggleBtn  = document.getElementById('menu-toggle');
 const controlsPanel  = document.getElementById('controls-and-list-container');
 const panelResizer   = document.getElementById('panel-resizer');
-
-
 
 function handleMenuToggle() {
     const isMobileView      = window.innerWidth <= 768;
@@ -4563,13 +4293,12 @@ function handleMenuToggle() {
     panelJustToggledOpen = false;
     if (panelToggleTimeout) clearTimeout(panelToggleTimeout);
 
-    /* ----------  MOBILE (≤ 768 px)  ---------- */
     if (isMobileView) {
-        // Toggle the slide-in drawer
+
         controlsPanelEl.classList.toggle('panel-mobile-open');
         controlsPanelEl.classList.remove('panel-desktop-hidden');
 
-        if (controlsPanelEl.classList.contains('panel-mobile-open')) {           // now OPEN
+        if (controlsPanelEl.classList.contains('panel-mobile-open')) {           
             panelResizerEl.style.display  = 'flex';
             panelResizerEl.style.position = 'absolute';
             const panelWidth = controlsPanelEl.offsetWidth;
@@ -4578,30 +4307,26 @@ function handleMenuToggle() {
             panelResizerEl.style.height = `${controlsPanelEl.offsetHeight}px`;
             panelResizerEl.style.zIndex =
                 (parseInt(window.getComputedStyle(controlsPanelEl).zIndex) || 0) + 1;
-        } else {                                                                 // now CLOSED
+        } else {                                                                 
             panelResizerEl.style.display = 'none';
         }
 
         if (menuToggleBtn) menuToggleBtn.style.left = '.75rem';
 
-        // Close any open photo pop-up when drawer opens
         if (controlsPanelEl.classList.contains('panel-mobile-open') &&
             seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
             hideSeniorPhotoPopup();
         }
 
-    /* ----------  DESKTOP (> 768 px)  ---------- */
     } else {
         controlsPanelEl.classList.toggle('panel-desktop-hidden');
         const panelIsHidden = controlsPanelEl.classList.contains('panel-desktop-hidden');
 
-        /* ---- Panel just CLOSED ---- */
         if (panelIsHidden) {
             panelResizerEl.style.display = 'none';
             panelResizerEl.classList.add('resizer-desktop-hidden');
             if (menuToggleBtn) menuToggleBtn.style.left = '.75rem';
 
-            // If a small popup is showing, reposition it for the closed-panel state
             if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') &&
                 currentlyZoomedSeniorOriginalIndex !== null &&
                 seniorPopupImage && !seniorPopupImage.classList.contains('zoomed')) {
@@ -4610,7 +4335,6 @@ function handleMenuToggle() {
                 if (item) showSeniorPhotoPopup(item, allData[currentlyZoomedSeniorOriginalIndex]);
             }
 
-        /* ---- Panel just OPENED ---- */
         } else {
             panelResizerEl.style.display = 'flex';
             panelResizerEl.style.position = '';
@@ -4622,18 +4346,13 @@ function handleMenuToggle() {
             if (menuToggleBtn) {
                 const panelWidth = controlsPanelEl.offsetWidth;
 
-                /* -------------- NEW SAFETY PATCH --------------
-                   getComputedStyle can return "auto" or "0px" before the
-                   browser repaints, so we fall back to the default 14 px. */
                 const cs = window.getComputedStyle(panelResizerEl);
                 let resizerWidth = parseFloat(cs.width);
                 if (isNaN(resizerWidth) || resizerWidth === 0) resizerWidth = 14;
-                /* --------------------------------------------- */
 
                 menuToggleBtn.style.left = `${panelWidth + resizerWidth + 12}px`;
             }
 
-            // Hide the photo pop-up as the panel opens
             if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible')) {
                 hideSeniorPhotoPopup();
                 panelJustToggledOpen = true;
@@ -4641,15 +4360,13 @@ function handleMenuToggle() {
             }
         }
 
-        // Force a map resize once the CSS transition is done
         setTimeout(() => {
             if (window.map && google?.maps?.event) {
                 google.maps.event.trigger(window.map, 'resize');
             }
-        }, 310); // slightly longer than the 300 ms panel transition
+        }, 310); 
     }
 }
-
 
 if (menuToggleBtn && controlsPanel && panelResizer) {
     menuToggleBtn.addEventListener('click', handleMenuToggle);
@@ -4665,7 +4382,6 @@ function initPhotoNavArrows() {
   }
 }
 
-
 function adjustLayoutOnResize() {
     const isMobileView = window.innerWidth <= 768;
     const menuToggleBtn = document.getElementById('menu-toggle');
@@ -4674,7 +4390,7 @@ function adjustLayoutOnResize() {
     const panelResizerEl = document.getElementById('panel-resizer');
 
     if (isMobileView) {
-        // Mobile specific adjustments
+
         controlPanel.classList.remove('panel-desktop-hidden'); 
 
         if (controlPanel.classList.contains('panel-mobile-open')) {
@@ -4684,15 +4400,14 @@ function adjustLayoutOnResize() {
             panelResizerEl.style.left = `${panelWidth}px`; 
             panelResizerEl.style.top = '0px'; 
             panelResizerEl.style.height = controlPanel.offsetHeight + 'px'; 
-            panelResizerEl.style.zIndex = (parseInt(window.getComputedStyle(controlPanel).zIndex) || 1000) + 1; // Ensure zIndex is higher
+            panelResizerEl.style.zIndex = (parseInt(window.getComputedStyle(controlPanel).zIndex) || 1000) + 1; 
         } else {
             panelResizerEl.style.display = 'none'; 
         }
 
         if (menuToggleBtn) {
-            menuToggleBtn.style.left = '.75rem'; // Hamburger ALWAYS stays top-left on mobile
-            // REMOVED the setTimeout block that was here, which moved the hamburger
-            // next to the opened mobile drawer. This ensures it stays fixed at .75rem.
+            menuToggleBtn.style.left = '.75rem'; 
+
         }
         if (mapDisplayPanel) mapDisplayPanel.style.height = '100%';
         if (controlPanel) {
@@ -4700,17 +4415,17 @@ function adjustLayoutOnResize() {
             controlPanel.style.width = ''; 
         }
 
-    } else { // Desktop specific adjustments
+    } else { 
         if (controlPanel.classList.contains('panel-desktop-hidden')) {
             panelResizerEl.style.display = 'none';
-            if (panelResizerEl) panelResizerEl.classList.add('resizer-desktop-hidden'); // panelResizer typo corrected to panelResizerEl
+            if (panelResizerEl) panelResizerEl.classList.add('resizer-desktop-hidden'); 
         } else {
             panelResizerEl.style.display = 'flex';
             panelResizerEl.style.position = ''; 
             panelResizerEl.style.left = '';     
             panelResizerEl.style.top = '';      
             panelResizerEl.style.height = '100%';
-             if (panelResizerEl) panelResizerEl.classList.remove('resizer-desktop-hidden'); // panelResizer typo corrected to panelResizerEl
+             if (panelResizerEl) panelResizerEl.classList.remove('resizer-desktop-hidden'); 
         }
 
         controlPanel.classList.remove('panel-mobile-open'); 
@@ -4721,7 +4436,7 @@ function adjustLayoutOnResize() {
             } else {
                 const panelWidth = controlPanel.offsetWidth;
                 const resizerCurrentDisplay = window.getComputedStyle(panelResizerEl).display;
-                // Fallback for resizerWidth is 14px (its CSS default width) if it's hidden or offsetWidth is 0
+
                 const resizerWidth = (resizerCurrentDisplay !== 'none' && panelResizerEl.offsetWidth) ? panelResizerEl.offsetWidth : 14; 
 
                 menuToggleBtn.style.left = `${panelWidth + resizerWidth + 12}px`; 
@@ -4740,7 +4455,6 @@ function adjustLayoutOnResize() {
     }, 50); 
 }
 
-// Debounce function (if not already defined)
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -4755,18 +4469,13 @@ function debounce(func, wait) {
 
 window.addEventListener('resize', debounce(adjustLayoutOnResize, 200));
 
-// Initial setup on load (can be at the end of initMap or DOMContentLoaded)
-// Initial setup on load
 document.addEventListener('DOMContentLoaded', () => {
-    // Defer initial layout adjustment slightly to ensure DOM dimensions are stable.
-    // setTimeout with 0ms delay pushes this to the end of the event queue,
-    // after the browser has finished its current rendering and layout pass.
+
     setTimeout(() => {
         adjustLayoutOnResize();
-        
+
     }, 0);
 
-    // Get element references safely within DOMContentLoaded
     const panelResizerElement = document.getElementById('panel-resizer');
     const controlsPanelElement = document.getElementById('controls-and-list-container');
 
@@ -4778,15 +4487,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMobileView || isPanelDesktopHidden) {
                 return;
             }
-            // The rest of your mousedown logic (startX, startWidth, add/remove event listeners for doDrag/stopDrag)
-            // should be here. Assuming it's correctly defined elsewhere or within this block.
-            // For brevity, not repeating the full mousedown handler from your original code.
+
         });
     }
 });
-
-
-        
 
         function updateCheckAllLocationFocusButtonState() {
             const checkAllBtn = document.getElementById('checkAllLocationFocusBtn');
@@ -4811,7 +4515,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkAllBtn.indeterminate = true;
             }
         }
-
 
         function gmLoadError() {
             console.error("Google Maps failed to load.");
@@ -4845,7 +4548,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Log final size right after we enter zoomed mode
   const observer = new MutationObserver(() => {
     if (img.classList.contains('zoomed')) {
       console.log('[SeniorPhotoDebug] Entered zoomed mode – size:',
@@ -4856,23 +4558,21 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
     </script>
 
-
-
    <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly"
     defer
 ></script>
 
  <div id="zoomed-info-panel" style="display: none;">
-    <!-- NEW GRAD CLASS INFO BOX -->
+
     <div id="zoomed-grad-class-info" style="display: none;">
         <span class="grad-class-label">Graduating Class:</span>
         <span id="zoomed-grad-class-value"></span>
     </div>
-    <!-- END NEW GRAD CLASS INFO BOX -->
+
     <p id="zoomed-bio-caption-content"></p>
     <div id="zoomed-social-links-container">
-        <!-- Links will be added here by JS -->
+
     </div>
 </div>
 
