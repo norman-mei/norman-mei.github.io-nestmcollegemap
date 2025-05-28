@@ -175,33 +175,41 @@ body.dark-mode #zoomed-info-panel {
     }
 
     html, body {
-        height: 100%; margin: 0; padding: 0; font-family: sans-serif;
-        background-color: #f8f9fa; color: #212529;
-        transition: background-color 0.3s, color 0.3s; overflow: hidden;
-    }
+    height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+    background-color: #f8f9fa; color: #212529;
+    transition: background-color 0.3s, color 0.3s; overflow: hidden;
+    font-size: 17px; 
+}
+
+input, button, select, textarea {
+    font-family: inherit; 
+    font-size: inherit; 
+}
+
     #map-container {
         display: flex; height: 100%; width: 100%;
         position: relative; 
     }
 
     #controls-and-list-container {
-
-        width: 30%;
-        min-width: 250px; 
-        max-width: 60%;   
-        height: 100%;
-        background-color: #f8f9fa;
-        border-right: 1px solid #ccc;
-        overflow-y: auto;
-        padding: 10px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        position: relative; 
-        transform: translateX(0); 
-        transition: transform 0.3s ease, background-color 0.3s, border-color 0.3s;
-        z-index: 500; 
-    }
+    width: 30%;
+    min-width: 320px; 
+    max-width: 60%;
+    height: 100%;
+    background-color: #f8f9fa;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+    padding: 15px; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transform: translateX(0);
+    transition: transform 0.3s ease, background-color 0.3s, border-color 0.3s;
+    z-index: 500;
+    font-size: 1rem; 
+    line-height: 1.7;   
+}
 
     #controls-and-list-container.panel-desktop-hidden{
     transform: translateX(-100%);
@@ -275,8 +283,31 @@ body:not(.panel-desktop-hidden) .hamburger {
     .info-window-type { color: #555; font-style: italic; }
     .info-window-grad-class { font-weight: bold; }
 
-    .map-control { background-color: rgba(255, 255, 255, 0.9); padding: 10px 15px; margin-bottom: 10px; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); color: #222; box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s; flex-shrink: 0;  }
-    .map-control h4 { margin-top: 0; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; font-size: 1.1em; font-weight: bold; transition: border-color 0.3s; display: inline-block; margin-right: 10px; cursor: pointer; }
+    .map-control {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px 20px; 
+    margin-bottom: 18px; 
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    color: #222;
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    flex-shrink: 0;
+
+}
+    .map-control h4 {
+    margin-top: 0;
+    margin-bottom: 12px; 
+    padding-bottom: 8px;  
+    border-bottom: 1px solid #eee;
+    font-size: 1.15em;   
+    font-weight: bold;
+    transition: border-color 0.3s;
+    display: inline-block;
+    margin-right: 10px;
+    cursor: pointer;
+}
     .map-control h4::after { content: " [-]"; font-weight: normal; font-size: 0.9em; }
     .map-control h4.collapsed::after { content: " [+]"; }
     .map-control .control-content { display: block; transition: max-height 0.3s ease-out, opacity 0.3s ease-out; max-height: 2000px; opacity: 1; overflow: hidden; }
@@ -310,9 +341,26 @@ body:not(.panel-desktop-hidden) .hamburger {
     }
 
     #filter-control { font-size: 0.9em; }
-    #filter-control .filter-header { margin-top: 0; margin-bottom: 6px; font-size: 1em; font-weight: bold; padding-bottom: 2px; border-bottom: 1px solid #ddd; }
-    .filter-item { display: block; margin-bottom: 5px; cursor: pointer; }
-    .filter-item label { margin-left: 5px; vertical-align: middle; cursor: pointer; }
+    #filter-control .filter-header {
+    margin-top: 0;
+    margin-bottom: 10px; 
+    font-size: 1.1em;    
+    font-weight: bold;
+    padding-bottom: 6px; 
+    border-bottom: 1px solid #ddd;
+}
+   .filter-item {
+    display: block;
+    margin-bottom: 10px; 
+    cursor: pointer;
+}
+
+.filter-item label {
+    margin-left: 8px; 
+    vertical-align: middle;
+    cursor: pointer;
+
+}
     .filter-item input[type="checkbox"] { vertical-align: middle; cursor: pointer; }
     .filter-color-box { width: 12px; height: 12px; border: 1px solid #ccc; margin-right: 5px; display: inline-block; vertical-align: middle; transition: border-color 0.3s; }
     .filter-control-buttons { display: inline-block; vertical-align: middle; margin-bottom: 8px; margin-left: 5px; }
@@ -351,7 +399,26 @@ body:not(.panel-desktop-hidden) .hamburger {
     #searchSuggestions div { padding: 5px 8px; font-size: 0.9em; cursor: pointer; }
     #searchSuggestions div:hover { background-color: #eee; }
 
-    #sort-controls-container { transition: border-color 0.3s; }
+   #sort-controls-container,
+.list-content {
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out, padding 0.3s ease-out;
+    max-height: 2000px; 
+    opacity: 1;
+    overflow: hidden;
+}
+
+#sort-controls-container.collapsed,
+.list-content.collapsed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+    padding-top:0 !important;
+    padding-bottom:0 !important;
+    border-top: none !important;
+    overflow: hidden !important;
+}
+
     body.dark-mode #sort-controls-container { border-bottom-color: #444; }
     body.dark-mode #sort-controls-container select { background-color: #333; border-color: #555; color: #e0e0e0; }
     #sort-controls-container optgroup { font-style: italic; }
@@ -361,7 +428,17 @@ body:not(.panel-desktop-hidden) .hamburger {
     .school-list-collapsible-content.hidden { display: none; }
     .list-content { overflow-y: auto; flex-grow: 1;  }
     .list-content ul { list-style: none; padding: 0; margin: 0 0 10px 0; }
-    .list-content li { padding: 3px 0; word-wrap: break-word; cursor: pointer; display: flex; align-items: center; transition: background-color 0.2s; position: relative; }
+    .list-content li {
+    padding: 6px 3px; 
+    word-wrap: break-word;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+    position: relative;
+
+    line-height: 1.6; 
+}
     .list-content li.list-item-highlight, .list-content li.current-selection-highlight { background-color: #d6eaff;  }
     body.dark-mode .list-content li.list-item-highlight, body.dark-mode .list-content li.current-selection-highlight { background-color: #2a3950; }
     .list-content li input[type="checkbox"] { margin-right: 6px; flex-shrink: 0; cursor: pointer; vertical-align: middle; }
@@ -518,9 +595,25 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions div:hover { background-color: #444; }
     body.dark-mode .filter-color-box { border-color: #666; }
-    body.dark-mode .dark-mode-toggle-control, body.dark-mode #toggleTransitBtn, body.dark-mode #toggleSatelliteViewBtn, body.dark-mode #zoomToVisibleBtn, body.dark-mode #clearAllFiltersBtn, body.dark-mode #toggleGalleryViewBtn, body.dark-mode #showFaqBtn {
-        background-color: rgba(50, 50, 50, 0.9); color: #e0e0e0; border-color: #555;
-    }
+    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
+    font-size: 0.9em; 
+    padding: 7px 11px; 
+    margin: 5px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background-color: rgba(245, 245, 245, 0.9);
+    color: #222;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    line-height: 1.5;
+    flex-basis: auto;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
     body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover, body.dark-mode #showFaqBtn:hover {
         background-color: rgba(70, 70, 70, 0.95);
     }
@@ -794,7 +887,7 @@ body:not(.panel-desktop-hidden) .hamburger {
                          {} 
                      </div>
 
-                      <h4 class="filter-header" style="margin-top: 15px;">Filter by State/Country</h4>
+                 <h4 class="filter-header" style="margin-top: 15px;">Filter by State/Country</h4>
                       <div class="control-content">
                          <div class="filter-control-buttons">
                              <button id="checkAllStateCountryBtn" title="Check all state/country filters">Check All</button>
@@ -1019,8 +1112,6 @@ body:not(.panel-desktop-hidden) .hamburger {
 
             <h4>Q: When at some point when you stop maintaining this project or let someone else take over?</h4>
             <p>A: Probably whenever I am in college and preferably it has someone that my school's college counselor recommended me to let them take over the project.</p>
-
-         
 
         </div>
     </div>
@@ -3432,46 +3523,54 @@ function getChartJsConfigOptions(
                  stateCountryFiltersContainer.innerHTML = "<p style='font-style:italic; font-size:0.9em; padding:5px;'>No state/country data to filter.</p>";
             }
 
-            document.querySelectorAll('.map-control > h4').forEach(header => {
+            document.querySelectorAll('.map-control h4').forEach(header => { 
 
-                if (header.parentElement && header.parentElement.id === 'description-control') {
-                    header.style.cursor = 'default'; 
-                    if (header.querySelector('::after')) header.querySelector('::after').remove(); 
-                    return;
-                }
+    if (header.closest('#description-control')) { 
+        header.style.cursor = 'default';
+        return;
+    }
 
-                if (header.parentElement && header.parentElement.classList.contains('list-header-container')) {
-                     header.style.cursor = 'default';
-                     return;
-                }
+    if (header.closest('#school-list-control') && header.textContent.includes('College List & Seniors')) {
+        const schoolListControlDiv = header.closest('#school-list-control');
+        const sortControlsContainer = schoolListControlDiv.querySelector('#sort-controls-container');
+        const listContentDiv = schoolListControlDiv.querySelector('.list-content');
 
-                const content = header.nextElementSibling;
-                if (content && content.classList.contains('control-content')) {
-                    header.addEventListener('click', () => {
-                        content.classList.toggle('collapsed');
-                        header.classList.toggle('collapsed'); 
-                    });
-                } else {
+        if (sortControlsContainer && listContentDiv) {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', () => {
+                sortControlsContainer.classList.toggle('collapsed');
+                listContentDiv.classList.toggle('collapsed');
+                header.classList.toggle('collapsed'); 
 
-                    let currentElement = header;
-                    let foundContent = null;
-                    while(currentElement.nextElementSibling && !foundContent) {
-                        currentElement = currentElement.nextElementSibling;
-                        if (currentElement.classList.contains('control-content') ||
-                            currentElement.id === 'grad-class-filters-container' || 
-                            currentElement.id === 'state-country-filters-container' ||
-                            currentElement.tagName === 'TABLE' || 
-                            currentElement.classList.contains('chart-container') 
-                           ) {
-                           foundContent = currentElement;
-
-                        }
-                    }
-                    if (foundContent && foundContent.parentElement.id !== header.parentElement.id) { 
-
-                    }
+                const toggleSchoolListBtn = document.getElementById('toggleSchoolListBtn');
+                if (toggleSchoolListBtn) {
+                    const isNowCollapsed = listContentDiv.classList.contains('collapsed');
+                    toggleSchoolListBtn.textContent = isNowCollapsed ? 'Show List' : 'Hide List';
+                    toggleSchoolListBtn.title = isNowCollapsed ? 'Show college and senior list' : 'Hide college and senior list';
                 }
             });
+
+            sortControlsContainer.classList.remove('collapsed');
+            listContentDiv.classList.remove('collapsed');
+            header.classList.remove('collapsed');
+        }
+        return; 
+    }
+
+    let contentToToggle = header.nextElementSibling;
+
+    while (contentToToggle && !contentToToggle.classList.contains('control-content')) {
+        contentToToggle = contentToToggle.nextElementSibling;
+    }
+
+    if (contentToToggle && contentToToggle.classList.contains('control-content')) {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => {
+            contentToToggle.classList.toggle('collapsed');
+            header.classList.toggle('collapsed'); 
+        });
+    }
+});
 
             baseMarkerIcon = { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
             highlightedMarkerIcon = { ...baseMarkerIcon, scale: 10, strokeWeight: 2.0 };
