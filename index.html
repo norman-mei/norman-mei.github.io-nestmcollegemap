@@ -330,13 +330,13 @@ body:not(.panel-desktop-hidden) .hamburger {
     #description-control span { display: inline-block; line-height: 28px; vertical-align: middle; }
 
     #map-options-control { margin-bottom:10px; display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; }
-    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #toggleNestmMarkerBtn, #showFaqBtn {
+    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
         font-size: 0.85em; padding: 5px 10px; margin: 5px; border: 1px solid #bbb; border-radius: 4px;
         background-color: rgba(245, 245, 245, 0.9); color: #222; cursor: pointer; user-select: none;
         transition: background-color 0.3s, color 0.3s, border-color 0.3s; line-height: 1.5; flex-basis: auto; text-align: center;
         display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
     }
-    .dark-mode-toggle-control:hover, #toggleTransitBtn:hover, #toggleSatelliteViewBtn:hover, #zoomToVisibleBtn:hover, #clearAllFiltersBtn:hover, #toggleGalleryViewBtn:hover, #toggleNestmMarkerBtn:hover, #showFaqBtn:hover {
+    .dark-mode-toggle-control:hover, #toggleTransitBtn:hover, #toggleSatelliteViewBtn:hover, #zoomToVisibleBtn:hover, #clearAllFiltersBtn:hover, #toggleGalleryViewBtn:hover, #showFaqBtn:hover {
         background-color: rgba(230, 230, 230, 0.95);
     }
 
@@ -590,13 +590,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .list-item-major { color: #bbb; }
     body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
     body.dark-mode #toggleSatelliteViewBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
-    body.dark-mode #toggleNestmMarkerBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
     body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
     body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions div:hover { background-color: #444; }
     body.dark-mode .filter-color-box { border-color: #666; }
-    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #toggleNestmMarkerBtn, #showFaqBtn {
+    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
     font-size: 0.9em; 
     padding: 7px 11px; 
     margin: 5px;
@@ -615,7 +614,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     justify-content: center;
     box-sizing: border-box;
 }
-    body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover, body.dark-mode #toggleNestmMarkerBtn:hover, body.dark-mode #showFaqBtn:hover {
+    body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover, body.dark-mode #showFaqBtn:hover {
         background-color: rgba(70, 70, 70, 0.95);
     }
     body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
@@ -738,7 +737,7 @@ body:not(.panel-desktop-hidden) .hamburger {
         }
 
         .map-control h4 { font-size: 1em; }
-        .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #toggleNestmMarkerBtn, #showFaqBtn {
+        .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
             font-size: 0.8em; padding: 4px 8px;
         }
         #schoolSearchContainer { width: 100%; float: none; margin-top: 5px; }
@@ -842,7 +841,6 @@ body:not(.panel-desktop-hidden) .hamburger {
                 <button id="zoomToVisibleBtn" title="Zoom to fit all visible markers">👁️ Zoom to Visible</button>
                 <button id="clearAllFiltersBtn" title="Clear all active filters and search">🧹 Clear All Filters</button>
                 <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
-                <button id="toggleNestmMarkerBtn" title="Show NEST+m location">🏫 Show NEST+m</button>
                 <button id="showFaqBtn" title="Show Frequently Asked Questions">❓ FAQ</button>
             </div>
             <div id="filter-control" class="map-control">
@@ -1181,18 +1179,13 @@ function getNextChartColor() {
         let highlightedMarkerIcon;
 
         const gradClassColors = {
-            "'21": "#FF69B4",
+            "'21": "#AA66CC", 
             "'22": "#FF0000", 
             "'23": "#99CC00", 
             "'24": "#FFBB33", 
             "'25": "#007FFF"  
         };
         const gradClassNames = Object.keys(gradClassColors);
-
-        const NESTM_COORD = { lat: 40.71962768936167,  lng: -73.97926774907971 };
-        let nestmMarker = null;
-        let nestmPolyline = null;
-        let nestmMarkerVisible = false;
 
         const NYC_BOUNDS = { north: 40.92, south: 40.47, west: -74.26, east: -73.70 };
                 const PREDEFINED_MAJOR_AREAS = [
@@ -1257,16 +1250,6 @@ function getNextChartColor() {
 
             const iconConfig = isHighlighted ? currentHighlightedIcon : currentBaseIcon;
             return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? '#111111' : '#ffffff' };
-        }
-
-        function haversineDistanceKm(lat1, lng1, lat2, lng2) {
-            const toRad = deg => deg * Math.PI / 180;
-            const R = 6371;
-            const dLat = toRad(lat2 - lat1);
-            const dLng = toRad(lng2 - lng1);
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) * Math.sin(dLng/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
         }
 
                function getCollegeProperties(collegeEntry) {
@@ -3739,22 +3722,7 @@ function getChartJsConfigOptions(
                 fullscreenControl: true, streetViewControl: true, zoomControl: true, mapTypeControl: true,
                 gestureHandling: 'greedy'
             };
-            map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-            nestmMarker = new google.maps.Marker({
-                position: NESTM_COORD,
-                title: 'NEST+m',
-                icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: '#800080', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 2, scale: 8 },
-                map: null
-            });
-            nestmPolyline = new google.maps.Polyline({
-                path: [],
-                geodesic: true,
-                strokeColor: '#800080',
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
-                map: null
-            });
+            map = new google.maps.Map(document.getElementById("map"), mapOptions); 
 
             infowindow = new google.maps.InfoWindow();
             schoolsSelectedForZoom = new Set();
@@ -3901,23 +3869,6 @@ function getChartJsConfigOptions(
                 });
             }
 
-            const toggleNestmMarkerBtn = document.getElementById('toggleNestmMarkerBtn');
-            if (toggleNestmMarkerBtn) {
-                toggleNestmMarkerBtn.addEventListener('click', () => {
-                    nestmMarkerVisible = !nestmMarkerVisible;
-                    if (nestmMarkerVisible) {
-                        nestmMarker.setMap(map);
-                        toggleNestmMarkerBtn.textContent = 'Hide NEST+m 🦅';
-                        toggleNestmMarkerBtn.title = 'Hide NEST+m location 🦅';
-                    } else {
-                        nestmMarker.setMap(null);
-                        if (nestmPolyline) nestmPolyline.setMap(null);
-                        toggleNestmMarkerBtn.textContent = 'Show NEST+m 🦅';
-                        toggleNestmMarkerBtn.title = 'Show NEST+m location 🦅';
-                    }
-                });
-            }
-
             const checkAllMajorAreasBtn = document.getElementById('checkAllMajorAreasBtn');
             checkAllMajorAreasBtn.addEventListener('change', (event) => {
                 const isChecked = event.target.checked;
@@ -4027,17 +3978,8 @@ function getChartJsConfigOptions(
                         contentString += `<b>${clickedSchoolData.collegeName}</b>`;
                      }
                      contentString += `<br><span class="info-window-type">Type: ${clickedSchoolData.collegeType} (${clickedSchoolData.isCampusPublic ? 'Public' : 'Private'}, ${clickedSchoolData.locationFocus})</span>`;
-                    if (clickedSchoolData.lat !== 0 || clickedSchoolData.lng !== 0) {
+                     if (clickedSchoolData.lat !== 0 || clickedSchoolData.lng !== 0) {
                         contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${clickedSchoolData.lat},${clickedSchoolData.lng}" target="_blank">Get Directions</a>`;
-                        const distKm = haversineDistanceKm(NESTM_COORD.lat, NESTM_COORD.lng, clickedSchoolData.lat, clickedSchoolData.lng);
-                        const distMi = distKm * 0.621371;
-                        contentString += `<br>Distance from NEST+m: ${distMi.toFixed(1)} mi (${distKm.toFixed(1)} km)`;
-                        if (nestmMarkerVisible) {
-                            nestmPolyline.setPath([NESTM_COORD, {lat: clickedSchoolData.lat, lng: clickedSchoolData.lng}]);
-                            nestmPolyline.setMap(map);
-                        }
-                     } else if (nestmPolyline) {
-                        nestmPolyline.setMap(null);
                      }
                      contentString += `<hr style="margin: 5px 0;">`;
 
