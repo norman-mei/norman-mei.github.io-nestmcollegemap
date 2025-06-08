@@ -106,7 +106,7 @@ body.dark-mode #zoomed-info-panel {
     display: none !important;
 }
 
-    #credits {
+   #credits {
         text-align: center;
         font-size: 0.8em;
         padding: 6px 15px;
@@ -134,12 +134,12 @@ body.dark-mode #zoomed-info-panel {
         margin-right: 3px;
     }
     body.dark-mode #credits {
-        color: #aaa;
-        background-color: rgba(30,30,30,0.7);
+        background-color: #1a1a1a;
+        color: #bbb;
         border-top-color: #444;
     }
     body.dark-mode #credits a {
-        color: #ccc;
+        color: #007bff; 
         font-weight: bold;
     }
 
@@ -330,13 +330,13 @@ body:not(.panel-desktop-hidden) .hamburger {
     #description-control span { display: inline-block; line-height: 28px; vertical-align: middle; }
 
     #map-options-control { margin-bottom:10px; display: flex; justify-content: space-evenly; align-items: center; flex-wrap: wrap; }
-    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
+    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn, #toggleNestmBtn, #zoomToNestmBtn {
         font-size: 0.85em; padding: 5px 10px; margin: 5px; border: 1px solid #bbb; border-radius: 4px;
         background-color: rgba(245, 245, 245, 0.9); color: #222; cursor: pointer; user-select: none;
         transition: background-color 0.3s, color 0.3s, border-color 0.3s; line-height: 1.5; flex-basis: auto; text-align: center;
         display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
     }
-    .dark-mode-toggle-control:hover, #toggleTransitBtn:hover, #toggleSatelliteViewBtn:hover, #zoomToVisibleBtn:hover, #clearAllFiltersBtn:hover, #toggleGalleryViewBtn:hover, #showFaqBtn:hover {
+        .dark-mode-toggle-control:hover, #toggleTransitBtn:hover, #toggleSatelliteViewBtn:hover, #zoomToVisibleBtn:hover, #clearAllFiltersBtn:hover, #toggleGalleryViewBtn:hover, #showFaqBtn:hover, #toggleNestmBtn:hover, #zoomToNestmBtn:hover {
         background-color: rgba(230, 230, 230, 0.95);
     }
 
@@ -589,13 +589,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #major-summary-table th { background-color: #2a2a2a; }
     body.dark-mode .list-item-major { color: #bbb; }
     body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
-    body.dark-mode #toggleSatelliteViewBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
     body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
     body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions div:hover { background-color: #444; }
     body.dark-mode .filter-color-box { border-color: #666; }
-    .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
+        .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn, #toggleNestmBtn, #zoomToNestmBtn {
     font-size: 0.9em; 
     padding: 7px 11px; 
     margin: 5px;
@@ -614,7 +613,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     justify-content: center;
     box-sizing: border-box;
 }
-    body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover, body.dark-mode #showFaqBtn:hover {
+               body.dark-mode .dark-mode-toggle-control:hover, body.dark-mode #toggleTransitBtn:hover, body.dark-mode #toggleSatelliteViewBtn:hover, body.dark-mode #zoomToVisibleBtn:hover, body.dark-mode #clearAllFiltersBtn:hover, body.dark-mode #toggleGalleryViewBtn:hover, body.dark-mode #showFaqBtn:hover, body.dark-mode #toggleNestmBtn:hover, body.dark-mode #zoomToNestmBtn:hover {
         background-color: rgba(70, 70, 70, 0.95);
     }
     body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
@@ -714,6 +713,8 @@ body:not(.panel-desktop-hidden) .hamburger {
         height: 360px; 
     }
 
+
+
         #controls-and-list-container {
 
             position: absolute;
@@ -737,7 +738,7 @@ body:not(.panel-desktop-hidden) .hamburger {
         }
 
         .map-control h4 { font-size: 1em; }
-        .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn {
+                               .dark-mode-toggle-control, #toggleTransitBtn, #toggleSatelliteViewBtn, #zoomToVisibleBtn, #clearAllFiltersBtn, #toggleGalleryViewBtn, #showFaqBtn, #toggleNestmBtn, #zoomToNestmBtn {
             font-size: 0.8em; padding: 4px 8px;
         }
         #schoolSearchContainer { width: 100%; float: none; margin-top: 5px; }
@@ -834,14 +835,16 @@ body:not(.panel-desktop-hidden) .hamburger {
     </a>
 </div>
 
-                        <div id="map-options-control" class="map-control">
+                                         <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
                 <button id="toggleSatelliteViewBtn" title="Switch to Satellite View">🛰️ Satellite View</button>
                 <button id="zoomToVisibleBtn" title="Zoom to fit all visible markers">👁️ Zoom to Visible</button>
+                <button id="zoomToNestmBtn" title="Zoom to NEST+m">🏠 Zoom Back to Home</button>
                 <button id="clearAllFiltersBtn" title="Clear all active filters and search">🧹 Clear All Filters</button>
                 <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
                 <button id="showFaqBtn" title="Show Frequently Asked Questions">❓ FAQ</button>
+                <button id="toggleNestmBtn" title="Show/Hide NEST+m Marker">🦅 Show NEST+m</button>
             </div>
             <div id="filter-control" class="map-control">
                  <h4 class="filter-header">Filter by Graduating Class</h4>
@@ -1149,6 +1152,8 @@ let currentStudentSortValue = 'grad_first';
 
         let majorAreaChartInstance, locationFocusChartInstance, popularCollegesChartInstance;
 
+       
+
 const LINKEDIN_SVG_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.776 13.019H3.561V9h3.552v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z";
         const INSTAGRAM_SVG_PATH = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z";
 
@@ -1178,8 +1183,8 @@ function getNextChartColor() {
         let baseMarkerIcon;
         let highlightedMarkerIcon;
 
-        const gradClassColors = {
-            "'21": "#AA66CC", 
+                const gradClassColors = {
+            "'21": "#00FFFF", 
             "'22": "#FF0000", 
             "'23": "#99CC00", 
             "'24": "#FFBB33", 
@@ -1202,15 +1207,7 @@ function getNextChartColor() {
             return a.localeCompare(b);
         });
 
-        for (const collegeName in collegeCoordsAndInfo) {
-            if (collegeCoordsAndInfo.hasOwnProperty(collegeName)) {
-                const properties = getCollegeProperties(collegeCoordsAndInfo[collegeName]);
-                collegeCoordsAndInfo[collegeName].isCampusPublic = properties.isCampusPublic;
-                collegeCoordsAndInfo[collegeName].locationFocus = properties.locationFocus;
-            }
-        }
-
-        const collegeTypeMappings = {
+      const collegeTypeMappings = {
             "FIT": TYPE_SUNY, "Fashion Institute of Technology": TYPE_SUNY,
             "AMDA": TYPE_OTHER_PRIVATE, "AMDA College of the Performing Arts": TYPE_OTHER_PRIVATE,
             "Undecided": TYPE_UNDECIDED,
@@ -1236,6 +1233,14 @@ function getNextChartColor() {
             { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
             { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
         ];
+
+        for (const collegeName in collegeCoordsAndInfo) {
+            if (collegeCoordsAndInfo.hasOwnProperty(collegeName)) {
+                const properties = getCollegeProperties(collegeCoordsAndInfo[collegeName]);
+                collegeCoordsAndInfo[collegeName].isCampusPublic = properties.isCampusPublic;
+                collegeCoordsAndInfo[collegeName].locationFocus = properties.locationFocus;
+            }
+        }
 
         let seniorCollegeChoices;
         let allData;
@@ -1517,45 +1522,7 @@ function getChartJsConfigOptions(
             return Math.min(100, yMax); 
         }
 
-        function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
-            const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
-            if (majorAreaChartInstance) majorAreaChartInstance.destroy();
-            chartColorIndex = 0;
-
-            const datasets = majorAreasList.map(area => {  });
-
-            const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); 
-
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-
-            majorAreaChartInstance = new Chart(ctx, {  options: chartOptions });
-        }
-
-        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
-            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
-            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
-            chartColorIndex = 0;
-
-            const datasets = locationFocusesList.map(focus => {  });
-
-            const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode, isMobile, false); 
-
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-
-            locationFocusChartInstance = new Chart(ctx, {  options: chartOptions });
-        }
-
-               function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+      function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
             const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
             if (majorAreaChartInstance) majorAreaChartInstance.destroy();
             chartColorIndex = 0; 
@@ -1587,6 +1554,74 @@ function getChartJsConfigOptions(
                     datasets: datasets
                 },
                 options: chartOptions
+            });
+        }
+
+        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
+            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
+            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
+            chartColorIndex = 0; 
+
+            const datasets = locationFocusesList.map(focus => {
+                const focusData = years.map(year => data[year][focus] || 0);
+                return {
+                    label: focus,
+                    data: focusData,
+                    borderColor: getNextChartColor(),
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
+
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            locationFocusChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: chartOptions 
+            });
+        }
+
+        function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
+            const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
+            if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
+            chartColorIndex = 0; 
+
+            const datasets = popularCollegesList.map(college => {
+                const collegeData = years.map(year => data[year][college] || 0);
+                return {
+                    label: college,
+                    data: collegeData,
+                    borderColor: getNextChartColor(),
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            const yAxisMax = calculateDynamicYAxisMax(datasets);
+            const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
+
+            if (!chartOptions.scales) chartOptions.scales = {};
+            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+            else chartOptions.scales.y.beginAtZero = true;
+            chartOptions.scales.y.max = yAxisMax;
+
+            popularCollegesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: chartOptions 
             });
         }
 
@@ -2317,7 +2352,7 @@ function getChartJsConfigOptions(
             }
         }
 
-                      function showSeniorPhotoPopup(listItem, schoolData) {
+                     function showSeniorPhotoPopup(listItem, schoolData) {
          if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
              console.error("[DEBUG] Senior photo popup elements not initialized properly.");
              return;
@@ -2435,7 +2470,9 @@ function getChartJsConfigOptions(
                  const listItemRect = listItem.getBoundingClientRect();
                  popupTop = listItemRect.top;
              } else {
-                 popupTop = (viewportHeight - popupCurrentHeight) / 2;
+                 const mapDiv = document.getElementById('map');
+                 const mapRect = mapDiv.getBoundingClientRect();
+                 popupTop = mapRect.top + 70;
              }
              popupTop = Math.max(paddingFromViewportEdge, popupTop);
              if (popupTop + popupCurrentHeight > viewportHeight - paddingFromViewportEdge) {
@@ -3421,8 +3458,18 @@ function getChartJsConfigOptions(
 
     initMap();
 }
+let nestmMarker, distancePolyline, distanceLabel;
+        const NEST_M_INFO = {
+            name: "NEST+m",
+            lat: 40.71956425410874, 
+            lng: -73.97923619240517,
+            imageUrl: "photos/NEST+m_Logo.png",
+            homepageUrl: "https://nestmk12.net/",
+            type: "K-12 School",
+            stateOrCountry: "NY"
+        };
 
-                      function initMap() {
+                                                           function initMap() {
             console.log("[DEBUG] initMap function called.");
 
             if (!window.isDataReadyForMap || !allData || !Array.isArray(allData)) {
@@ -3439,6 +3486,108 @@ function getChartJsConfigOptions(
                 return;
             }
             console.log(`[DEBUG] initMap: Data is ready. Proceeding with allData containing ${allData.length} items.`);
+
+            // Define DistanceLabel class here, after google object is available
+            class DistanceLabel extends google.maps.OverlayView {
+                constructor(position, text) {
+                    super();
+                    this.position = position;
+                    this.text = text;
+                    this.div = null;
+                }
+                onAdd() {
+                    this.div = document.createElement("div");
+                    this.div.style.position = "absolute";
+                    this.div.style.background = isDarkMode ? "rgba(40, 40, 40, 0.9)" : "rgba(255, 255, 255, 0.9)";
+                    this.div.style.color = isDarkMode ? "#e0e0e0" : "#333";
+                    this.div.style.padding = "4px 8px";
+                    this.div.style.border = isDarkMode ? "1px solid #555" : "1px solid #777";
+                    this.div.style.borderRadius = "4px";
+                    this.div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+                    this.div.style.fontSize = "0.85em";
+                    this.div.style.whiteSpace = "nowrap";
+                    this.div.style.zIndex = "1000";
+                    this.div.innerHTML = this.text;
+
+                    const closeButton = this.div.querySelector("#close-distance-label");
+                    if (closeButton) {
+                        closeButton.addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            if (distancePolyline) distancePolyline.setMap(null);
+                            this.setMap(null);
+                        });
+                    }
+
+                    const panes = this.getPanes();
+                    panes.floatPane.appendChild(this.div);
+                }
+                draw() {
+                    const overlayProjection = this.getProjection();
+                    const point = overlayProjection.fromLatLngToDivPixel(this.position);
+                    if (point) {
+                        this.div.style.left = point.x + 10 + "px";
+                        this.div.style.top = point.y - 15 + "px";
+                    }
+                }
+                onRemove() {
+                    if (this.div) {
+                        this.div.parentNode.removeChild(this.div);
+                        this.div = null;
+                    }
+                }
+                updateText(text) {
+                    this.text = text;
+                    if (this.div) {
+                        this.div.innerHTML = this.text;
+                    }
+                }
+            }
+
+            function showDistanceToNestm(collegeData) {
+                if (distancePolyline) distancePolyline.setMap(null);
+                if (distanceLabel) distanceLabel.setMap(null);
+
+                console.log("[DistanceDebug] Called showDistanceToNestm for:", collegeData.collegeName);
+
+                if (!nestmMarker || !nestmMarker.getVisible() || !collegeData || collegeData.lat === 0) {
+                    console.log("[DistanceDebug] Aborting: NEST+m marker not visible or college data invalid.");
+                    return;
+                }
+
+                if (!google.maps.geometry || !google.maps.geometry.spherical) {
+                    console.error("[DistanceDebug] CRITICAL: google.maps.geometry.spherical library not loaded. Please add '&libraries=geometry' to the Google Maps API script URL.");
+                    return;
+                }
+
+                const collegePosition = new google.maps.LatLng(collegeData.lat, collegeData.lng);
+                const nestmPosition = nestmMarker.getPosition();
+                const path = [nestmPosition, collegePosition];
+
+                distancePolyline = new google.maps.Polyline({
+                    path: path,
+                    geodesic: true,
+                    strokeColor: '#8A2BE2', // Purple
+                    strokeOpacity: 0.9,
+                    strokeWeight: 2.5,
+                    map: map
+                });
+
+                const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(nestmPosition, collegePosition);
+                const distanceInMiles = distanceInMeters * 0.000621371;
+                const distanceInKm = distanceInMeters / 1000;
+
+                console.log(`[DistanceDebug] Distance in meters: ${distanceInMeters}, miles: ${distanceInMiles}, km: ${distanceInKm}`);
+
+                const midPoint = google.maps.geometry.spherical.interpolate(nestmPosition, collegePosition, 0.5);
+                const labelText = `
+                    ${distanceInMiles.toFixed(1)} mi / ${distanceInKm.toFixed(1)} km to NEST+m
+                    <span id="close-distance-label" style="cursor: pointer; font-weight: bold; margin-left: 8px; color: #FF6347;" title="Dismiss">×</span>
+                `;
+                
+                console.log("[DistanceDebug] Creating label with text:", labelText.trim());
+                distanceLabel = new DistanceLabel(midPoint, labelText);
+                distanceLabel.setMap(map);
+            }
 
             stateCountryFilterState = {}; 
 
@@ -3764,6 +3913,8 @@ function getChartJsConfigOptions(
             const zoomToVisibleBtn = document.getElementById('zoomToVisibleBtn');
             const clearAllFiltersBtn = document.getElementById('clearAllFiltersBtn');
             const toggleGalleryViewBtn = document.getElementById('toggleGalleryViewBtn');
+            const toggleNestmBtn = document.getElementById('toggleNestmBtn');
+            const zoomToNestmBtn = document.getElementById('zoomToNestmBtn');
 
             gradClassFiltersContainer.innerHTML = '';
             const fragmentGradClassFilters = document.createDocumentFragment();
@@ -3809,6 +3960,15 @@ function getChartJsConfigOptions(
             });
 
             zoomToVisibleBtn.addEventListener('click', zoomToAllVisibleMarkers);
+
+            if (zoomToNestmBtn) {
+                zoomToNestmBtn.addEventListener('click', () => {
+                    if (map && nestmMarker) {
+                        map.panTo(nestmMarker.getPosition());
+                        map.setZoom(16);
+                    }
+                });
+            }
 
                         if (closeSeniorPhotoBtn) {
                 closeSeniorPhotoBtn.addEventListener('click', () => {
@@ -4006,7 +4166,7 @@ function getChartJsConfigOptions(
                             studentsAtSameCollege.forEach(student => {
                                 const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
                                  let studentEntry = `<li>`;
-            if (student.originalIndex === originalIndex) studentEntry += `<b>`;
+            if (student.originalIndex === clickedOriginalIndex) studentEntry += `<b>`;
             studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
 
             if (student.linkedInUrl) {
@@ -4016,7 +4176,7 @@ function getChartJsConfigOptions(
                 studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
             }
 
-            if (student.originalIndex === originalIndex) studentEntry += `</b>`;
+            if (student.originalIndex === clickedOriginalIndex) studentEntry += `</b>`;
             studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
             studentEntry += `</li>`;
             contentString += studentEntry;
@@ -4033,6 +4193,7 @@ function getChartJsConfigOptions(
 
                      const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${clickedOriginalIndex}"]`);
                      showSeniorPhotoPopup(listItem, clickedSchoolData); 
+                     showDistanceToNestm(clickedSchoolData);
 
                      const visibleListItems = getVisibleListItemsDOM();
                      currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
@@ -4073,6 +4234,48 @@ function getChartJsConfigOptions(
                          marker.setZIndex(null);
                     }
                  });
+            });
+
+            const homeIconPath = 'M12 2L2 7v13h6v-7h8v7h6V7L12 2z';
+            nestmMarker = new google.maps.Marker({
+                position: NEST_M_INFO,
+                map: map,
+                title: "NEST+m High School",
+                icon: {
+                    path: homeIconPath,
+                    fillColor: '#8A2BE2', // Purple
+                    fillOpacity: 1,
+                    strokeWeight: 1,
+                    strokeColor: '#FFFFFF',
+                    scale: 1.2,
+                    anchor: new google.maps.Point(12, 22)
+                },
+                zIndex: 999
+            });
+
+            nestmMarker.addListener('click', () => {
+                if (infowindow) infowindow.close();
+                let content = `
+                    <div class="info-window-content">
+                        <a href="${NEST_M_INFO.homepageUrl}" target="_blank">
+                            <img src="${NEST_M_INFO.imageUrl}" alt="NEST+m Logo" style="max-width: 150px; margin-bottom: 10px;">
+                        </a>
+                        <b><a href="${NEST_M_INFO.homepageUrl}" target="_blank">${NEST_M_INFO.name}</a></b>
+                        <br>
+                        <span class="info-window-type">${NEST_M_INFO.type}</span>
+                    </div>`;
+                infowindow.setContent(content);
+                infowindow.open(map, nestmMarker);
+            });
+
+            toggleNestmBtn.addEventListener('click', () => {
+                const isVisible = !nestmMarker.getVisible();
+                nestmMarker.setVisible(isVisible);
+                toggleNestmBtn.textContent = isVisible ? '🦅 Hide NEST+m' : '🦅 Show NEST+m';
+                if (!isVisible) {
+                    if (distancePolyline) distancePolyline.setMap(null);
+                    if (distanceLabel) distanceLabel.setMap(null);
+                }
             });
 
             const customClusterRenderer = {
@@ -4660,7 +4863,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 
    <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly&libraries=geometry"
     defer
 ></script>
 
