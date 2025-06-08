@@ -407,9 +407,15 @@ body:not(.panel-desktop-hidden) .hamburger {
 
     #school-list-control { font-size: 0.9em; flex-grow: 1;  display: flex; flex-direction: column; overflow: hidden;  }
     .list-header-container { overflow: visible;  margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; transition: border-color 0.3s; flex-shrink: 0;  }
+   .list-header-container::after{
+    content: "";
+    display: table;
+    clear: both;
+}
     .list-header-container h4 { float: left; margin-bottom: 0; border-bottom: none; padding-bottom: 0; line-height: 26px; }
-    #toggleSchoolListBtn { float: right; font-size: 0.8em; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; line-height: normal; vertical-align: middle; }
-    #toggleSchoolListBtn:hover { background-color: #e0e0e0; }
+    #toggleSchoolListBtn, #toggleGalleryViewBtn { float: right; font-size: 0.8em; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; line-height: normal; vertical-align: middle; }
+#toggleSchoolListBtn:hover, #toggleGalleryViewBtn:hover { background-color: #e0e0e0; }
+    
     #schoolSearchContainer { float: right; width: 45%; position: relative;  }
     #schoolSearchInput { width: 100%; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.9em; box-sizing: border-box; }
     #searchSuggestions { position: absolute; top: 100%;  left: 0; right: 0; background-color: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 3px 3px; max-height: 150px;  overflow-y: auto; z-index: 1000;  box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none;  }
@@ -628,7 +634,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #major-summary-table th, body.dark-mode #major-summary-table td { border-color: #555; }
     body.dark-mode #major-summary-table th { background-color: #2a2a2a; }
     body.dark-mode .list-item-major { color: #bbb; }
-    body.dark-mode #toggleSchoolListBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
+    body.dark-mode #toggleSchoolListBtn, body.dark-mode #toggleGalleryViewBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
     body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
     body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
@@ -825,7 +831,7 @@ body:not(.panel-desktop-hidden) .hamburger {
         }
         #schoolSearchContainer { width: 100%; float: none; margin-top: 5px; }
         .list-header-container h4 { float: none; display: block; }
-        #toggleSchoolListBtn { font-size:0.75em; }
+        #toggleSchoolListBtn, #toggleGalleryViewBtn { font-size:0.75em; }
         .list-content.gallery-view li:not(.grad-class-separator) {
             flex-basis: calc((100% - 1 * 10px) / 2); min-width: 120px;
         }
@@ -4874,6 +4880,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             }
         }
 
+      
        let currentTutorialStep = 0;
 const tutorialSteps = [
     {
@@ -4884,47 +4891,137 @@ const tutorialSteps = [
     {
         element: '#map-options-control',
         title: 'Map & View Options',
-        text: 'Here you can toggle dark mode, show transit/satellite layers, zoom to fit markers, clear filters, and access other useful tools.'
+        text: 'This strip is your command center. It houses all the quick-access tools you will learn about next.'
+    },
+
+    /* ---------- INDIVIDUAL MAP-OPTION BUTTONS ---------- */
+    {
+        element: '#darkModeToggle',
+        title: 'Toggle Dark Mode',
+        text: 'Prefer darker colours? Click to switch the entire site to a dark theme that’s easier on the eyes at night.'
     },
     {
-        element: '#grad-class-filters-container',
-        title: 'Filter by Graduating Class',
-        text: 'Select one or more graduating classes to show on the map. You can use the "Check All" and "Uncheck All" buttons for convenience.'
+        element: '#toggleTransitBtn',
+        title: 'Transit Layer',
+        text: 'Overlay subway, rail, and bus lines so you can gauge commute options to each college.'
     },
-     {
-        element: '#state-country-filters-container',
-        title: 'Filter by Location',
-        text: 'You can also narrow down the results by the state or country where the college is located.'
+    {
+        element: '#toggleSatelliteViewBtn',
+        title: 'Satellite View',
+        text: 'Swap the default road map for crisp aerial imagery. Click again to return to the standard view.'
     },
+    {
+        element: '#zoomToVisibleBtn',
+        title: 'Zoom to Visible',
+        text: 'Fits the map bounds to every marker that passes your current filters so nothing is left off-screen.'
+    },
+    {
+        element: '#zoomToNestmBtn',
+        title: 'Zoom Back to Home',
+        text: 'Instantly centres and zooms the map on the NEST+m campus—handy if you get lost while exploring.'
+    },
+    {
+        element: '#clearAllFiltersBtn',
+        title: 'Clear All Filters',
+        text: 'Resets every filter, search term, and gallery selection so you can start fresh.'
+    },
+    
+    {
+        element: '#showFaqBtn',
+        title: 'FAQ',
+        text: 'Opens a window with answers to common questions about data sources, privacy, update schedule, and more.'
+    },
+    {
+        element: '#toggleNestmBtn',
+        title: 'Show / Hide NEST+m',
+        text: 'Toggle the purple home marker. Hiding it can declutter the map when you’re zoomed out.'
+    },
+
+    {
+    element: '#instagram-links-control',
+    title: 'Class Instagram Pages',
+    text: 'Tap any of these coloured buttons to open the graduating class’s Instagram college-decision page in a new tab.',
+},
+
+    /* ---------- FILTER PANEL ---------- */
+    {
+        element: '#filter-control',
+        title: 'Primary Filters',
+        text: 'Select one or more graduating classes, states, or countries to show on the map. Everything updates instantly.'
+    },
+    {
+        element: '#checkAllGradClassesBtn',
+        title: 'Check All',
+        text: 'Selects every graduating-class filter in one click.'
+    },
+    {
+        element: '#uncheckAllGradClassesBtn',
+        title: 'Uncheck All',
+        text: 'Clears every graduating-class filter so you can quickly start a new selection.'
+    },
+
+    /* ---------- ANALYTICS & SUMMARY ---------- */
     {
         element: '#stats-table-control',
-        title: 'View Statistics',
-        text: 'This table provides a statistical breakdown of college choices. It updates automatically as you apply filters.'
+        title: 'Filter by Statistics',
+        text: 'The checkboxes here double as filters. For example, uncheck everything except “In City (NYC)” to see only local destinations.'
     },
     {
         element: '#major-summary-control',
-        title: 'Major Area Summary',
-        text: 'See a summary of popular fields of study. You can also filter by major area using the checkboxes here.'
+        title: 'Filter by Major Area',
+        text: 'See a summary of popular fields of study and filter by major area (STEM, Humanities, Arts, etc.).'
     },
     {
-        element: '#school-list-control',
-        title: 'College & Senior List',
-        text: 'This entire panel contains the list of students and colleges. You can search, sort, and interact with the entries here.'
+        element: '#trends-control',
+        title: 'Data Trends Over Time',
+        text: "These charts track popularity of majors, college locations, and top schools across years. Zoom & pan the first chart with the mouse wheel or by pinching."
+    },
+
+    /* ---------- LIST PANEL ---------- */
+    {
+        element: '#school-list-control .list-header-container',
+        title: 'Search & Sort the List',
+        text: 'Use the search bar to find a student, college, or major. Change sort order (students vs. colleges) with the dropdowns.'
     },
     {
         element: '#school-list-control .list-content',
         title: 'Interact with the List',
-        text: 'Hover over an entry to see a photo and highlight it on the map. Click it to open an info window on the map and get more details.'
+        text: "Hover over an entry to highlight it on the map and preview the photo. Click to open its info window. Click the photo itself to zoom; use ←/→ keys to navigate between zoomed photos; press Esc to exit."
     },
+    {
+        element: '#toggleGalleryViewBtn',
+        title: 'Toggle Gallery View',
+        text: "Switch the list into a visual 'Gallery View'—perfect for browsing senior photos."
+    },
+
+    {
+    element: '#zoomed-social-links-container',
+    title: 'Student Instagram & LinkedIn',
+    text: 'When you open a senior’s info panel, these icons give you one-click access to their personal Instagram and LinkedIn profiles.',
+},
+{
+    element: '#senior-photo-popup img',
+    title: 'Zoom Senior Photos',
+    text: 'Try it with **“Alex Chen ’24”** (who has both Instagram and LinkedIn links). Click the list entry to open the photo popup, then click the image again— it automatically expands to full-screen. Use ←/→ to browse other seniors and Esc to exit.',
+},
+
+    /* ---------- MAP & LAYOUT ---------- */
     {
         element: '#map',
         title: 'The Interactive Map',
-        text: "Click a marker to see details about the college and the students attending. Zoom and pan around to explore!"
+        text: "Click coloured markers (or clusters) to see destinations. You can also click the purple NEST+m icon to measure distances."
     },
     {
+        element: '#menu-toggle',
+        title: 'Show / Hide Control Panel',
+        text: 'On mobile, tap this hamburger icon to reveal or hide the left-hand panel; on desktop it tucks the panel away for a wider map.'
+    },
+
+    /* ---------- WRAP-UP ---------- */
+    {
         element: '#credits',
-        title: "You're all set!",
-        text: "That's it for the tour! If you ever want to see this again, just click the 'Show Tutorial' button. Enjoy exploring!"
+        title: "You're All Set!",
+        text: "That’s the tour! If you need a refresher, click the 💡 button to restart it any time. Enjoy exploring!"
     }
 ];
 
