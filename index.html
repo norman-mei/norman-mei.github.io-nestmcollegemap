@@ -5,7 +5,9 @@
     <script src="majorToAreaMapping.js"></script>
     <script src="normalizeCollegeName.js"></script>
      <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 <head>
     <link rel="icon" href="photos/favicon/favicon.jpg" type="image/png">
     <meta charset="UTF-8">
@@ -107,17 +109,26 @@ body.dark-mode #zoomed-info-panel {
 }
 
    #credits {
-        text-align: center;
-        font-size: 0.8em;
-        padding: 6px 15px;
-        margin-top: -10px; 
-        margin-bottom: 10px; 
-        border-top: 1px solid #eee;
-        position: relative;
-        background-color: #f8f9fa; 
-        color: #555; 
-        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    }
+    text-align: center;
+    font-size: 0.8em;
+    padding: 6px 15px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    border-top: 1px solid #eee;
+    position: relative;
+    background-color: #f8f9fa;
+    color: #555;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    /* --- Alignment Fixes --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Adjusts spacing between all items */
+}
+
+#credits > span {
+    margin-right: -4px; /* Slightly reduce gap after "Created by:" */
+}
     #credits a {
         text-decoration: none;
         vertical-align: middle;
@@ -314,6 +325,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     .map-control .control-content.collapsed { max-height: 0; opacity: 0; margin-top:0; margin-bottom:0; padding-top:0; padding-bottom:0; border-top: none; }
 
     .tip-message { background-color: #eef5ff; border: 1px solid #b8d4ff; color: #31708f; padding: 8px 10px; margin-top: 8px; margin-bottom: 12px; border-radius: 4px; font-size: 0.85em; line-height: 1.4; position: relative; overflow: hidden; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+    .tip-message{
+    clear: both;       /* drop below the floated search-bar */
+    display: block;    /* let it stretch the full panel width */
+}
+
+    
     .dismiss-button { float: right; cursor: pointer; font-weight: bold; margin-left: 10px; padding: 0 5px; color: #a1a1a1; border-radius: 3px; line-height: 1.4; user-select: none; transition: color 0.2s, background-color 0.2s; }
     .dismiss-button:hover { color: #333; background-color: #e0e0e0; }
 
@@ -556,10 +573,33 @@ body:not(.panel-desktop-hidden) .hamburger {
         z-index: 2001; padding: 8px 12px; border-radius: 4px;
     }
 
-    .college-group-header {
-        font-weight: bold; padding: 6px 3px; background-color: #e9ecef;
-        border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;
-        margin-top: 3px; margin-bottom: 2px; position: sticky; top: -1px; z-index: 10; cursor: default;
+               .college-group-header {
+        font-weight: bold;
+        padding: 8px 10px;
+        background-color: #e9ecef;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+        margin-top: 3px;
+        margin-bottom: 2px;
+        position: sticky;
+        top: -1px;
+        z-index: 10;
+        cursor: default;
+        /* --- Alignment Fixes --- */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        line-height: 1.2;
+    }
+    .college-group-header[data-grad-class] {
+        justify-content: center; /* Center the remaining flex item ('XX Seniors' span) */
+        position: relative; /* Establish positioning context for the toggle */
+    }
+    .college-group-header[data-grad-class] .toggle-indicator {
+        position: absolute;
+        right: 10px; /* Position from the right edge of the padding box */
+        top: 50%; /* Vertically center */
+        transform: translateY(-50%); /* Fine-tune vertical centering */
     }
     body.dark-mode .college-group-header { background-color: #2c2c2c; border-color: #444; color: #e0e0e0; }
     .student-sublist { list-style: none; padding-left: 15px; margin: 0; }
@@ -652,9 +692,51 @@ body:not(.panel-desktop-hidden) .hamburger {
     #trends-control { font-size: 0.9em; margin-top: 10px; }
     #trends-control h4 { margin-bottom: 10px; }
     #trends-control h5 { margin-top: 0; margin-bottom: 8px; font-size: 1em; font-weight: bold; text-align: center; }
-    .chart-container {
-        position: relative; margin: 0 auto 15px auto; padding: 5px; border: 1px solid #ddd; border-radius: 4px;
-        background-color: #fdfdfd; width: 100%; height: 280px; box-sizing: border-box;
+        .chart-container {
+        position: relative; /* This is important for positioning the buttons */
+        height: 300px;      /* Set a default height for all charts */
+        width: 100%;
+    }
+    #trends-control .chart-container:first-child {
+        height: 360px;      /* Give the first, more complex chart more vertical space */
+    }
+    .chart-zoom-controls {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+    }
+    .chart-zoom-controls button {
+        background-color: rgba(240, 240, 240, 0.8);
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 24px;
+        height: 24px;
+        line-height: 22px;
+        text-align: center;
+        padding: 0;
+        font-size: 16px;
+        transition: background-color 0.2s;
+    }
+    .chart-zoom-controls button:hover {
+        background-color: rgba(220, 220, 220, 0.9);
+    }
+    body.dark-mode .chart-zoom-controls button {
+        background-color: rgba(60, 60, 60, 0.8);
+        border-color: #777;
+        color: #eee;
+    }
+    body.dark-mode .chart-zoom-controls button:hover {
+        background-color: rgba(80, 80, 80, 0.9);
+    }
+    #resetZoomMajorChart {
+        font-size: 11px;
+        width: auto;
+        padding: 0 6px;
     }
     body.dark-mode .chart-container { border-color: #555; background-color: #2a2a2a; }
     #trends-control canvas { max-width: 100%; margin-bottom: 10px; }
@@ -803,6 +885,184 @@ body:not(.panel-desktop-hidden) .hamburger {
         }
     }
 
+    /* --- Tutorial Styles --- */
+#show-tutorial-btn {
+    font-size: 0.9em;
+    padding: 7px 11px;
+    margin: 0; /* Use gap for spacing */
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background-color: rgba(245, 245, 245, 0.9);
+    color: #222;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+#show-tutorial-btn:hover {
+    background-color: rgba(230, 230, 230, 0.95);
+}
+body.dark-mode #show-tutorial-btn {
+    background-color: #3e3e3e;
+    border-color: #666;
+    color: #e0e0e0;
+}
+body.dark-mode #show-tutorial-btn:hover {
+    background-color: #555;
+}
+
+#tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9998;
+    transition: opacity 0.3s ease;
+}
+
+#tutorial-highlight {
+    position: absolute;
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    pointer-events: none;
+    transition: top 0.4s ease-in-out, left 0.4s ease-in-out, width 0.4s ease-in-out, height 0.4s ease-in-out;
+}
+
+#tutorial-description-box {
+    position: absolute;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 10000;
+    max-width: 350px;
+    line-height: 1.5;
+    transition: top 0.4s ease-in-out, left 0.4s ease-in-out, transform 0.4s ease-in-out, opacity 0.3s;
+    opacity: 0; /* Fade in */
+}
+#tutorial-description-box.visible {
+    opacity: 1;
+}
+
+#tutorial-description-box::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+}
+#tutorial-description-box.arrow-top::before {
+    top: -20px; left: 50%; transform: translateX(-50%);
+    border-bottom-color: white;
+}
+#tutorial-description-box.arrow-bottom::before {
+    bottom: -20px; left: 50%; transform: translateX(-50%);
+    border-top-color: white;
+}
+#tutorial-description-box.arrow-left::before {
+    left: -20px; top: 50%; transform: translateY(-50%);
+    border-right-color: white;
+}
+#tutorial-description-box.arrow-right::before {
+    right: -20px; top: 50%; transform: translateY(-50%);
+    border-left-color: white;
+}
+
+body.dark-mode #tutorial-description-box.arrow-top::before { border-bottom-color: #2a2a2a; }
+body.dark-mode #tutorial-description-box.arrow-bottom::before { border-top-color: #2a2a2a; }
+body.dark-mode #tutorial-description-box.arrow-left::before { border-right-color: #2a2a2a; }
+body.dark-mode #tutorial-description-box.arrow-right::before { border-left-color: #2a2a2a; }
+
+
+#tutorial-description-box h3 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+#tutorial-description-box p {
+    margin-bottom: 15px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+#tutorial-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+#tutorial-navigation > div {
+    display: flex;
+    gap: 8px;
+}
+#tutorial-navigation button {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    cursor: pointer;
+    font-weight: bold;
+}
+#tutorial-navigation button:hover {
+    background-color: #eee;
+}
+#tutorial-skip-btn {
+    background-color: #fff0f0;
+    border-color: #f0c0c0;
+    font-weight: normal;
+}
+#tutorial-skip-btn:hover {
+    background-color: #ffe0e0;
+}
+#tutorial-step-counter {
+    font-size: 0.9em;
+    color: #777;
+    margin: 0 10px;
+    flex-shrink: 0; /* Prevents the element from shrinking */
+    white-space: nowrap; /* Ensures the text stays on one line */
+}
+
+/* Dark Mode Tutorial */
+body.dark-mode #tutorial-description-box {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+}
+body.dark-mode #tutorial-description-box h3 {
+    color: #e0e0e0;
+}
+body.dark-mode #tutorial-description-box p {
+    color: #ccc;
+}
+body.dark-mode #tutorial-navigation {
+    border-top-color: #444;
+}
+body.dark-mode #tutorial-navigation button {
+    background-color: #333;
+    border-color: #555;
+    color: #e0e0e0;
+}
+body.dark-mode #tutorial-navigation button:hover {
+    background-color: #444;
+}
+body.dark-mode #tutorial-skip-btn {
+    background-color: #4d3030;
+    border-color: #7a5050;
+}
+body.dark-mode #tutorial-skip-btn:hover {
+    background-color: #603838;
+}
+body.dark-mode #tutorial-step-counter {
+    color: #999;
+}
+
 </style>
 
 </head>
@@ -820,7 +1080,7 @@ body:not(.panel-desktop-hidden) .hamburger {
                 <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
             </div>
 
-                        <div id="credits">
+                 <div id="credits">
     <span>Created by: </span>
     <a href="https://github.com/norman-mei" target="_blank" title="GitHub Profile">
         Norman Mei ('25) 
@@ -833,6 +1093,7 @@ body:not(.panel-desktop-hidden) .hamburger {
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
         </svg>
     </a>
+    <button id="show-tutorial-btn" title="Show Tutorial">💡 Show Tutorial</button>
 </div>
 
                                          <div id="map-options-control" class="map-control">
@@ -979,8 +1240,13 @@ body:not(.panel-desktop-hidden) .hamburger {
              <div id="trends-control" class="map-control">
                 <h4>Data Trends Over Time</h4>
                 <div class="control-content">
-                    <div class="chart-container" style="margin-bottom: 20px;">
+                                        <div class="chart-container" style="margin-bottom: 20px;">
                         <h5>Major Area Popularity (% of Grads/Year)</h5>
+                        <div class="chart-zoom-controls">
+                            <button id="zoomInMajorChart" title="Zoom In">+</button>
+                            <button id="zoomOutMajorChart" title="Zoom Out">-</button>
+                            <button id="resetZoomMajorChart" title="Reset Zoom">Reset</button>
+                        </div>
                         <canvas id="majorAreaTrendChart"></canvas>
                     </div>
                     <div class="chart-container" style="margin-bottom: 20px;">
@@ -994,52 +1260,57 @@ body:not(.panel-desktop-hidden) .hamburger {
                 </div>
             </div>
 
-            <div id="school-list-control" class="map-control">
-                <div class="list-header-container"> 
-                    <h4>College List & Seniors</h4>
-                     <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
-                    <div id="schoolSearchContainer">
-                        <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
-                        <div id="searchSuggestions"></div>
+                        <div id="school-list-control" class="map-control">
+                <div id="list-controls-wrapper">
+                    <div class="list-header-container"> 
+                        <h4>College List & Seniors</h4>
+                        <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
+                        <div id="schoolSearchContainer">
+                            <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
+                            <div id="searchSuggestions"></div>
+                        </div>
                     </div>
-                </div>
 
-                <div id="sort-controls-container" style="padding: 5px 0px 10px 0px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
-                    <div>
-                        <label for="primarySortTarget" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Target:</label>
-                        <select id="primarySortTarget" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc; margin-right: 10px;">
-                            <option value="students" selected>Students</option>
-                            <option value="colleges">Colleges</option>
-                        </select>
-                    </div>
-                    <div id="collegeSortOptionsContainer" style="display: none; margin-top: 8px;">
-                        <label for="collegeSortSelect" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Colleges by:</label>
-                        <select id="collegeSortSelect" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
-                            <option value="name_asc" selected>Name (A-Z)</option>
-                            <option value="name_desc">Name (Z-A)</option>
-                            <option value="count_desc">Student Count (Most)</option>
-                            <option value="count_asc">Student Count (Least)</option>
-                        </select>
-                    </div>
-                    <div id="studentSortOptionsContainer" style="margin-top: 8px;"> 
-                        <label for="studentSortSelect" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Students by:</label>
-                        <select id="studentSortSelect" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
-                            <option value="grad_first" selected>Grad Class, First Name</option>
-                            <option value="grad_last">Grad Class, Last Name</option>
-                            <option value="first_name">First Name (Overall)</option>
-                            <option value="last_name">Last Name (Overall)</option>
-                        </select>
+                    <div id="sort-controls-container" style="padding: 5px 0px 10px 0px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
+                        <div>
+                            <label for="primarySortTarget" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Target:</label>
+                            <select id="primarySortTarget" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc; margin-right: 10px;">
+                                <option value="students" selected>Students</option>
+                                <option value="colleges">Colleges</option>
+                            </select>
+                        </div>
+                        <div id="collegeSortOptionsContainer" style="display: none; margin-top: 8px;">
+                            <label for="collegeSortSelect" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Colleges by:</label>
+                            <select id="collegeSortSelect" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
+                                <option value="name_asc" selected>Name (A-Z)</option>
+                                <option value="name_desc">Name (Z-A)</option>
+                                <option value="count_desc">Student Count (Most)</option>
+                                <option value="count_asc">Student Count (Least)</option>
+                            </select>
+                        </div>
+                        <div id="studentSortOptionsContainer" style="margin-top: 8px;"> 
+                            <label for="studentSortSelect" style="margin-right: 5px; font-size: 0.9em; vertical-align: middle;">Sort Students by:</label>
+                            <select id="studentSortSelect" style="padding: 4px; font-size: 0.85em; vertical-align: middle; border-radius: 3px; border: 1px solid #ccc;">
+                                <option value="grad_first" selected>Grad Class, First Name</option>
+                                <option value="grad_last">Grad Class, Last Name</option>
+                                <option value="first_name">First Name (Overall)</option>
+                                <option value="last_name">Last Name (Overall)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                  <div class="list-content">
                      <div class="school-list-collapsible-content">
-
                           <div id="no-results-message">No seniors match your current filters.</div>
                      </div>
                  </div>
             </div>
+
+
         </div>
+
+
         <div id="panel-resizer"></div>
         <div id="map"></div>
 
@@ -1427,78 +1698,71 @@ function getChartJsConfigOptions(
     titleText,
     currentIsDarkMode,
     isMobile = false,
-    isMajorAreaChart = false
+    isMajorAreaChart = false,
+    years = []
 ) {
-    const gridColor   = currentIsDarkMode ? 'rgba(255, 255, 255, 0.1)'
-                                          : 'rgba(0, 0, 0, 0.1)';
-    const ticksColor  = currentIsDarkMode ? '#ccc' : '#666';
-    const legendColor = currentIsDarkMode ? '#eee' : '#333';
+    const gridColor   = currentIsDarkMode ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.1)';
+    const ticksColor  = currentIsDarkMode ? '#ccc'               : '#666';
+    const legendColor = currentIsDarkMode ? '#eee'               : '#333';
 
-    let legendPosition     = 'top';
-    let legendAlign        = 'start';
-    let layoutPaddingTop   = 10;
+    // ── responsive / legend tweaks ──────────────────────────────────────
+    let legendPosition     = isMobile && isMajorAreaChart ? 'bottom' : 'top';
+    let legendAlign        = isMobile && isMajorAreaChart ? 'center' : 'start';
+    let layoutPaddingTop   = isMobile ? (isMajorAreaChart ? 10 : 25) : 10;
+    const legendFontSize   = isMobile ? 9.5 : Chart.defaults.font.size;
+    const legendBoxWidth   = isMobile ? 9   : 12;
+    const legendPad        = isMobile ? 4   : 8;
 
-    if (isMobile && isMajorAreaChart) {
-        legendPosition   = 'bottom';     
-        legendAlign      = 'center';     
-        layoutPaddingTop = 10;           
-    } else if (isMobile) {
-
-        layoutPaddingTop = 25;
-    }
-
-    const legendFontSize     = isMobile ? 9.5 : Chart.defaults.font.size;
-    const legendBoxWidth     = isMobile ? 9   : 12;
-    const legendItemsPadding = isMobile ? 4   : 8;
-
-    return {
+    const options = {
         responsive: true,
         maintainAspectRatio: false,
-        layout: {
-            padding: {
-                top  : layoutPaddingTop,
-                right: isMobile ? 5  : 10,
-                bottom: isMobile ? 15 : 20,
-                left : isMobile ? 5  : 10
-            }
+        layout : { padding: {top: layoutPaddingTop, right: isMobile?5:10, bottom: isMobile?15:20, left: isMobile?5:10} },
+        plugins : {
+            legend : { position: legendPosition, align: legendAlign,
+                       labels:{ color: legendColor, boxWidth: legendBoxWidth,
+                                padding: legendPad, font:{size: legendFontSize}} },
+            title  : { display:false, text:titleText },
+            tooltip: { callbacks:{ label:ctx=>{
+                let l = ctx.dataset.label ? `${ctx.dataset.label}: ` : '';
+                if (ctx.parsed.y != null) l += `${ctx.parsed.y.toFixed(1)}%`;
+                return l;} } }
         },
-        plugins: {
-            legend: {
-                position: legendPosition,
-                align   : legendAlign,
-                labels  : {
-                    color   : legendColor,
-                    boxWidth: legendBoxWidth,
-                    padding : legendItemsPadding,
-                    font    : { size: legendFontSize }
-                }
-            },
-
-            title: { display: false, text: titleText, font: { size: 14 } },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => {
-                        let l = ctx.dataset.label ? `${ctx.dataset.label}: ` : '';
-                        if (ctx.parsed.y != null) l += `${ctx.parsed.y.toFixed(1)}%`;
-                        return l;
-                    }
-                }
-            }
-        },
-        scales: {
-            x: { grid: { color: gridColor }, ticks: { color: ticksColor } },
-            y: {
-                beginAtZero: true,
-                grid : { color: gridColor },
-                ticks: {
-                    color: ticksColor,
-                    precision: 0,
-                    callback: (v) => `${v}%`
-                }
-            }
+        scales : {
+            x:{ grid:{color:gridColor}, ticks:{color:ticksColor} },
+            y:{ beginAtZero:true, grid:{color:gridColor},
+                ticks:{ color:ticksColor, precision:0, callback:v=>`${v}%` } }
         }
     };
+
+    /* major-area chart gets pan/zoom – now fully clamped */
+    if (isMajorAreaChart) {
+        // Define clamp with both x and y limits
+        const clamp = {
+            y: { min: 0, max: 105, minRange: 5 },
+            x: { min: -0.5, max: years.length - 0.5, minRange: 1 }
+        };
+
+        options.plugins.zoom = {
+            pan: {
+                enabled: true,
+                mode: 'x',
+                threshold: 5,
+                limits: clamp
+            },
+            zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                mode: 'x',
+                limits: clamp,
+                rangeMin: { y: 0 },
+                rangeMax: { y: 105 }
+            }
+        };
+    }
+
+    return options;
 }
+
 
         function calculateDynamicYAxisMax(datasets) {
             let maxValue = 0;
@@ -1522,7 +1786,7 @@ function getChartJsConfigOptions(
             return Math.min(100, yMax); 
         }
 
-      function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+     function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
             const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
             if (majorAreaChartInstance) majorAreaChartInstance.destroy();
             chartColorIndex = 0; 
@@ -1541,11 +1805,20 @@ function getChartJsConfigOptions(
             const isMobile = window.innerWidth <= 768;
             const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); 
 
+            // Dynamically set the x-axis zoom limits based on the number of years.
+            if (chartOptions.plugins?.zoom?.zoom?.limits) {
+                chartOptions.plugins.zoom.zoom.limits.x = {
+                    min: -0.5, // Allow panning slightly before the first data point
+                    max: years.length - 0.5 // Allow panning slightly after the last data point
+                };
+            }
+
             const yAxisMax = calculateDynamicYAxisMax(datasets);
             if (!chartOptions.scales) chartOptions.scales = {};
             if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
             else chartOptions.scales.y.beginAtZero = true;
             chartOptions.scales.y.max = yAxisMax;
+            chartOptions.scales.y.min = 0;
 
             majorAreaChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -2165,7 +2438,7 @@ function getChartJsConfigOptions(
             }
         }
 
-            function filterSchoolList() {
+                     function filterSchoolList() {
             const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
             const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
             if (!listContentDiv || !listContentDiv.querySelector('ul')) return;
@@ -2174,183 +2447,47 @@ function getChartJsConfigOptions(
             const noResultsMessage = document.getElementById('no-results-message');
             let hasVisibleItemsOverall = false;
 
-            if (isGalleryViewEnabled || (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled) ) {
-                const listItems = mainUl.querySelectorAll('li:not(.grad-class-separator)[data-original-index]'); 
-                listItems.forEach(item => {
-                    const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
-                    const schoolData = (!isNaN(originalIndex) && allData && allData[originalIndex]) ? allData[originalIndex] : null;
+            const allStudentListItems = mainUl.querySelectorAll('li[data-original-index]');
+            allStudentListItems.forEach(item => {
+                const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
+                const schoolData = allData?.[originalIndex];
 
-                    if (!schoolData) { 
-                        item.style.display = 'none';
-                        return;
-                    }
-
-                    const meetsGlobalFilters = schoolData.isVisible;
-                    let matchesSearch = searchTerm === '';
-                    if (!matchesSearch && meetsGlobalFilters) { 
-                        const itemTextContent = item.textContent.toLowerCase(); 
-                        matchesSearch = itemTextContent.includes(searchTerm);
-                    }
-
-                    if (meetsGlobalFilters && matchesSearch) {
-                        item.style.display = isGalleryViewEnabled ? 'flex' : 'flex'; 
-                        hasVisibleItemsOverall = true;
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            }
-
-            else {
-                const collegeGroupHeaders = mainUl.querySelectorAll('li.college-group-header');
-                collegeGroupHeaders.forEach(header => {
-                    let groupHasVisibleStudentsMatchingSearchOrFilter = false;
-                    const studentSublist = header.nextElementSibling;
-                    let collegeNameInHeaderText = header.textContent.toLowerCase(); 
-
-                    if (studentSublist && studentSublist.classList.contains('student-sublist')) {
-                        const studentItems = studentSublist.querySelectorAll('li[data-original-index]');
-                        studentItems.forEach(item => {
-                            const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
-                            const schoolData = (!isNaN(originalIndex) && allData && allData[originalIndex]) ? allData[originalIndex] : null;
-
-                            if (!schoolData) { item.style.display = 'none'; return; }
-
-                            const meetsGlobalFilters = schoolData.isVisible;
-                            let matchesSearch = searchTerm === '';
-
-                            if (!matchesSearch && meetsGlobalFilters) {
-                                const nameSpan = item.querySelector('span.school-name');
-                                const studentLiText = nameSpan ? nameSpan.textContent.toLowerCase() : item.textContent.toLowerCase(); 
-
-                                matchesSearch = studentLiText.includes(searchTerm) ||
-                                                (schoolData.collegeName && schoolData.collegeName.toLowerCase().includes(searchTerm)) ||
-                                                collegeNameInHeaderText.includes(searchTerm);
-                            }
-
-                            if (meetsGlobalFilters && matchesSearch) {
-                                item.style.display = 'flex';
-                                groupHasVisibleStudentsMatchingSearchOrFilter = true;
-                            } else {
-                                item.style.display = 'none';
-                            }
-                        });
-                    }
-
-                    let headerItselfMatchesSearch = searchTerm !== '' && collegeNameInHeaderText.includes(searchTerm);
-
-                    if (groupHasVisibleStudentsMatchingSearchOrFilter || headerItselfMatchesSearch) {
-                        header.style.display = 'list-item';
-                        if (studentSublist) studentSublist.style.display = 'block';
-                        hasVisibleItemsOverall = true;
-
-                        if (headerItselfMatchesSearch && !groupHasVisibleStudentsMatchingSearchOrFilter && studentSublist) {
-                             const studentItems = studentSublist.querySelectorAll('li[data-original-index]');
-                             studentItems.forEach(item => {
-                                const originalIndex = parseInt(item.getAttribute('data-original-index'), 10);
-                                const schoolData = allData[originalIndex];
-                                if(schoolData && schoolData.isVisible) { 
-                                    item.style.display = 'flex'; 
-
-                                }
-                             });
-                        }
-
-                    } else {
-                        header.style.display = 'none';
-                        if (studentSublist) studentSublist.style.display = 'none';
-                    }
-                });
-            }
-
-            noResultsMessage.style.display = hasVisibleItemsOverall ? 'none' : 'block';
-            updateCurrentSelectionHighlight();
-            updateSeparators();
-        }
-
-        function updateSeparators() {
-            const listContentDiv = document.querySelector('#school-list-control .list-content');
-            if (!listContentDiv) return;
-
-            const mainUl = listContentDiv.querySelector('ul');
-            if (!mainUl) return;
-
-            const processUlForSeparators = (ulElement, isSubListContext) => {
-
-                ulElement.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
-
-                let shouldAddSeparatorsInThisContext = false;
-                if (isSubListContext) { 
-                    shouldAddSeparatorsInThisContext = (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last');
-                } else { 
-                    shouldAddSeparatorsInThisContext =
-                        (isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last')) ||
-                        (currentPrimarySortTarget === 'students' && !isGalleryViewEnabled && (currentStudentSortValue === 'grad_first' || currentStudentSortValue === 'grad_last'));
-                }
-
-                if (!shouldAddSeparatorsInThisContext) {
+                if (!schoolData) {
+                    item.style.display = 'none';
                     return;
                 }
 
-                const visibleListItemsInUl = Array.from(ulElement.querySelectorAll(':scope > li:not(.grad-class-separator)[data-original-index]'))
-                    .filter(li => li.style.display !== 'none' && !li.classList.contains('college-group-header'));
-
-                if (visibleListItemsInUl.length === 0) return;
-
-                const visibleGradClassesInUl = visibleListItemsInUl.map(li => {
-                    const originalIndex = parseInt(li.dataset.originalIndex);
-                    return allData[originalIndex]?.gradClass;
-                }).filter(gc => gc); 
-
-                const uniqueVisibleGradClassesInUl = new Set(visibleGradClassesInUl);
-
-                if (uniqueVisibleGradClassesInUl.size <= 1) {
-                    return; 
+                const meetsGlobalFilters = schoolData.isVisible;
+                let matchesSearch = searchTerm === '';
+                if (!matchesSearch && meetsGlobalFilters) {
+                    const itemTextContent = item.textContent.toLowerCase();
+                    const collegeName = schoolData.collegeName.toLowerCase();
+                    matchesSearch = itemTextContent.includes(searchTerm) || collegeName.includes(searchTerm);
                 }
 
-                let previousVisibleGradClass = null;
-                for (let i = 0; i < visibleListItemsInUl.length; i++) {
-                    const currentLi = visibleListItemsInUl[i];
-                    const originalIndex = parseInt(currentLi.dataset.originalIndex);
-                    const currentGradClass = allData[originalIndex]?.gradClass;
-
-                    if (currentGradClass) {
-                        if (previousVisibleGradClass !== null && currentGradClass !== previousVisibleGradClass) {
-                            const separatorLi = document.createElement('li');
-                            separatorLi.className = 'grad-class-separator';
-
-                            ulElement.insertBefore(separatorLi, currentLi);
-                        }
-                        previousVisibleGradClass = currentGradClass;
-                    }
+                if (meetsGlobalFilters && matchesSearch) {
+                    item.style.display = isGalleryViewEnabled ? 'flex' : 'flex';
+                    hasVisibleItemsOverall = true;
+                } else {
+                    item.style.display = 'none';
                 }
-            };
+            });
 
-            if (currentPrimarySortTarget === 'students' || isGalleryViewEnabled) {
+            const allGroupContainers = mainUl.querySelectorAll('.grad-class-group-container, .college-group-container');
+            allGroupContainers.forEach(container => {
+                const visibleChildren = container.querySelector('li[data-original-index]:not([style*="display: none"])');
+                if (visibleChildren) {
+                    container.style.display = 'block'; // Restore the correct display property
+                } else {
+                    container.style.display = 'none';
+                }
+            });
 
-                processUlForSeparators(mainUl, false);
-            } else { 
-
-                mainUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
-
-                const studentSublists = mainUl.querySelectorAll('ul.student-sublist');
-                studentSublists.forEach(sublistUl => {
-                    const parentHeader = sublistUl.previousElementSibling;
-
-                    if (parentHeader && parentHeader.classList.contains('college-group-header') && parentHeader.style.display !== 'none') {
-                        if (sublistUl.style.display !== 'none') {
-                           processUlForSeparators(sublistUl, true);
-                        } else {
-
-                           sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
-                        }
-                    } else {
-
-                         sublistUl.querySelectorAll(':scope > li.grad-class-separator').forEach(sep => sep.remove());
-                    }
-                });
-            }
+            noResultsMessage.style.display = hasVisibleItemsOverall ? 'none' : 'block';
+            updateCurrentSelectionHighlight();
         }
+
+       
 
                      function showSeniorPhotoPopup(listItem, schoolData) {
          if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
@@ -2986,7 +3123,7 @@ function getChartJsConfigOptions(
         updateCurrentSelectionHighlight();
     }
 
-    function rebuildSchoolListHTML() {
+           function rebuildSchoolListHTML() {
         const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
         if (!schoolListCollapsibleContentDiv) {
             console.error("School list collapsible content div not found.");
@@ -2999,7 +3136,7 @@ function getChartJsConfigOptions(
             schoolListUl = document.createElement('ul');
             schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage);
         }
-        schoolListUl.innerHTML = ''; 
+        schoolListUl.innerHTML = '';
 
         if (!allData) {
             schoolListUl.innerHTML = '<li>Data is not available.</li>';
@@ -3007,38 +3144,110 @@ function getChartJsConfigOptions(
             return;
         }
 
-        if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
-            allData.forEach(seniorChoice => {
-                if (seniorChoice.isVisible) { 
-                    schoolListUl.appendChild(createStudentListItem(seniorChoice));
+       if (localStorage.getItem('gradClassCollapseInitialized') !== 'true') {
+    // save *all* grad-classes as “collapsed” on the very first visit
+    const allGradClasses = Array.from(new Set(allData.map(s => s.gradClass)));
+    localStorage.setItem('collapsedGradClasses', JSON.stringify(allGradClasses));
+    localStorage.setItem('gradClassCollapseInitialized', 'true');
+}
+        const collapsedClasses = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+
+        const createToggleHandler = (headerDiv, studentContainer, gradClass) => {
+            headerDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isCurrentlyCollapsed = studentContainer.style.display === 'none';
+                studentContainer.style.display = isCurrentlyCollapsed ? '' : 'none';
+                const indicator = headerDiv.querySelector('.toggle-indicator');
+                if(indicator) indicator.textContent = isCurrentlyCollapsed ? '[-]' : '[+]';
+
+                let storedCollapsed = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+                if (isCurrentlyCollapsed) { // Opening it
+                    storedCollapsed = storedCollapsed.filter(gc => gc !== gradClass);
+                } else { // Closing it
+                    if (!storedCollapsed.includes(gradClass)) {
+                        storedCollapsed.push(gradClass);
+                    }
                 }
+                localStorage.setItem('collapsedGradClasses', JSON.stringify(storedCollapsed));
             });
-        } else { 
+        };
+
+        const studentsByGradClass = new Map();
+        allData.forEach(seniorChoice => {
+            if (!studentsByGradClass.has(seniorChoice.gradClass)) {
+                studentsByGradClass.set(seniorChoice.gradClass, []);
+            }
+            studentsByGradClass.get(seniorChoice.gradClass).push(seniorChoice);
+        });
+        const sortedGradClasses = Array.from(studentsByGradClass.keys()).sort();
+
+        if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
+            sortedGradClasses.forEach(gradClass => {
+                const students = studentsByGradClass.get(gradClass);
+                const isCollapsed = collapsedClasses.includes(gradClass);
+
+                const groupContainerLi = document.createElement('li');
+                groupContainerLi.className = 'grad-class-group-container';
+                groupContainerLi.style.display = 'block';
+                groupContainerLi.style.width = '100%';
+                groupContainerLi.style.padding = '0';
+                groupContainerLi.style.cursor = 'default';
+
+                if (isGalleryViewEnabled) {
+                    groupContainerLi.style.flexBasis = '100%';
+                }
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'college-group-header';
+                headerDiv.style.cursor = 'pointer';
+                headerDiv.dataset.gradClass = gradClass;
+                headerDiv.innerHTML = `<span>${gradClass} Seniors</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
+                groupContainerLi.appendChild(headerDiv);
+
+                const studentGroupUl = document.createElement('ul');
+                if (isGalleryViewEnabled) {
+                    studentGroupUl.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; width: 100%;';
+                } else {
+                    studentGroupUl.className = 'student-sublist';
+                    studentGroupUl.style.width = '100%';
+                }
+
+                if (isCollapsed) {
+                    studentGroupUl.style.display = 'none';
+                }
+                groupContainerLi.appendChild(studentGroupUl);
+                schoolListUl.appendChild(groupContainerLi);
+
+                createToggleHandler(headerDiv, studentGroupUl, gradClass);
+
+                students.forEach(seniorChoice => {
+                    if (seniorChoice.isVisible) {
+                        studentGroupUl.appendChild(createStudentListItem(seniorChoice));
+                    }
+                });
+            });
+        } else { // currentPrimarySortTarget === 'colleges'
             const studentGroupsByCollege = new Map();
             allData.forEach(seniorChoice => {
-                if (seniorChoice.isVisible) { 
-                    const groupKey = seniorChoice.collegeKey || seniorChoice.collegeName;
-                    if (!studentGroupsByCollege.has(groupKey)) {
-                        studentGroupsByCollege.set(groupKey, { students: [], collegeInfo: seniorChoice });
-                    }
-                    studentGroupsByCollege.get(groupKey).students.push(seniorChoice);
+                const groupKey = seniorChoice.collegeKey || seniorChoice.collegeName;
+                if (!studentGroupsByCollege.has(groupKey)) {
+                    studentGroupsByCollege.set(groupKey, { students: [], collegeInfo: seniorChoice });
                 }
+                studentGroupsByCollege.get(groupKey).students.push(seniorChoice);
             });
 
-            let collegeEntries = Array.from(studentGroupsByCollege.entries()).map(([key, data]) => {
-                const collegeDetail = collegeCoordsAndInfo[key] || { name: data.collegeInfo.collegeName };
-                return {
-                    groupKey: key,
-                    displayName: collegeDetail.name,
-                    students: data.students
-                };
-            });
+            let collegeEntries = Array.from(studentGroupsByCollege.values())
+                .map(data => ({
+                    ...data,
+                    visibleStudentCount: data.students.filter(s => s.isVisible).length
+                }))
+                .filter(entry => entry.visibleStudentCount > 0);
 
             collegeEntries.sort((entryA, entryB) => {
-                const nameA = entryA.displayName.toLowerCase();
-                const nameB = entryB.displayName.toLowerCase();
-                const countA = entryA.students.length;
-                const countB = entryB.students.length;
+                const nameA = entryA.collegeInfo.collegeName.toLowerCase();
+                const nameB = entryB.collegeInfo.collegeName.toLowerCase();
+                const countA = entryA.visibleStudentCount;
+                const countB = entryB.visibleStudentCount;
                 switch (currentCollegeSortValue) {
                     case 'name_asc': return nameA.localeCompare(nameB);
                     case 'name_desc': return nameB.localeCompare(nameA);
@@ -3049,46 +3258,63 @@ function getChartJsConfigOptions(
             });
 
             collegeEntries.forEach(collegeEntry => {
-                const collegeHeaderLi = document.createElement('li');
-                collegeHeaderLi.className = 'college-group-header';
-                collegeHeaderLi.innerHTML = `${collegeEntry.displayName} <span style="font-weight:normal;">(Students: ${collegeEntry.students.length})</span>`;
-                schoolListUl.appendChild(collegeHeaderLi);
+                const collegeGroupLi = document.createElement('li');
+                collegeGroupLi.className = 'college-group-container';
+                collegeGroupLi.style.display = 'block';
+                collegeGroupLi.style.width = '100%';
+                collegeGroupLi.style.padding = '0';
+                collegeGroupLi.style.cursor = 'default';
 
-                collegeEntry.students.sort((a, b) => { 
-                    let comparison = 0;
-                    const gradClassA = parseInt(a.gradClass.substring(1));
-                    const gradClassB = parseInt(b.gradClass.substring(1));
-                    const firstNameA = getFirstName(a.seniorName);
-                    const firstNameB = getFirstName(b.seniorName);
-                    const lastNameA = getLastName(a.seniorName);
-                    const lastNameB = getLastName(b.seniorName);
-                    switch (currentStudentSortValue) {
-                        case 'grad_first':
-                            if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                            comparison = firstNameA.localeCompare(firstNameB); break;
-                        case 'grad_last':
-                            if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                            comparison = lastNameA.localeCompare(lastNameB);
-                            if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB); break;
-                        case 'first_name':
-                            comparison = firstNameA.localeCompare(firstNameB);
-                            if (comparison === 0) comparison = lastNameA.localeCompare(lastNameB); break;
-                        case 'last_name':
-                            comparison = lastNameA.localeCompare(lastNameB);
-                            if (comparison === 0) comparison = firstNameA.localeCompare(firstNameB); break;
-                        default:
-                            if (gradClassA !== gradClassB) return gradClassA - gradClassB;
-                            comparison = firstNameA.localeCompare(firstNameB); break;
+                const collegeHeaderDiv = document.createElement('div');
+                collegeHeaderDiv.className = 'college-group-header';
+                collegeHeaderDiv.style.cursor = 'default';
+                collegeHeaderDiv.innerHTML = `${collegeEntry.collegeInfo.collegeName} <span style="font-weight:normal;">(Students: ${collegeEntry.visibleStudentCount})</span>`;
+                collegeGroupLi.appendChild(collegeHeaderDiv);
+
+                const studentSublistContainer = document.createElement('div');
+                studentSublistContainer.className = 'student-sublist';
+                collegeGroupLi.appendChild(studentSublistContainer);
+
+                const studentsByGradClassInCollege = new Map();
+                collegeEntry.students.forEach(student => {
+                    if (!student.isVisible) return;
+                    if (!studentsByGradClassInCollege.has(student.gradClass)) {
+                        studentsByGradClassInCollege.set(student.gradClass, []);
                     }
-                    return comparison;
+                    studentsByGradClassInCollege.get(student.gradClass).push(student);
                 });
 
-                const studentSublistUl = document.createElement('ul');
-                studentSublistUl.className = 'student-sublist';
-                collegeEntry.students.forEach(student => { 
-                    studentSublistUl.appendChild(createStudentListItem(student)); 
+                const sortedGradClassesInCollege = Array.from(studentsByGradClassInCollege.keys()).sort();
+
+                sortedGradClassesInCollege.forEach(gradClass => {
+                    const students = studentsByGradClassInCollege.get(gradClass);
+                    const isCollapsed = collapsedClasses.includes(gradClass);
+
+                    const subHeaderDiv = document.createElement('div');
+                    subHeaderDiv.className = 'college-group-header';
+                    subHeaderDiv.style.paddingLeft = '15px';
+                    subHeaderDiv.style.backgroundColor = isDarkMode ? '#3a3a3a' : '#f0f0f0';
+                    subHeaderDiv.style.cursor = 'pointer';
+                    subHeaderDiv.dataset.gradClass = gradClass;
+                    subHeaderDiv.innerHTML = `<span>${gradClass} (${students.length})</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
+                    studentSublistContainer.appendChild(subHeaderDiv);
+
+                    const studentGroupUl = document.createElement('ul');
+                    studentGroupUl.className = 'student-sublist';
+                    studentGroupUl.style.paddingLeft = '15px';
+                    if (isCollapsed) {
+                        studentGroupUl.style.display = 'none';
+                    }
+                    studentSublistContainer.appendChild(studentGroupUl);
+
+                    createToggleHandler(subHeaderDiv, studentGroupUl, gradClass);
+
+                    students.forEach(student => {
+                        studentGroupUl.appendChild(createStudentListItem(student));
+                    });
                 });
-                schoolListUl.appendChild(studentSublistUl);
+
+                schoolListUl.appendChild(collegeGroupLi);
             });
         }
         filterSchoolList();
@@ -3933,14 +4159,39 @@ let nestmMarker, distancePolyline, distanceLabel;
             });
             gradClassFiltersContainer.appendChild(fragmentGradClassFilters);
 
-            if (listHeaderContainer && !document.getElementById('schoolListTip')) {
-                 const tipDiv = document.createElement('div'); tipDiv.id = 'schoolListTip'; tipDiv.className = 'tip-message';
-                 const tipText = document.createElement('span');
-                 tipText.innerHTML = 'Tips: <br>• Filters update Stats & Major tables.<br>• Checkboxes toggle visibility.<br>• <b>Shift + Click checkbox</b>: Group Zoom.<br>• <b>CTRL/CMD + Click name</b>: College Homepage.<br>• Hover list/marker to highlight & see photo.<br>• Click senior photo to zoom (Esc to close).<br>• Use ↑↓ keys to navigate list; ← → in zoomed photo.<br>• Left panel is resizable.<br>• Explore different sort options for colleges and students!<br>• Dark mode can be easier on the eyes.';
-                 const dismissBtn = document.createElement('span'); dismissBtn.className = 'dismiss-button'; dismissBtn.textContent = 'x'; dismissBtn.title = 'Dismiss this tip';
-                 dismissBtn.onclick = () => { tipDiv.style.display = 'none'; };
-                 tipDiv.appendChild(tipText); tipDiv.appendChild(dismissBtn);
-                 listHeaderContainer.insertAdjacentElement('afterend', tipDiv);
+                        if (listHeaderContainer && !document.getElementById('schoolListTip')) {
+                const tipDiv = document.createElement('div');
+                tipDiv.id = 'schoolListTip';
+                tipDiv.className = 'tip-message';
+                
+                const tipContent = `
+                    <strong>Tips:</strong>
+                    <ul style="margin: 8px 0 0 0; padding: 0 0 0 25px; list-style-type: disc; line-height: 1.6;">
+                        <li>Filters update Stats & Major tables.</li>
+                        <li>Checkboxes toggle visibility.</li>
+                        <li><b>Shift + Click checkbox</b>: Group Zoom.</li>
+                        <li><b>CTRL/CMD + Click name</b>: College Homepage.</li>
+                        <li>Hover list/marker to highlight & see photo.</li>
+                        <li>Click senior photo to zoom (Esc to close).</li>
+                        <li>Use ↑↓ keys to navigate list; ← → in zoomed photo.</li>
+                        <li>Left panel is resizable.</li>
+                        <li>Explore different sort options for colleges and students!</li>
+                        <li>Dark mode can be easier on the eyes.</li>
+                    </ul>
+                `;
+                
+                const tipTextContainer = document.createElement('div');
+                tipTextContainer.innerHTML = tipContent;
+
+                const dismissBtn = document.createElement('span');
+                dismissBtn.className = 'dismiss-button';
+                dismissBtn.innerHTML = '×'; // Use the multiplication sign for a better 'x'
+                dismissBtn.title = 'Dismiss this tip';
+                dismissBtn.onclick = () => { tipDiv.style.display = 'none'; };
+                
+                tipDiv.appendChild(tipTextContainer);
+                tipDiv.appendChild(dismissBtn);
+                listHeaderContainer.insertAdjacentElement('afterend', tipDiv);
             }
 
             toggleSchoolListBtn.addEventListener('click', () => {
@@ -4549,6 +4800,30 @@ let nestmMarker, distancePolyline, distanceLabel;
                     renderPopularCollegesTrendChart(popularCollegesData.trends, popularCollegesData.years, popularCollegesData.categories, isDarkMode);
                 }
             }
+             if (majorAreaChartInstance) {
+                document.getElementById('zoomInMajorChart').addEventListener('click', () => {
+                    majorAreaChartInstance.zoom(1.1);
+                });
+                document.getElementById('zoomOutMajorChart').addEventListener('click', () => {
+                    majorAreaChartInstance.zoom(0.9);
+                });
+                document.getElementById('resetZoomMajorChart').addEventListener('click', () => {
+                    majorAreaChartInstance.resetZoom();
+                });
+            }
+
+               const majorAreaChartCanvas = document.getElementById('majorAreaTrendChart');
+            const controlsContainer = document.getElementById('controls-and-list-container');
+
+            if (majorAreaChartCanvas && controlsContainer) {
+                majorAreaChartCanvas.addEventListener('mouseenter', () => {
+                    controlsContainer.style.overflowY = 'hidden';
+                });
+                majorAreaChartCanvas.addEventListener('mouseleave', () => {
+                    controlsContainer.style.overflowY = 'auto';
+                });
+            }
+
 
             rebuildSchoolListHTML(); 
             updateMarkersVisibility(); 
@@ -4557,6 +4832,21 @@ let nestmMarker, distancePolyline, distanceLabel;
             const faqPopup = document.getElementById('faq-popup');
             const faqOverlay = document.getElementById('faq-overlay');
             const closeFaqPopupBtn = document.getElementById('close-faq-popup');
+
+               const showTutorialBtn = document.getElementById('show-tutorial-btn');
+            const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+            const tutorialPrevBtn = document.getElementById('tutorial-prev-btn');
+            const tutorialSkipBtn = document.getElementById('tutorial-skip-btn');
+
+            if(showTutorialBtn) showTutorialBtn.addEventListener('click', startTutorial);
+            if(tutorialNextBtn) tutorialNextBtn.addEventListener('click', () => showTutorialStep(currentTutorialStep + 1));
+            if(tutorialPrevBtn) tutorialPrevBtn.addEventListener('click', () => showTutorialStep(currentTutorialStep - 1));
+            if(tutorialSkipBtn) tutorialSkipBtn.addEventListener('click', endTutorial);
+
+            if (localStorage.getItem('tutorialCompleted') !== 'true') {
+                // Use a longer delay to ensure map and all elements have fully rendered
+                setTimeout(startTutorial, 1200);
+            }
 
             if (showFaqBtn && faqPopup && faqOverlay && closeFaqPopupBtn) {
                 showFaqBtn.addEventListener('click', () => {
@@ -4583,6 +4873,204 @@ let nestmMarker, distancePolyline, distanceLabel;
                 console.warn("FAQ popup elements not found. FAQ functionality will be disabled.");
             }
         }
+
+       let currentTutorialStep = 0;
+const tutorialSteps = [
+    {
+        element: '#description-control',
+        title: 'Welcome!',
+        text: "This quick tutorial will guide you through the main features of the NEST+m Senior College Destinations Map."
+    },
+    {
+        element: '#map-options-control',
+        title: 'Map & View Options',
+        text: 'Here you can toggle dark mode, show transit/satellite layers, zoom to fit markers, clear filters, and access other useful tools.'
+    },
+    {
+        element: '#grad-class-filters-container',
+        title: 'Filter by Graduating Class',
+        text: 'Select one or more graduating classes to show on the map. You can use the "Check All" and "Uncheck All" buttons for convenience.'
+    },
+     {
+        element: '#state-country-filters-container',
+        title: 'Filter by Location',
+        text: 'You can also narrow down the results by the state or country where the college is located.'
+    },
+    {
+        element: '#stats-table-control',
+        title: 'View Statistics',
+        text: 'This table provides a statistical breakdown of college choices. It updates automatically as you apply filters.'
+    },
+    {
+        element: '#major-summary-control',
+        title: 'Major Area Summary',
+        text: 'See a summary of popular fields of study. You can also filter by major area using the checkboxes here.'
+    },
+    {
+        element: '#school-list-control',
+        title: 'College & Senior List',
+        text: 'This entire panel contains the list of students and colleges. You can search, sort, and interact with the entries here.'
+    },
+    {
+        element: '#school-list-control .list-content',
+        title: 'Interact with the List',
+        text: 'Hover over an entry to see a photo and highlight it on the map. Click it to open an info window on the map and get more details.'
+    },
+    {
+        element: '#map',
+        title: 'The Interactive Map',
+        text: "Click a marker to see details about the college and the students attending. Zoom and pan around to explore!"
+    },
+    {
+        element: '#credits',
+        title: "You're all set!",
+        text: "That's it for the tour! If you ever want to see this again, just click the 'Show Tutorial' button. Enjoy exploring!"
+    }
+];
+
+function endTutorial() {
+    const tutorialOverlay = document.getElementById('tutorial-overlay');
+    if (tutorialOverlay) tutorialOverlay.style.display = 'none';
+    localStorage.setItem('tutorialCompleted', 'true');
+    window.removeEventListener('resize', positionTutorialElements);
+}
+
+function positionTutorialElements() {
+    showTutorialStep(currentTutorialStep, false);
+}
+
+function showTutorialStep(stepIndex, shouldScroll = true) {
+    console.log(`%c[TUTORIAL_DEBUG] showTutorialStep called for index: ${stepIndex}`, 'color: #007bff; font-weight: bold;');
+
+    const tutorialHighlight = document.getElementById('tutorial-highlight');
+    const tutorialDescBox = document.getElementById('tutorial-description-box');
+    const tutorialTitle = document.getElementById('tutorial-title');
+    const tutorialText = document.getElementById('tutorial-text');
+    const tutorialStepCounter = document.getElementById('tutorial-step-counter');
+    const tutorialPrevBtn = document.getElementById('tutorial-prev-btn');
+    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+
+    if (stepIndex < 0 || stepIndex >= tutorialSteps.length) {
+        endTutorial();
+        return;
+    }
+    currentTutorialStep = stepIndex;
+
+    const step = tutorialSteps[stepIndex];
+    let targetElement = document.querySelector(step.element);
+
+    if (!targetElement) {
+        console.error(`[TUTORIAL_DEBUG] CRITICAL: Element not found for step ${stepIndex} with selector "${step.element}". Skipping.`);
+        showTutorialStep(stepIndex + 1);
+        return;
+    }
+    console.log('[TUTORIAL_DEBUG] Target element FOUND:', targetElement);
+
+    // --- INSTANT SCROLLING LOGIC ---
+    if (shouldScroll) {
+        const scrollParent = document.getElementById('controls-and-list-container');
+        if (scrollParent && scrollParent.contains(targetElement)) {
+            console.log('[TUTORIAL_DEBUG] Scrolling parent container INSTANTLY.');
+            const parentRect = scrollParent.getBoundingClientRect();
+            const childRect = targetElement.getBoundingClientRect();
+            const scrollTop = childRect.top - parentRect.top + scrollParent.scrollTop;
+
+            // Scroll instantly by removing the 'behavior' property
+            scrollParent.scrollTo({
+                top: scrollTop - 20,
+            });
+        } else {
+            console.log('[TUTORIAL_DEBUG] Element not in main panel. Using default scrollIntoView.');
+            targetElement.scrollIntoView({ block: 'center', inline: 'center' });
+        }
+    }
+    // --- END OF INSTANT SCROLLING LOGIC ---
+
+    tutorialDescBox.classList.remove('visible');
+
+    // Reduced timeout as we no longer wait for an animation
+    setTimeout(() => {
+        console.log('[TUTORIAL_DEBUG] Timeout executing. Calculating positions...');
+        const targetRect = targetElement.getBoundingClientRect();
+        console.log('[TUTORIAL_DEBUG] Target BoundingRect:', JSON.parse(JSON.stringify(targetRect)));
+
+        if (targetRect.width === 0 || targetRect.height === 0) {
+            console.error(`[TUTORIAL_DEBUG] ERROR: Target element for step ${stepIndex} has zero width or height. The highlight will not be visible.`, targetElement);
+        }
+
+        tutorialHighlight.style.top = `${targetRect.top - 5}px`;
+        tutorialHighlight.style.left = `${targetRect.left - 5}px`;
+        tutorialHighlight.style.width = `${targetRect.width + 10}px`;
+        tutorialHighlight.style.height = `${targetRect.height + 10}px`;
+
+        tutorialTitle.textContent = step.title;
+        tutorialText.textContent = step.text;
+        tutorialStepCounter.textContent = `Step ${stepIndex + 1} of ${tutorialSteps.length}`;
+        
+        const descBox = tutorialDescBox;
+        descBox.className = 'tutorial-description-box';
+        
+        descBox.style.visibility = 'hidden';
+        descBox.style.display = 'block';
+        const descRect = descBox.getBoundingClientRect();
+        descBox.style.visibility = '';
+        descBox.style.display = '';
+
+        const margin = 25;
+        let top, left, positionClass;
+
+        if (window.innerHeight - targetRect.bottom >= descRect.height + margin) {
+            positionClass = 'arrow-top';
+            top = targetRect.bottom + margin;
+            left = targetRect.left + (targetRect.width / 2) - (descRect.width / 2);
+        } else if (targetRect.top >= descRect.height + margin) {
+            positionClass = 'arrow-bottom';
+            top = targetRect.top - descRect.height - margin;
+            left = targetRect.left + (targetRect.width / 2) - (descRect.width / 2);
+        } else if (window.innerWidth - targetRect.right >= descRect.width + margin) {
+            positionClass = 'arrow-left';
+            left = targetRect.right + margin;
+            top = targetRect.top + (targetRect.height / 2) - (descRect.height / 2);
+        } else {
+            positionClass = 'arrow-right';
+            left = targetRect.left - descRect.width - margin;
+            top = targetRect.top + (targetRect.height / 2) - (descRect.height / 2);
+        }
+        
+        top = Math.max(10, Math.min(top, window.innerHeight - descRect.height - 10));
+        left = Math.max(10, Math.min(left, window.innerWidth - descRect.width - 10));
+
+        descBox.style.top = `${top}px`;
+        descBox.style.left = `${left}px`;
+        descBox.style.transform = '';
+
+        descBox.classList.add(positionClass);
+        descBox.classList.add('visible');
+
+        tutorialPrevBtn.style.visibility = stepIndex === 0 ? 'hidden' : 'visible';
+        tutorialNextBtn.textContent = (stepIndex === tutorialSteps.length - 1) ? 'Finish' : 'Next';
+
+    }, 100); // Shortened timeout
+}
+
+function startTutorial() {
+    currentTutorialStep = 0;
+    const controlsPanelEl = document.getElementById('controls-and-list-container');
+    const isDesktopView = window.innerWidth > 768;
+
+    // Ensure the panel is open on desktop before starting
+    if (isDesktopView && controlsPanelEl.classList.contains('panel-desktop-hidden')) {
+        handleMenuToggle();
+    }
+    
+    // Allow panel animation to complete
+    setTimeout(() => {
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        tutorialOverlay.style.display = 'block';
+        showTutorialStep(0);
+        window.addEventListener('resize', positionTutorialElements);
+    }, 350);
+}
 
       const menuToggleBtn  = document.getElementById('menu-toggle');
 const controlsPanel  = document.getElementById('controls-and-list-container');
@@ -4879,6 +5367,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     </div>
 </div>
-
+<div id="tutorial-overlay" style="display: none;">
+    <div id="tutorial-highlight"></div>
+    <div id="tutorial-description-box">
+        <h3 id="tutorial-title"></h3>
+        <p id="tutorial-text"></p>
+        <div id="tutorial-navigation">
+            <button id="tutorial-skip-btn">Skip Tutorial</button>
+            <span id="tutorial-step-counter"></span>
+            <div>
+                <button id="tutorial-prev-btn">Previous</button>
+                <button id="tutorial-next-btn">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
