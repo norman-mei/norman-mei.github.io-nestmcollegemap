@@ -702,15 +702,18 @@ body:not(.panel-desktop-hidden) .hamburger {
 
     #trends-control { font-size: 0.9em; margin-top: 10px; }
     #trends-control h4 { margin-bottom: 10px; }
-    #trends-control h5 { margin-top: 0; margin-bottom: 8px; font-size: 1em; font-weight: bold; text-align: center; }
-        .chart-container {
-        position: relative; /* This is important for positioning the buttons */
-        height: 300px;      /* Set a default height for all charts */
-        width: 100%;
-    }
-    #trends-control .chart-container:first-child {
-        height: 360px;      /* Give the first, more complex chart more vertical space */
-    }
+    #trends-control h5 {
+    margin-top: 30px; /* Pushes title down to make space for controls */
+    margin-bottom: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.school-list-collapsible-content {
+    /* overflow-y: auto; /* This was removed to prevent a nested scrollbar */
+    flex-grow: 1;
+}
     .chart-zoom-controls {
         position: absolute;
         top: 8px;
@@ -744,11 +747,20 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .chart-zoom-controls button:hover {
         background-color: rgba(80, 80, 80, 0.9);
     }
-    #resetZoomMajorChart {
-        font-size: 11px;
-        width: auto;
-        padding: 0 6px;
-    }
+   #resetZoomMajorChart {
+    font-size: 11px;
+    width: auto;
+    padding: 0 6px;
+}
+
+.chart-container {
+    position: relative; /* This is correct */
+    height: 280px; /* This is the fix: Add a default height for desktop */
+    margin-bottom: 20px;
+}
+
+
+
     body.dark-mode .chart-container { border-color: #555; background-color: #2a2a2a; }
     #trends-control canvas { max-width: 100%; margin-bottom: 10px; }
     #trends-control .chart-container p { font-size: 0.8em; text-align: center; margin-top: 5px; margin-bottom: 5px; line-height: 1.3; color: black; }
@@ -1107,14 +1119,13 @@ body.dark-mode #tutorial-step-counter {
     <button id="show-tutorial-btn" title="Show Tutorial">💡 Show Tutorial</button>
 </div>
 
-                                         <div id="map-options-control" class="map-control">
+            <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
                 <button id="toggleSatelliteViewBtn" title="Switch to Satellite View">🛰️ Satellite View</button>
                 <button id="zoomToVisibleBtn" title="Zoom to fit all visible markers">👁️ Zoom to Visible</button>
                 <button id="zoomToNestmBtn" title="Zoom to NEST+m">🏠 Zoom Back to Home</button>
                 <button id="clearAllFiltersBtn" title="Clear all active filters and search">🧹 Clear All Filters</button>
-                <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
                 <button id="showFaqBtn" title="Show Frequently Asked Questions">❓ FAQ</button>
                 <button id="toggleNestmBtn" title="Show/Hide NEST+m Marker">🦅 Show NEST+m</button>
             </div>
@@ -1274,13 +1285,15 @@ body.dark-mode #tutorial-step-counter {
                         <div id="school-list-control" class="map-control">
                 <div id="list-controls-wrapper">
                     <div class="list-header-container"> 
-                        <h4>College List & Seniors</h4>
-                        <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
-                        <div id="schoolSearchContainer">
-                            <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
-                            <div id="searchSuggestions"></div>
-                        </div>
-                    </div>
+    <h4>College List & Seniors</h4>
+    <!-- The gallery view button is now here -->
+    <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
+    <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
+    <div id="schoolSearchContainer">
+        <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
+        <div id="searchSuggestions"></div>
+    </div>
+</div>
 
                     <div id="sort-controls-container" style="padding: 5px 0px 10px 0px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
                         <div>
@@ -1404,6 +1417,9 @@ body.dark-mode #tutorial-step-counter {
      <script>
 
         let map;
+        // Add this with your other global variables
+let renderChartCallCount = 0;
+const RENDER_CHART_CALL_LIMIT = 20; // A safe limit to detect runaway loops
         let tutorialVisibleElements = [];
         let infowindow;
         let isDarkMode = false;
@@ -1529,7 +1545,7 @@ function getNextChartColor() {
         let allData;
         window.isDataReadyForMap = false;
 
-                       function getAdvancedMarkerPinElement(seniorChoice, isHighlighted = false, currentIsDarkMode) {
+                    function getAdvancedMarkerPinElement(seniorChoice, isHighlighted = false, currentIsDarkMode) {
             let displayColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
             if (seniorChoice.collegeName === "Undecided") displayColor = '#999999';
 
@@ -1537,15 +1553,15 @@ function getNextChartColor() {
             
             let borderColor;
             if (currentIsDarkMode) {
-                // Per user request: in dark mode, class '22 has a dark border, all others have a white border.
+                // In dark mode, all markers have a black border for consistency.
+                borderColor = '#111111';
+            } else {
+                // In light mode, class '22 has a black border, all others have a white border.
                 if (seniorChoice.gradClass === "'22") {
                     borderColor = '#111111'; 
                 } else {
                     borderColor = '#FFFFFF';
                 }
-            } else {
-                // In light mode, a white border provides a clean, consistent look.
-                borderColor = '#FFFFFF';
             }
             
             // Determine glyph color based on background brightness for better contrast
@@ -1831,185 +1847,111 @@ function getChartJsConfigOptions(
             return Math.min(100, yMax); 
         }
 
-     function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
-            const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
-            if (majorAreaChartInstance) majorAreaChartInstance.destroy();
-            chartColorIndex = 0; 
+    function renderMajorAreaTrendChart(data, years, majorAreasList, currentIsDarkMode) {
+    const ctx = document.getElementById('majorAreaTrendChart').getContext('2d');
+    if (majorAreaChartInstance) {
+        majorAreaChartInstance.destroy();
+    }
+    chartColorIndex = 0;
 
-            const datasets = majorAreasList.map(area => {
-                const areaData = years.map(year => data[year][area] || 0);
-                return {
-                    label: area,
-                    data: areaData,
-                    borderColor: getNextChartColor(),
-                    tension: 0.1,
-                    fill: false
-                };
-            });
+    const datasets = majorAreasList.map(area => {
+        const areaData = years.map(year => data[year][area] || 0);
+        return {
+            label: area,
+            data: areaData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
 
-            const isMobile = window.innerWidth <= 768;
-            const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true); 
+    const isMobile = window.innerWidth <= 768;
+    const chartOptions = getChartJsConfigOptions('Major Area Popularity Over Years', currentIsDarkMode, isMobile, true, years);
 
-            // Dynamically set the x-axis zoom limits based on the number of years.
-            if (chartOptions.plugins?.zoom?.zoom?.limits) {
-                chartOptions.plugins.zoom.zoom.limits.x = {
-                    min: -0.5, // Allow panning slightly before the first data point
-                    max: years.length - 0.5 // Allow panning slightly after the last data point
-                };
-            }
+    const yAxisMax = calculateDynamicYAxisMax(datasets);
+    if (!chartOptions.scales) chartOptions.scales = {};
+    if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+    else chartOptions.scales.y.beginAtZero = true;
+    chartOptions.scales.y.max = yAxisMax;
+    chartOptions.scales.y.min = 0;
 
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-            chartOptions.scales.y.min = 0;
+    majorAreaChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: chartOptions
+    });
+}
 
-            majorAreaChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: datasets
-                },
-                options: chartOptions
-            });
-        }
+function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
+    const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
+    if (locationFocusChartInstance) locationFocusChartInstance.destroy();
+    chartColorIndex = 0;
 
-        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
-            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
-            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
-            chartColorIndex = 0; 
+    const datasets = locationFocusesList.map(focus => {
+        const focusData = years.map(year => data[year][focus] || 0);
+        return {
+            label: focus,
+            data: focusData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
 
-            const datasets = locationFocusesList.map(focus => {
-                const focusData = years.map(year => data[year][focus] || 0);
-                return {
-                    label: focus,
-                    data: focusData,
-                    borderColor: getNextChartColor(),
-                    tension: 0.1,
-                    fill: false
-                };
-            });
+    const yAxisMax = calculateDynamicYAxisMax(datasets);
+    const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
 
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
+    if (!chartOptions.scales) chartOptions.scales = {};
+    if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+    else chartOptions.scales.y.beginAtZero = true;
+    chartOptions.scales.y.max = yAxisMax;
 
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
+    locationFocusChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: chartOptions
+    });
+}
 
-            locationFocusChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: datasets
-                },
-                options: chartOptions 
-            });
-        }
+function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
+    const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
+    if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
+    chartColorIndex = 0;
 
-        function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
-            const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
-            if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
-            chartColorIndex = 0; 
+    const datasets = popularCollegesList.map(college => {
+        const collegeData = years.map(year => data[year][college] || 0);
+        return {
+            label: college,
+            data: collegeData,
+            borderColor: getNextChartColor(),
+            tension: 0.1,
+            fill: false
+        };
+    });
 
-            const datasets = popularCollegesList.map(college => {
-                const collegeData = years.map(year => data[year][college] || 0);
-                return {
-                    label: college,
-                    data: collegeData,
-                    borderColor: getNextChartColor(),
-                    tension: 0.1,
-                    fill: false
-                };
-            });
+    const yAxisMax = calculateDynamicYAxisMax(datasets);
+    const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
 
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
+    if (!chartOptions.scales) chartOptions.scales = {};
+    if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
+    else chartOptions.scales.y.beginAtZero = true;
+    chartOptions.scales.y.max = yAxisMax;
 
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-
-            popularCollegesChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: datasets
-                },
-                options: chartOptions 
-            });
-        }
-
-        function renderLocationFocusTrendChart(data, years, locationFocusesList, currentIsDarkMode) {
-            const ctx = document.getElementById('locationFocusTrendChart').getContext('2d');
-            if (locationFocusChartInstance) locationFocusChartInstance.destroy();
-            chartColorIndex = 0; 
-
-            const datasets = locationFocusesList.map(focus => {
-                const focusData = years.map(year => data[year][focus] || 0);
-                return {
-                    label: focus,
-                    data: focusData,
-                    borderColor: getNextChartColor(),
-                    tension: 0.1,
-                    fill: false
-                };
-            });
-
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            const chartOptions = getChartJsConfigOptions('Location Focus Distribution Over Years', currentIsDarkMode);
-
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-
-            locationFocusChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: datasets
-                },
-                options: chartOptions 
-            });
-        }
-
-        function renderPopularCollegesTrendChart(data, years, popularCollegesList, currentIsDarkMode) {
-            const ctx = document.getElementById('popularCollegesTrendChart').getContext('2d');
-            if (popularCollegesChartInstance) popularCollegesChartInstance.destroy();
-            chartColorIndex = 0; 
-
-            const datasets = popularCollegesList.map(college => {
-                const collegeData = years.map(year => data[year][college] || 0);
-                return {
-                    label: college,
-                    data: collegeData,
-                    borderColor: getNextChartColor(),
-                    tension: 0.1,
-                    fill: false
-                };
-            });
-
-            const yAxisMax = calculateDynamicYAxisMax(datasets);
-            const chartOptions = getChartJsConfigOptions('Top College Attendance Over Years', currentIsDarkMode);
-
-            if (!chartOptions.scales) chartOptions.scales = {};
-            if (!chartOptions.scales.y) chartOptions.scales.y = { beginAtZero: true };
-            else chartOptions.scales.y.beginAtZero = true;
-            chartOptions.scales.y.max = yAxisMax;
-
-            popularCollegesChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: datasets
-                },
-                options: chartOptions 
-            });
-        }
+    popularCollegesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: datasets
+        },
+        options: chartOptions
+    });
+}
 
               function getMajorArea(specificMajor) {
             if (!specificMajor) return "Unknown";
@@ -2746,7 +2688,7 @@ function getChartJsConfigOptions(
             return suffixHtml;
         }
 
-                              function handleListItemInteraction(event, originalIndex, isHover) {
+             function handleListItemInteraction(event, originalIndex, isHover) {
              if (event && event.target && event.target.type === 'checkbox') return;
              if (originalIndex === undefined || !allData[originalIndex]) {
                 console.warn("Invalid originalIndex or data for list item interaction:", originalIndex);
@@ -2855,93 +2797,58 @@ function getChartJsConfigOptions(
              }
         }
 
-                            function navigateToSeniorPhoto(direction) {
-                console.log(`%c[NAV_DEBUG] NAVIGATE START (${direction}) ==================`, "color: blue; font-weight: bold;");
-            console.log(`[NAV_DEBUG] Initial currentlyZoomedSeniorOriginalIndex: ${currentlyZoomedSeniorOriginalIndex}`);
+                         function navigateToSeniorPhoto(direction) {
+    const visibleListItems = getVisibleListItemsDOM();
+    if (visibleListItems.length === 0) {
+        return;
+    }
 
-            const visibleListItems = getVisibleListItemsDOM();
-            console.log(`[NAV_DEBUG] Found ${visibleListItems.length} visible list items.`);
-             if (visibleListItems.length > 0) {
+    let currentIndexInVisibleList = -1;
+    if (currentlyZoomedSeniorOriginalIndex !== null) {
+        currentIndexInVisibleList = visibleListItems.findIndex(li =>
+            parseInt(li.dataset.originalIndex) === currentlyZoomedSeniorOriginalIndex
+        );
+    }
 
-            }
-            if (visibleListItems.length === 0) {
-                 console.warn("[NAV_DEBUG] No visible list items. Navigation aborted.");
-                return;
-            }
-            let currentIndexInVisibleList = -1;
-            if (currentlyZoomedSeniorOriginalIndex !== null) {
-                currentIndexInVisibleList = visibleListItems.findIndex(li =>
-                    parseInt(li.dataset.originalIndex) === currentlyZoomedSeniorOriginalIndex
-                );
-            }
-             console.log(`[NAV_DEBUG] currentIndexInVisibleList (index in visibleListItems for current photo): ${currentIndexInVisibleList}`);
-
-            let newIndexInVisibleList;
-            if (currentIndexInVisibleList === -1) {
-                newIndexInVisibleList = (direction === 'next') ? 0 : visibleListItems.length - 1;
-                console.log(`[NAV_DEBUG] current index was -1, defaulting newIndexInVisibleList to: ${newIndexInVisibleList}`);
-            } else {
-                if (direction === 'next') {
-                    newIndexInVisibleList = (currentIndexInVisibleList + 1) % visibleListItems.length;
-                } else {
-                    newIndexInVisibleList = (currentIndexInVisibleList - 1 + visibleListItems.length) % visibleListItems.length;
-                }
-                console.log(`[NAV_DEBUG] Calculated newIndexInVisibleList (0-based in visibleListItems): ${newIndexInVisibleList}`);
-            }
-
-            const newListItem = visibleListItems[newIndexInVisibleList];
-            if (newListItem) {
-                const newOriginalIndex = parseInt(newListItem.dataset.originalIndex);
-                console.log(`[NAV_DEBUG] Target newListItem found. Its originalIndex: ${newOriginalIndex}`);
-                const newSeniorData = allData[newOriginalIndex];
-
-                if (newSeniorData) {
-                      console.log(`[NAV_DEBUG] Navigating to senior: ${newSeniorData.seniorName} (originalIndex: ${newOriginalIndex})`);
-                    currentlyZoomedSeniorOriginalIndex = newOriginalIndex; 
-
-                    seniorPopupImage.src = newSeniorData.seniorPhotoUrl;
-                     seniorPopupImage.onerror = function() {
-                        this.src = newSeniorData.seniorPhotoUrlPng;
-                        this.onerror = function() {
-                            if (newSeniorData.collegeImageUrl && newSeniorData.collegeImageUrl !== 'x' && !newSeniorData.collegeImageUrl.startsWith('placeholder')) {
-                                this.src = newSeniorData.collegeImageUrl;
-                            } else { this.style.display = 'none'; }
-                            this.onerror = null;
-                        };
-                    };
-                    seniorPopupImage.alt = `${newSeniorData.seniorName}'s Photo / ${newSeniorData.collegeName} Logo`;
-
-                    currentListSelectionIndex = newIndexInVisibleList;
-                    updateCurrentSelectionHighlight(); 
-                    newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                     newListItem.focus(); 
-
-                      console.log(`[NAV_DEBUG] Calling handleListItemInteraction for originalIndex: ${newOriginalIndex}. This should update currentlyZoomedSeniorOriginalIndex.`);
-                    handleListItemInteraction({ currentTarget: newListItem, target: newListItem, ctrlKey: false, metaKey: false }, newOriginalIndex, false);
-
-                     console.log(`[NAV_DEBUG] currentlyZoomedSeniorOriginalIndex *after* handleListItemInteraction: ${currentlyZoomedSeniorOriginalIndex}`);
-                    if (currentlyZoomedSeniorOriginalIndex !== newOriginalIndex) {
-                        console.error(`[NAV_DEBUG] CRITICAL MISMATCH! Expected currentlyZoomedSeniorOriginalIndex to be ${newOriginalIndex}, but it is ${currentlyZoomedSeniorOriginalIndex}. This is the cause of skipping!`);
-
-                    }
-
-                    if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                        allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
-                        allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
-                    }
-                    if (allMarkers[newOriginalIndex]?.marker && allData[newOriginalIndex]) {
-                         allMarkers[newOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[newOriginalIndex], true, isDarkMode).element;
-                         allMarkers[newOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
-                         activeHoverMarkerIndex = newOriginalIndex;
-                    }
-                } else {
-                    console.warn(`[NAV_DEBUG] WARN: No senior data found for newOriginalIndex: ${newOriginalIndex}`);
-                }
-            } else {
-                console.warn(`[NAV_DEBUG] WARN: newListItem is undefined for newIndexInVisibleList: ${newIndexInVisibleList}. This might happen if visibleListItems is unexpectedly empty or index is out of bounds.`);
-            }
-            console.log(`%c[NAV_DEBUG] NAVIGATE END (${direction}) ====================`, "color: blue; font-weight: bold;");
+    let newIndexInVisibleList;
+    if (currentIndexInVisibleList === -1) {
+        newIndexInVisibleList = (direction === 'next') ? 0 : visibleListItems.length - 1;
+    } else {
+        if (direction === 'next') {
+            newIndexInVisibleList = (currentIndexInVisibleList + 1) % visibleListItems.length;
+        } else {
+            newIndexInVisibleList = (currentIndexInVisibleList - 1 + visibleListItems.length) % visibleListItems.length;
         }
+    }
+
+    const newListItem = visibleListItems[newIndexInVisibleList];
+    if (newListItem) {
+        const newOriginalIndex = parseInt(newListItem.dataset.originalIndex);
+        const newSeniorData = allData[newOriginalIndex];
+
+        if (newSeniorData) {
+            // This call handles updating the photo, caption, and info window
+            handleListItemInteraction({ currentTarget: newListItem, target: newListItem, ctrlKey: false, metaKey: false }, newOriginalIndex, false);
+            
+            // This call handles updating the visual selection in the list
+            currentListSelectionIndex = newIndexInVisibleList;
+            updateCurrentSelectionHighlight();
+            newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            newListItem.focus();
+
+            // This call handles updating the marker on the map
+            if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
+                allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
+            }
+            if (allMarkers[newOriginalIndex]?.marker && allData[newOriginalIndex]) {
+                 allMarkers[newOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[newOriginalIndex], true, isDarkMode).element;
+                 allMarkers[newOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
+                 activeHoverMarkerIndex = newOriginalIndex;
+            }
+        }
+    }
+}
 
         function zoomToSelectedSchools() {
             if (!google || !map || !allMarkers) return;
@@ -3496,7 +3403,7 @@ function getChartJsConfigOptions(
                 const schoolData = allData[currentOriginalIndex];
                 const markerInfo = allMarkers[currentOriginalIndex];
                 if (markerInfo?.marker && schoolData?.isVisible) {
-                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
+                    markerInfo.marker.content = getAdvancedMarkerPinElement(schoolData, true, isDarkMode).element;
                     markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                     handleListItemInteraction(event, currentOriginalIndex, true);
                 }
@@ -3519,7 +3426,7 @@ function getChartJsConfigOptions(
                 }
 
                 if (!isKeyboardSelected && markerInfo?.marker && schoolData && activeHoverMarkerIndex !== currentOriginalIndex) {
-                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                    markerInfo.marker.content = getAdvancedMarkerPinElement(schoolData, false, isDarkMode).element;
                     markerInfo.marker.setZIndex(null);
                 }
                  if (!isKeyboardSelected) {
@@ -3537,11 +3444,11 @@ function getChartJsConfigOptions(
                 currentListSelectionIndex = visibleListItems.findIndex(li => li === studentLi);
 
                 if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                    allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
                     allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
                 }
                 if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                     allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
+                     allMarkers[clickedOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[clickedOriginalIndex], true, isDarkMode).element;
                      allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                      activeHoverMarkerIndex = clickedOriginalIndex;
                 }
@@ -3743,7 +3650,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             stateOrCountry: "NY"
         };
 
-   function initMap() {
+     function initMap() {
     console.log("[DEBUG] initMap function called.");
 
     if (!window.isDataReadyForMap || !allData || !Array.isArray(allData)) {
@@ -4589,6 +4496,9 @@ let nestmMarker, distancePolyline, distanceLabel;
             });
 
             const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${clickedOriginalIndex}"]`);
+            if (listItem) {
+                listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
             showSeniorPhotoPopup(listItem, clickedSchoolData);
             showDistanceToNestm(clickedSchoolData);
 
@@ -4614,6 +4524,11 @@ let nestmMarker, distancePolyline, distanceLabel;
                 document.getElementById('searchSuggestions').style.display = 'none';
                 const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
 
+                if (listItem) {
+                    listItem.classList.add('list-item-highlight');
+                    listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
                 showSeniorPhotoPopup(listItem, schoolData);
 
                 marker.content = getAdvancedMarkerPinElement(schoolData, true, isDarkMode).element;
@@ -4624,7 +4539,19 @@ let nestmMarker, distancePolyline, distanceLabel;
             const schoolData = allData[index];
             const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
             if (listItem) {
-                listItem.classList.remove('list-item-highlight');
+                let isKeyboardSelected = false;
+                if (currentListSelectionIndex !== -1) {
+                    const visibleLIs = getVisibleListItemsDOM();
+                    if (currentListSelectionIndex < visibleLIs.length) {
+                        const kbdSelectedLi = visibleLIs[currentListSelectionIndex];
+                        if (kbdSelectedLi && parseInt(kbdSelectedLi.dataset.originalIndex) === index) {
+                            isKeyboardSelected = true;
+                        }
+                    }
+                }
+                if (!isKeyboardSelected) {
+                    listItem.classList.remove('list-item-highlight');
+                }
             }
             if (activeHoverMarkerIndex !== index) {
                 marker.content = getAdvancedMarkerPinElement(schoolData, false, isDarkMode).element;
@@ -5207,6 +5134,11 @@ function endTutorial() {
     localStorage.removeItem('tutorialLastStep');
     window.removeEventListener('resize', positionTutorialElements);
 
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    if (menuToggleBtn) {
+        menuToggleBtn.style.visibility = 'visible';
+    }
+
     // Cleanup any temporarily shown elements
     tutorialVisibleElements.forEach(el => {
         if (el.id === 'senior-photo-popup') {
@@ -5243,6 +5175,7 @@ function showTutorialStep(stepIndex, shouldScroll = true) {
     const tutorialStepCounter = document.getElementById('tutorial-step-counter');
     const tutorialPrevBtn = document.getElementById('tutorial-prev-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+    const menuToggleBtn = document.getElementById('menu-toggle');
 
     if (stepIndex < 0 || stepIndex >= tutorialSteps.length) {
         endTutorial();
@@ -5252,6 +5185,15 @@ function showTutorialStep(stepIndex, shouldScroll = true) {
     localStorage.setItem('tutorialLastStep', currentTutorialStep);
 
     const step = tutorialSteps[stepIndex];
+
+    if (menuToggleBtn) {
+        const menuToggleStep = tutorialSteps.find(s => s.element === '#menu-toggle');
+        if (step.element === menuToggleStep.element) {
+            menuToggleBtn.style.visibility = 'visible';
+        } else {
+            menuToggleBtn.style.visibility = 'hidden';
+        }
+    }
 
     // --- PRE-SHOW LOGIC ---
     if (step.element.includes('#zoomed-info-panel')) {
