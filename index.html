@@ -2402,7 +2402,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
         }
 
-        function getVisibleListItemsDOM() {
+function getVisibleListItemsDOM() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
             if (!listUl) return [];
 
@@ -2836,6 +2836,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             // This call handles updating the visual selection in the list
             currentListSelectionIndex = newIndexInVisibleList;
             updateCurrentSelectionHighlight();
+            ensureListItemVisible(newListItem);
             newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             newListItem.focus();
 
@@ -2852,6 +2853,23 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
         }
     }
 }
+
+        function ensureListItemVisible(listItem) {
+            if (!listItem) return;
+            const sublist = listItem.closest('.student-sublist');
+            if (sublist && sublist.style.display === 'none') {
+                sublist.style.display = '';
+                const header = sublist.previousElementSibling;
+                const indicator = header?.querySelector('.toggle-indicator');
+                if (indicator) indicator.textContent = '[-]';
+                const gradClass = header?.dataset.gradClass;
+                if (gradClass) {
+                    let stored = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+                    stored = stored.filter(gc => gc !== gradClass);
+                    localStorage.setItem('collapsedGradClasses', JSON.stringify(stored));
+                }
+            }
+        }
 
         function zoomToSelectedSchools() {
             if (!google || !map || !allMarkers) return;
@@ -2998,8 +3016,9 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                          const clickedOriginalIndex = entry.originalIndex;
                          const listItem = document.querySelector(`.list-content li[data-original-index="${clickedOriginalIndex}"]`);
-                         if (listItem) {
+                        if (listItem) {
                             handleListItemInteraction({ currentTarget: listItem, target: listItem, ctrlKey: false, metaKey: false }, clickedOriginalIndex, false);
+                            ensureListItemVisible(listItem);
                             listItem.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 
                             const listUl = document.querySelector('#school-list-control .list-content ul');
@@ -3532,6 +3551,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 const originalIndexOfNewSelection = parseInt(selectedLi.dataset.originalIndex);
                 if (!isNaN(originalIndexOfNewSelection) && allData[originalIndexOfNewSelection]) {
                     handleListItemInteraction({ currentTarget: selectedLi, target: selectedLi, ctrlKey: false, metaKey: false }, originalIndexOfNewSelection, false);
+                    ensureListItemVisible(selectedLi);
                     selectedLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     selectedLi.focus();
 
@@ -4502,6 +4522,7 @@ let nestmMarker, distancePolyline, distanceLabel;
 
             const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${clickedOriginalIndex}"]`);
             if (listItem) {
+                ensureListItemVisible(listItem);
                 listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
             showSeniorPhotoPopup(listItem, clickedSchoolData);
@@ -4530,6 +4551,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                 const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
 
                 if (listItem) {
+                    ensureListItemVisible(listItem);
                     listItem.classList.add('list-item-highlight');
                     listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
