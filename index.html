@@ -3831,6 +3831,8 @@ let nestmMarker, distancePolyline, distanceLabel;
                 distanceLabel.setMap(map);
             }
 
+
+=======
     async function getNearbyTransitStopsHTML(lat, lng) {
         return new Promise(resolve => {
             if (!google.maps.places || !map || !lat || !lng) {
@@ -3855,6 +3857,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             }
         });
     }
+
 
        async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
         if (!marker || !collegeData) return;
@@ -4275,6 +4278,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                 if (distancePolyline) distancePolyline.setMap(null);
                 if (distanceLabel) distanceLabel.setMap(null);
             });
+
 
     async function getNearbyTransitStopsHTML(lat, lng) {
         return new Promise(async resolve => {
