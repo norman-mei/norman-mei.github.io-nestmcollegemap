@@ -426,10 +426,7 @@ body:not(.panel-desktop-hidden) .hamburger {
 
    #sort-controls-container,
 .list-content {
-    transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out, padding 0.3s ease-out;
-    max-height: 2000px; 
-    opacity: 1;
-    overflow: hidden;
+    flex-grow: 1; /* This allows the list to expand, and the parent container will handle all scrolling. */
 }
 
 #sort-controls-container.collapsed,
@@ -676,9 +673,16 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .info-window-content a { color: #90caf9 !important; }
     body.dark-mode .info-window-content a:hover { color: #bbdefb !important; }
     body.dark-mode .info-window-type { color: #aaa; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] , body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] img { display: block !important; width: 14px !important; height: 14px !important; filter: brightness(0) invert(1) !important; opacity: 1 !important; transform: scale(1) !important; }
+        body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"], body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
+    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
+    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] img { 
+    display: block !important; 
+    width: 14px !important; 
+    height: 14px !important; 
+    filter: brightness(0) invert(1) !important; /* This makes the black 'X' icon white */
+    opacity: 1 !important; 
+    transform: scale(1) !important; 
+}
     body.dark-mode .gm-style .gm-style-mtc , body.dark-mode .gmnoprint .gm-style-mtc { background-color: #303030 !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); border: 1px solid #444 !important; border-radius: 2px; }
     body.dark-mode .gm-style .gm-style-mtc button, body.dark-mode .gm-style .gm-style-mtc div { color: #ffffff !important; font-weight: 500 !important; background-color: transparent !important; text-shadow: none !important; }
     body.dark-mode .gm-style .gm-style-mtc button:hover, body.dark-mode .gm-style .gm-style-mtc div:hover { background-color: #444 !important; }
@@ -2019,6 +2023,8 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             return "Other"; 
         }
 
+        
+
        function parseRawData(jsonData) { 
             if (!Array.isArray(jsonData)) {
                 console.error("Error: Input to parseRawData is not a JSON array.", jsonData);
@@ -2403,7 +2409,7 @@ function getVisibleListItemsDOM() {
             }
         }
 
-                     function filterSchoolList() {
+                                         function filterSchoolList() {
             const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
             const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
             if (!listContentDiv || !listContentDiv.querySelector('ul')) return;
@@ -2433,6 +2439,10 @@ function getVisibleListItemsDOM() {
                 if (meetsGlobalFilters && matchesSearch) {
                     item.style.display = isGalleryViewEnabled ? 'flex' : 'flex';
                     hasVisibleItemsOverall = true;
+                    // If an item matches the search, ensure its parent group is expanded.
+                    if (searchTerm !== '') {
+                        ensureListItemVisible(item);
+                    }
                 } else {
                     item.style.display = 'none';
                 }
@@ -2898,7 +2908,7 @@ function getVisibleListItemsDOM() {
     }
 }
 
-        function handleSearchInput() {
+               function handleSearchInput() {
              const input = document.getElementById('schoolSearchInput');
              const suggestionsDiv = document.getElementById('searchSuggestions');
              const searchTerm = input.value.toLowerCase().trim();
@@ -2936,26 +2946,39 @@ function getVisibleListItemsDOM() {
                          filterSchoolList();
 
                          const clickedOriginalIndex = entry.originalIndex;
+                         const schoolData = allData[clickedOriginalIndex];
+                         const markerInfo = allMarkers[clickedOriginalIndex];
                          const listItem = document.querySelector(`.list-content li[data-original-index="${clickedOriginalIndex}"]`);
-                        if (listItem) {
-                            handleListItemInteraction({ currentTarget: listItem, target: listItem, ctrlKey: false, metaKey: false }, clickedOriginalIndex, false);
-                            ensureListItemVisible(listItem);
-                            listItem.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 
-                            const listUl = document.querySelector('#school-list-control .list-content ul');
-                            const visibleListItemsAfterSearch = getVisibleListItemsDOM();
-                            currentListSelectionIndex = visibleListItemsAfterSearch.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
+                         if (schoolData && markerInfo && markerInfo.marker) {
+                             // Pan to marker and open info window (like a marker click)
+                             if (markerInfo.marker.position && map) {
+                                 map.panTo(markerInfo.marker.position);
+                                 map.setZoom(Math.max(map.getZoom(), 12));
+                             }
+                             openCollegeInfoWindow(markerInfo.marker, schoolData, clickedOriginalIndex, true); // Make it sticky
+                             showSeniorPhotoPopup(listItem, schoolData); // Explicitly show photo popup
+                             showDistanceToNestm(schoolData);
 
-                            if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
-                                allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
-                            }
-                            if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                                updateMarkerAppearance(allMarkers[clickedOriginalIndex].marker, allData[clickedOriginalIndex], true, isDarkMode);
-                                allMarkers[clickedOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
-                                activeHoverMarkerIndex = clickedOriginalIndex;
-                            }
-                            updateCurrentSelectionHighlight();
+                             // Scroll list into view
+                             if (listItem) {
+                                 ensureListItemVisible(listItem);
+                                 listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                             }
+
+                             // Update selection state and highlights
+                             const visibleListItems = getVisibleListItemsDOM();
+                             currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
+
+                             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
+                                 updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
+                                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
+                             }
+                             updateMarkerAppearance(markerInfo.marker, schoolData, true, isDarkMode);
+                             markerInfo.marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
+                             activeHoverMarkerIndex = clickedOriginalIndex;
+
+                             updateCurrentSelectionHighlight();
                          }
                      };
                      suggestionsDiv.appendChild(div);
@@ -3529,85 +3552,90 @@ function getVisibleListItemsDOM() {
             }
         }
 
-            async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
-        console.log(`[InfoWindow DEBUG] Opening for: ${collegeData.collegeName}, Sticky: ${isSticky}`);
-        if (!marker || !collegeData) {
-            console.error("[InfoWindow DEBUG] Aborting: Invalid marker or collegeData provided.");
-            return;
-        }
-        if (infowindow && infowindow.getMap()) {
-            console.log("[InfoWindow DEBUG] An info window is already open. Closing it first.");
-            infowindow.close();
-        }
-        infowindow.isSticky = isSticky; // Set sticky state
-
-        let contentString = `<div class="info-window-content">`;
-        const targetUrl = collegeData.collegeHomepageUrl && collegeData.collegeHomepageUrl !== '#' ? collegeData.collegeHomepageUrl : '#';
-        const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
-        if (collegeData.collegeImageUrl && collegeData.collegeImageUrl !== 'x' && !collegeData.collegeImageUrl.startsWith('placeholder')) {
-            contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${collegeData.collegeImageUrl}" alt="${collegeData.collegeName} logo/photo"></a>`;
-        }
-        if (targetUrl !== '#') {
-            contentString += `<b><a href="${targetUrl}" ${openInNewTab}>${collegeData.collegeName}</a></b>`;
-        } else {
-            contentString += `<b>${collegeData.collegeName}</b>`;
-        }
-        contentString += `<br><span class="info-window-type">Type: ${collegeData.collegeType} (${collegeData.isCampusPublic ? 'Public' : 'Private'}, ${collegeData.locationFocus})</span>`;
-        if (collegeData.lat !== 0 || collegeData.lng !== 0) {
-            contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${collegeData.lat},${collegeData.lng}" target="_blank">Get Directions</a>`;
-        }
-        contentString += `<hr style="margin: 5px 0;">`;
-        if (collegeData.collegeName === "Undecided") {
-            const suffixHtml = getHonorarySuffixHTML(collegeData.collegeNameRaw);
-            contentString += `<b>${collegeData.seniorName}</b>${suffixHtml}`;
-            contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[collegeData.gradClass] || '#ccc'};">Class: ${collegeData.gradClass}</span>`;
-            contentString += `<br>Major: ${collegeData.major || 'Undecided Major'} (${collegeData.majorArea || 'N/A'})`;
-        } else {
-            const studentsAtSameCollege = allData.filter(s =>
-                s.isVisible &&
-                s.collegeName === collegeData.collegeName &&
-                s.collegeName !== "Undecided"
-            ).sort((a, b) => {
-                if (a.gradClass !== b.gradClass) return a.gradClass.localeCompare(b.gradClass);
-                const lastNameA = getLastName(a.seniorName);
-                const lastNameB = getLastName(b.seniorName);
-                if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
-                return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
-            });
-            if (studentsAtSameCollege.length > 0) {
-                contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
-                studentsAtSameCollege.forEach(student => {
-                    const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
-                    let studentEntry = `<li>`;
-                    if (student.originalIndex === originalIndex) studentEntry += `<b>`;
-                    studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
-                    if (student.linkedInUrl) {
-                        studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
-                    }
-                    if (student.instagramUrl) {
-                        studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
-                    }
-                    if (student.originalIndex === originalIndex) studentEntry += `</b>`;
-                    studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
-                    studentEntry += `</li>`;
-                    contentString += studentEntry;
-                });
-                contentString += `</ul>`;
-            } else {
-                contentString += `No other visible students found for this college with current filters.`;
+                                async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
+            if (!marker || !collegeData) {
+                return;
             }
-        }
-        const transitHtml = await getNearbyTransitStopsHTML(collegeData.lat, collegeData.lng);
-        if (transitHtml) {
-            contentString += `<hr style="margin: 5px 0;">` + transitHtml;
-        }
-        contentString += `</div>`;
+            // If a window is already open for this marker and it's the same sticky state, do nothing to prevent flickering.
+            if (infowindow && infowindow.getMap() && infowindow.anchor === marker && infowindow.isSticky === isSticky) {
+                return;
+            }
+            if (infowindow && infowindow.getMap()) {
+                infowindow.close();
+            }
+            infowindow.isSticky = isSticky; // Set sticky state for later checks
 
-        console.log("[InfoWindow DEBUG] Content generated. Setting content and opening on map.");
-        infowindow.setContent(contentString);
-        infowindow.open({ map: map, anchor: marker });
-        console.log("[InfoWindow DEBUG] open() method called. The info window should now be visible.");
-    }
+            let contentString = `<div class="info-window-content">`;
+            const targetUrl = collegeData.collegeHomepageUrl && collegeData.collegeHomepageUrl !== '#' ? collegeData.collegeHomepageUrl : '#';
+            const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
+            if (collegeData.collegeImageUrl && collegeData.collegeImageUrl !== 'x' && !collegeData.collegeImageUrl.startsWith('placeholder')) {
+                contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${collegeData.collegeImageUrl}" alt="${collegeData.collegeName} logo/photo"></a>`;
+            }
+            if (targetUrl !== '#') {
+                contentString += `<b><a href="${targetUrl}" ${openInNewTab}>${collegeData.collegeName}</a></b>`;
+            } else {
+                contentString += `<b>${collegeData.collegeName}</b>`;
+            }
+            contentString += `<br><span class="info-window-type">Type: ${collegeData.collegeType} (${collegeData.isCampusPublic ? 'Public' : 'Private'}, ${collegeData.locationFocus})</span>`;
+            if (collegeData.lat !== 0 || collegeData.lng !== 0) {
+                contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${collegeData.lat},${collegeData.lng}" target="_blank">Get Directions</a>`;
+            }
+            contentString += `<hr style="margin: 5px 0;">`;
+            if (collegeData.collegeName === "Undecided") {
+                const suffixHtml = getHonorarySuffixHTML(collegeData.collegeNameRaw);
+                contentString += `<b>${collegeData.seniorName}</b>${suffixHtml}`;
+                contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[collegeData.gradClass] || '#ccc'};">Class: ${collegeData.gradClass}</span>`;
+                contentString += `<br>Major: ${collegeData.major || 'Undecided Major'} (${collegeData.majorArea || 'N/A'})`;
+            } else {
+                const studentsAtSameCollege = allData.filter(s =>
+                    s.isVisible &&
+                    s.collegeName === collegeData.collegeName &&
+                    s.collegeName !== "Undecided"
+                ).sort((a, b) => {
+                    if (a.gradClass !== b.gradClass) return a.gradClass.localeCompare(b.gradClass);
+                    const lastNameA = getLastName(a.seniorName);
+                    const lastNameB = getLastName(b.seniorName);
+                    if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
+                    return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
+                });
+                if (studentsAtSameCollege.length > 0) {
+                    contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
+                    studentsAtSameCollege.forEach(student => {
+                        const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
+                        let studentEntry = `<li>`;
+                        
+                        const studentNameHTML = student.seniorName;
+                        
+                        studentEntry += `${studentNameHTML}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
+                        
+                        if (student.linkedInUrl) {
+                            studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
+                        }
+                        if (student.instagramUrl) {
+                            studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
+                        }
+                        
+                        studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
+                        studentEntry += `</li>`;
+                        contentString += studentEntry;
+                    });
+                    contentString += `</ul>`;
+                } else {
+                    contentString += `No other visible students found for this college with current filters.`;
+                }
+            }
+            
+            // NOTE: This function requires the "Places API" to be enabled in your Google Cloud project
+            // for the API key being used. If it's not, you will see 403 Forbidden errors in the console.
+            const transitHtml = await getNearbyTransitStopsHTML(collegeData.lat, collegeData.lng);
+            if (transitHtml) {
+                contentString += `<hr style="margin: 5px 0;">` + transitHtml;
+            }
+            contentString += `</div>`;
+
+            infowindow.setContent(contentString);
+            infowindow.open({ map: map, anchor: marker });
+        }
 
           async function initializeApp() {
             try {
@@ -3702,7 +3730,7 @@ function getVisibleListItemsDOM() {
 
             initMap();
         }
-let nestmMarker, distancePolyline, distanceLabel;
+        let distancePolyline, distanceLabel;
         const NEST_M_INFO = {
             name: "NEST+m",
             lat: 40.71956425410874, 
@@ -3713,7 +3741,98 @@ let nestmMarker, distancePolyline, distanceLabel;
             stateOrCountry: "NY"
         };
 
-             function initMap() {
+        class DistanceLabel extends google.maps.OverlayView {
+            constructor(position, text) {
+                super();
+                this.position = position;
+                this.text = text;
+                this.div = null;
+            }
+            onAdd() {
+                this.div = document.createElement("div");
+                this.div.style.position = "absolute";
+                this.div.style.background = isDarkMode ? "rgba(40, 40, 40, 0.9)" : "rgba(255, 255, 255, 0.9)";
+                this.div.style.color = isDarkMode ? "#e0e0e0" : "#333";
+                this.div.style.padding = "4px 8px";
+                this.div.style.border = isDarkMode ? "1px solid #555" : "1px solid #777";
+                this.div.style.borderRadius = "4px";
+                this.div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+                this.div.style.fontSize = "1.1em";
+                this.div.style.whiteSpace = "nowrap";
+                this.div.style.zIndex = "1000";
+                this.div.innerHTML = this.text;
+
+                this.div.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (distancePolyline) distancePolyline.setMap(null);
+                    this.setMap(null);
+                });
+
+                const panes = this.getPanes();
+                panes.floatPane.appendChild(this.div);
+            }
+            draw() {
+                const overlayProjection = this.getProjection();
+                const point = overlayProjection.fromLatLngToDivPixel(this.position);
+                if (point) {
+                    this.div.style.left = point.x + 10 + "px";
+                    this.div.style.top = point.y - 15 + "px";
+                }
+            }
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode.removeChild(this.div);
+                    this.div = null;
+                }
+            }
+            updateText(text) {
+                this.text = text;
+                if (this.div) {
+                    this.div.innerHTML = this.text;
+                }
+            }
+        }
+
+        function showDistanceToNestm(collegeData) {
+            if (distancePolyline) distancePolyline.setMap(null);
+            if (distanceLabel) distanceLabel.setMap(null);
+
+            const nestmMarker = allMarkers.find(m => m && m.school && m.school.collegeName === "NEST+m")?.marker;
+
+            if (!nestmMarker || !nestmMarker.map || !collegeData || collegeData.lat === 0) {
+                return;
+            }
+
+            if (!google.maps.geometry || !google.maps.geometry.spherical) {
+                console.error("[DistanceDebug] CRITICAL: google.maps.geometry.spherical library not loaded.");
+                return;
+            }
+
+            const collegePosition = new google.maps.LatLng(collegeData.lat, collegeData.lng);
+            const nestmPosition = nestmMarker.position;
+            const path = [nestmPosition, collegePosition];
+
+            distancePolyline = new google.maps.Polyline({
+                path: path,
+                geodesic: true,
+                strokeColor: '#8A2BE2',
+                strokeOpacity: 0.9,
+                strokeWeight: 2.5,
+                map: map
+            });
+
+            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(nestmPosition, collegePosition);
+            const distanceInMiles = distanceInMeters * 0.000621371;
+            const distanceInKm = distanceInMeters / 1000;
+
+            const midPoint = google.maps.geometry.spherical.interpolate(nestmPosition, collegePosition, 0.5);
+            const labelText = `${distanceInMiles.toFixed(1)} mi / ${distanceInKm.toFixed(1)} km to NEST+m`;
+            
+            distanceLabel = new DistanceLabel(midPoint, labelText);
+            distanceLabel.setMap(map);
+        }
+
+   function initMap() {
     // Read the saved dark mode state from localStorage at the beginning.
     isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -4138,6 +4257,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             lng: -74.5
         },
         zoom: savedZoom ? parseInt(savedZoom, 10) : 7,
+        mapId: 'YOUR_MAP_ID', // This is required for Advanced Markers
         mapTypeControlOptions: {
             position: google.maps.ControlPosition.TOP_RIGHT
         },
@@ -4499,7 +4619,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                  });
                  allMarkers[index] = { marker: marker, school: seniorChoice };
 
-                marker.addListener("click", (event) => {
+                marker.addListener("gmp-click", (event) => {
                     if (event && event.domEvent && typeof event.domEvent.stopPropagation === 'function') {
                         event.domEvent.stopPropagation();
                     }
@@ -4546,8 +4666,14 @@ let nestmMarker, distancePolyline, distanceLabel;
                             listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         }
 
+                        // Pan map to marker
+                        if (marker.position && map) {
+                            map.panTo(marker.position);
+                        }
+
                         showSeniorPhotoPopup(listItem, schoolData);
                         openCollegeInfoWindow(marker, schoolData, index);
+                        showDistanceToNestm(schoolData);
                         updateMarkerAppearance(marker, schoolData, true, isDarkMode);
                         marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                     }
@@ -4574,10 +4700,8 @@ let nestmMarker, distancePolyline, distanceLabel;
                         updateMarkerAppearance(marker, schoolData, false, isDarkMode);
                         marker.zIndex = null;
                     }
-                    // Only close the info window if it's not sticky (i.e., wasn't opened by a click)
-                    if (infowindow && infowindow.getMap() && infowindow.anchor === marker && !infowindow.isSticky) {
-                        infowindow.close();
-                    }
+                    // The infowindow is now handled by the next hover/click, not on mouseout.
+                    // The line that closes the infowindow is removed.
                 });
             });
 
@@ -4725,13 +4849,29 @@ let nestmMarker, distancePolyline, distanceLabel;
         darkModeToggle.textContent = '☀️ Light Mode';
         darkModeToggle.title = 'Light Mode';
     }
-    darkModeToggle.addEventListener('click', () => {
+        darkModeToggle.addEventListener('click', () => {
+        // Store the state of the currently open infowindow
+        let openInfoWindowIndex = -1;
+        let wasSticky = false;
+        if (infowindow && infowindow.getMap() && infowindow.anchor) {
+            openInfoWindowIndex = allMarkers.findIndex(mInfo => mInfo && mInfo.marker === infowindow.anchor);
+            wasSticky = infowindow.isSticky || false;
+        }
+
+        // Close it temporarily to prevent visual glitches during the theme switch
+        if (openInfoWindowIndex !== -1) {
+            infowindow.close();
+        }
+
+        // Apply the new theme
         isDarkMode = !isDarkMode;
         localStorage.setItem('isDarkMode', isDarkMode);
         document.body.classList.toggle('dark-mode', isDarkMode);
         map.setOptions({
             styles: isDarkMode ? darkMapStyle : null
         });
+
+        // Update all markers and the toggle button to reflect the new theme
         allMarkers.forEach((mInfo, idx) => {
             if (mInfo && mInfo.marker && mInfo.school) {
                 const currentSchoolData = allData[idx];
@@ -4742,12 +4882,10 @@ let nestmMarker, distancePolyline, distanceLabel;
         darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
         darkModeToggle.title = isDarkMode ? 'Light Mode' : 'Dark Mode';
 
+        // Rebuild UI elements that depend on the theme
         rebuildSchoolListHTML();
 
-        if (infowindow && infowindow.getMap()) {
-            infowindow.close();
-        }
-
+        // Re-render charts with the correct colors
         if (allData && allData.length > 0) {
             const majorAreaData = aggregateMajorAreaTrends(allData);
             if (document.getElementById('majorAreaTrendChart') && majorAreaData.categories.length > 0) {
@@ -4762,6 +4900,17 @@ let nestmMarker, distancePolyline, distanceLabel;
             const popularCollegesData = aggregatePopularCollegeTrends(allData, 5);
             if (document.getElementById('popularCollegesTrendChart') && popularCollegesData.categories.length > 0) {
                 renderPopularCollegesTrendChart(popularCollegesData.trends, popularCollegesData.years, popularCollegesData.categories, isDarkMode);
+            }
+        }
+
+        // If an infowindow was open before, re-open it now
+        if (openInfoWindowIndex !== -1) {
+            const markerInfo = allMarkers[openInfoWindowIndex];
+            if (markerInfo && markerInfo.marker && markerInfo.school) {
+                // Use a small timeout to ensure the DOM has settled after list/chart rebuilds
+                setTimeout(() => {
+                    openCollegeInfoWindow(markerInfo.marker, markerInfo.school, openInfoWindowIndex, wasSticky);
+                }, 50);
             }
         }
     });
