@@ -1547,50 +1547,18 @@ function getNextChartColor() {
         let seniorCollegeChoices;
         let allData;
         window.isDataReadyForMap = false;
+        function getMarkerIcon(seniorChoice, isHighlighted = false, currentIsDarkMode) {
+            let displayColor = gradClassColors[seniorChoice.gradClass] || "#cccccc";
+            if (seniorChoice.collegeName === "Undecided") displayColor = "#999999";
 
-                    function getAdvancedMarkerPinElement(seniorChoice, isHighlighted = false, currentIsDarkMode) {
-            let displayColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
-            if (seniorChoice.collegeName === "Undecided") displayColor = '#999999';
+            const currentBaseIcon = baseMarkerIcon || { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
+            const currentHighlightedIcon = highlightedMarkerIcon || { ...currentBaseIcon, scale: 10, strokeWeight: 2.0 };
 
-            const scale = isHighlighted ? 1.5 : 1.0;
-            
-            let borderColor;
-            if (currentIsDarkMode) {
-                // In dark mode, all markers have a black border for consistency.
-                borderColor = '#111111';
-            } else {
-                // In light mode, class '22 has a black border, all others have a white border.
-                if (seniorChoice.gradClass === "'22") {
-                    borderColor = '#111111'; 
-                } else {
-                    borderColor = '#FFFFFF';
-                }
-            }
-            
-            // Determine glyph color based on background brightness for better contrast
-            let glyphColor = 'white';
-            try {
-                if (displayColor.startsWith('#')) {
-                    const r = parseInt(displayColor.slice(1, 3), 16);
-                    const g = parseInt(displayColor.slice(3, 5), 16);
-                    const b = parseInt(displayColor.slice(5, 7), 16);
-                    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-                    if (yiq >= 128) {
-                        glyphColor = 'black';
-                    }
-                }
-            } catch (e) {
-                glyphColor = 'white';
-            }
-
-            const pinElement = new google.maps.marker.PinElement({
-                scale: scale,
-                background: displayColor,
-                borderColor: borderColor,
-                glyphColor: glyphColor,
-            });
-            return pinElement;
+            const iconConfig = isHighlighted ? currentHighlightedIcon : currentBaseIcon;
+            return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? "#111111" : "#ffffff" };
         }
+
+
 
                function getCollegeProperties(collegeEntry) {
             let isCampusPublic = false;
@@ -2373,7 +2341,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                     if (activeHoverMarkerIndex === school.originalIndex) {
                         if (markerInfo && markerInfo.marker) {
-                            markerInfo.marker.content = getAdvancedMarkerPinElement(school, false, isDarkMode).element;
+                            markerInfo.marker.setIcon(getMarkerIcon(school, false, isDarkMode));
                             markerInfo.marker.zIndex = null;
                         }
                         activeHoverMarkerIndex = null;
@@ -2402,7 +2370,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
         }
 
-        function getVisibleListItemsDOM() {
+function getVisibleListItemsDOM() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
             if (!listUl) return [];
 
@@ -2836,22 +2804,40 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             // This call handles updating the visual selection in the list
             currentListSelectionIndex = newIndexInVisibleList;
             updateCurrentSelectionHighlight();
+            ensureListItemVisible(newListItem);
             newListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             newListItem.focus();
 
             // This call handles updating the marker on the map
             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
             }
             if (allMarkers[newOriginalIndex]?.marker && allData[newOriginalIndex]) {
-                 allMarkers[newOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[newOriginalIndex], true, isDarkMode).element;
+                 allMarkers[newOriginalIndex].marker.setIcon(getMarkerIcon(allData[newOriginalIndex], true, isDarkMode));
                  allMarkers[newOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                  activeHoverMarkerIndex = newOriginalIndex;
             }
         }
     }
 }
+
+        function ensureListItemVisible(listItem) {
+            if (!listItem) return;
+            const sublist = listItem.closest('.student-sublist');
+            if (sublist && sublist.style.display === 'none') {
+                sublist.style.display = '';
+                const header = sublist.previousElementSibling;
+                const indicator = header?.querySelector('.toggle-indicator');
+                if (indicator) indicator.textContent = '[-]';
+                const gradClass = header?.dataset.gradClass;
+                if (gradClass) {
+                    let stored = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+                    stored = stored.filter(gc => gc !== gradClass);
+                    localStorage.setItem('collapsedGradClasses', JSON.stringify(stored));
+                }
+            }
+        }
 
         function zoomToSelectedSchools() {
             if (!google || !map || !allMarkers) return;
@@ -2946,7 +2932,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
             const schoolData = allData[activeHoverMarkerIndex];
             if (schoolData) { 
-                allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(schoolData, false, isDarkMode).element;
+                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
             }
             activeHoverMarkerIndex = null; 
@@ -2998,8 +2984,9 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                          const clickedOriginalIndex = entry.originalIndex;
                          const listItem = document.querySelector(`.list-content li[data-original-index="${clickedOriginalIndex}"]`);
-                         if (listItem) {
+                        if (listItem) {
                             handleListItemInteraction({ currentTarget: listItem, target: listItem, ctrlKey: false, metaKey: false }, clickedOriginalIndex, false);
+                            ensureListItemVisible(listItem);
                             listItem.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 
                             const listUl = document.querySelector('#school-list-control .list-content ul');
@@ -3007,11 +2994,11 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                             currentListSelectionIndex = visibleListItemsAfterSearch.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
 
                             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                                allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                             }
                             if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                                allMarkers[clickedOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[clickedOriginalIndex], true, isDarkMode).element;
+                                allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
                                 allMarkers[clickedOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                                 activeHoverMarkerIndex = clickedOriginalIndex;
                             }
@@ -3406,7 +3393,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 const schoolData = allData[currentOriginalIndex];
                 const markerInfo = allMarkers[currentOriginalIndex];
                 if (markerInfo?.marker && schoolData?.isVisible) {
-                    markerInfo.marker.content = getAdvancedMarkerPinElement(schoolData, true, isDarkMode).element;
+                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
                     markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                     handleListItemInteraction(event, currentOriginalIndex, true);
                 }
@@ -3429,7 +3416,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 }
 
                 if (!isKeyboardSelected && markerInfo?.marker && schoolData && activeHoverMarkerIndex !== currentOriginalIndex) {
-                    markerInfo.marker.content = getAdvancedMarkerPinElement(schoolData, false, isDarkMode).element;
+                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                     markerInfo.marker.setZIndex(null);
                 }
                  if (!isKeyboardSelected) {
@@ -3447,11 +3434,11 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 currentListSelectionIndex = visibleListItems.findIndex(li => li === studentLi);
 
                 if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                     allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
                 }
                 if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                     allMarkers[clickedOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[clickedOriginalIndex], true, isDarkMode).element;
+                     allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
                      allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                      activeHoverMarkerIndex = clickedOriginalIndex;
                 }
@@ -3489,7 +3476,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
             if (visibleListItems.length === 0) {
                 if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                     allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                 }
                 activeHoverMarkerIndex = null;
@@ -3518,7 +3505,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                     if (!isNaN(prevOriginalIndex) && allMarkers[prevOriginalIndex]?.marker && allData[prevOriginalIndex]) {
                          if(prevOriginalIndex !== newOriginalIndexIfKnown && prevOriginalIndex !== activeHoverMarkerIndex) {
-                            allMarkers[prevOriginalIndex].marker.content = getAdvancedMarkerPinElement(allData[prevOriginalIndex], false, isDarkMode).element;
+                            allMarkers[prevOriginalIndex].marker.setIcon(getMarkerIcon(allData[prevOriginalIndex], false, isDarkMode));
                             allMarkers[prevOriginalIndex].marker.zIndex = null;
                          }
                     }
@@ -3532,14 +3519,15 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                 const originalIndexOfNewSelection = parseInt(selectedLi.dataset.originalIndex);
                 if (!isNaN(originalIndexOfNewSelection) && allData[originalIndexOfNewSelection]) {
                     handleListItemInteraction({ currentTarget: selectedLi, target: selectedLi, ctrlKey: false, metaKey: false }, originalIndexOfNewSelection, false);
+                    ensureListItemVisible(selectedLi);
                     selectedLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     selectedLi.focus();
 
                     if (allMarkers[originalIndexOfNewSelection]?.marker) {
-                        allMarkers[originalIndexOfNewSelection].marker.content = getAdvancedMarkerPinElement(allData[originalIndexOfNewSelection], true, isDarkMode).element;
+                        allMarkers[originalIndexOfNewSelection].marker.setIcon(getMarkerIcon(allData[originalIndexOfNewSelection], true, isDarkMode));
                         allMarkers[originalIndexOfNewSelection].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                         if(activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== originalIndexOfNewSelection && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                             allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                             allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                              allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                         }
                         activeHoverMarkerIndex = originalIndexOfNewSelection;
@@ -4407,14 +4395,14 @@ let nestmMarker, distancePolyline, distanceLabel;
             }
         }
 
-        const markerInitialPin = getAdvancedMarkerPinElement(seniorChoice, false, isDarkMode);
-        const marker = new google.maps.marker.AdvancedMarkerElement({
+        const markerIcon = getMarkerIcon(seniorChoice, false, isDarkMode);
+        const marker = new google.maps.Marker({
             position: {
                 lat: lat,
                 lng: lng
             },
             title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName} (${seniorChoice.major || 'Undecided Major'})`,
-            content: markerInitialPin.element,
+            icon: markerIcon,
         });
         allMarkers[index] = {
             marker: marker,
@@ -4502,6 +4490,7 @@ let nestmMarker, distancePolyline, distanceLabel;
 
             const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${clickedOriginalIndex}"]`);
             if (listItem) {
+                ensureListItemVisible(listItem);
                 listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
             showSeniorPhotoPopup(listItem, clickedSchoolData);
@@ -4511,10 +4500,10 @@ let nestmMarker, distancePolyline, distanceLabel;
             currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
 
             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                allMarkers[activeHoverMarkerIndex].marker.content = getAdvancedMarkerPinElement(allData[activeHoverMarkerIndex], false, isDarkMode).element;
+                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
             }
-            marker.content = getAdvancedMarkerPinElement(clickedSchoolData, true, isDarkMode).element;
+            marker.setIcon(getMarkerIcon(clickedSchoolData, true, isDarkMode));
             marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
             activeHoverMarkerIndex = clickedOriginalIndex;
 
@@ -4530,13 +4519,14 @@ let nestmMarker, distancePolyline, distanceLabel;
                 const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
 
                 if (listItem) {
+                    ensureListItemVisible(listItem);
                     listItem.classList.add('list-item-highlight');
                     listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
 
                 showSeniorPhotoPopup(listItem, schoolData);
 
-                marker.content = getAdvancedMarkerPinElement(schoolData, true, isDarkMode).element;
+                marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
                 marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
             }
         });
@@ -4559,21 +4549,26 @@ let nestmMarker, distancePolyline, distanceLabel;
                 }
             }
             if (activeHoverMarkerIndex !== index) {
-                marker.content = getAdvancedMarkerPinElement(schoolData, false, isDarkMode).element;
+                marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                 marker.zIndex = null;
             }
         });
     });
 
     const homeIconPath = 'M12 2L2 7v13h6v-7h8v7h6V7L12 2z';
-    const nestmIconDiv = document.createElement('div');
-    nestmIconDiv.innerHTML = `<svg width="29" height="29" viewBox="0 0 24 24"><path fill="#8A2BE2" stroke="#FFFFFF" stroke-width="1" d="${homeIconPath}"/></svg>`;
-
-    nestmMarker = new google.maps.marker.AdvancedMarkerElement({
+    nestmMarker = new google.maps.Marker({
         position: NEST_M_INFO,
         map: map,
         title: "NEST+m High School",
-        content: nestmIconDiv,
+        icon: {
+            path: homeIconPath,
+            fillColor: "#8A2BE2",
+            fillOpacity: 1,
+            strokeWeight: 1,
+            strokeColor: "#FFFFFF",
+            scale: 1.2,
+            anchor: new google.maps.Point(12, 22)
+        },
         zIndex: 999
     });
 
@@ -4709,7 +4704,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             if (mInfo && mInfo.marker && mInfo.school) {
                 const currentSchoolData = allData[idx];
                 const isHighlighted = activeHoverMarkerIndex === idx;
-                mInfo.marker.content = getAdvancedMarkerPinElement(currentSchoolData, isHighlighted, isDarkMode).element;
+                mInfo.marker.setIcon(getMarkerIcon(currentSchoolData, isHighlighted, isDarkMode));
             }
         });
         darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
@@ -5362,7 +5357,7 @@ function startTutorial(startStep = 0) {
     // Dynamically find a senior for the photo zoom tutorial step
     const photoZoomStep = tutorialSteps.find(step => step.title === 'Zoom Senior Photos');
     if (photoZoomStep) {
-        if (window.allData && window.allData.length > 0) {
+        if (allData && allData.length > 0) {
             const candidates = allData.filter(senior => senior.linkedInUrl && senior.instagramUrl && senior.isVisible);
             const selectedSenior = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null;
             
