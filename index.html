@@ -2680,13 +2680,15 @@ function getVisibleListItemsDOM() {
              }
             const currentTargetListItem = event ? event.currentTarget : document.querySelector(`.list-content li[data-original-index="${originalIndex}"]`);
 
-             if (isHover) { 
+             if (isHover) {
                 if (panelJustToggledOpen) return;
                 if (markerInfo && markerInfo.marker && (schoolData.lat !== 0 || schoolData.lng !== 0)) {
                     const position = markerInfo.marker.position;
                     if (position && map) {
                         map.panTo(position);
                     }
+                    openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex);
+                    showDistanceToNestm(schoolData);
                 }
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
              } else { 
