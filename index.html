@@ -413,10 +413,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     clear: both;
 }
     .list-header-container h4 { float: left; margin-bottom: 0; border-bottom: none; padding-bottom: 0; line-height: 26px; }
-    #toggleSchoolListBtn, #toggleGalleryViewBtn { float: right; font-size: 0.8em; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; line-height: normal; vertical-align: middle; }
+    #toggleSchoolListBtn, #toggleGalleryViewBtn { font-size: 0.8em; padding: 3px 8px; margin-left: 5px; cursor: pointer; border: 1px solid #bbb; border-radius: 3px; background-color: #f0f0f0; transition: background-color 0.2s; line-height: normal; vertical-align: middle; }
 #toggleSchoolListBtn:hover, #toggleGalleryViewBtn:hover { background-color: #e0e0e0; }
-    
-    #schoolSearchContainer { float: right; width: 45%; position: relative;  }
+
+    #schoolSearchContainer { width: 45%; position: relative;  }
+    .list-action-row { display:flex; gap:5px; margin-top:4px; flex-wrap:wrap; align-items:center; }
+    .list-action-row #schoolSearchContainer { flex-grow:1; margin-left:auto; }
     #schoolSearchInput { width: 100%; padding: 4px 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.9em; box-sizing: border-box; }
     #searchSuggestions { position: absolute; top: 100%;  left: 0; right: 0; background-color: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 3px 3px; max-height: 150px;  overflow-y: auto; z-index: 1000;  box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none;  }
     #searchSuggestions div { padding: 5px 8px; font-size: 0.9em; cursor: pointer; }
@@ -447,7 +449,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     #sort-controls-container optgroup { font-style: italic; }
     #sort-controls-container optgroup option { font-style: normal; }
 
-    .school-list-collapsible-content { overflow-y: auto; flex-grow: 1; }
+    .school-list-collapsible-content { flex-grow: 1; }
     .school-list-collapsible-content.hidden { display: none; }
     .list-content { overflow-y: auto; flex-grow: 1;  }
     .list-content ul { list-style: none; padding: 0; margin: 0 0 10px 0; }
@@ -703,20 +705,19 @@ body:not(.panel-desktop-hidden) .hamburger {
     #trends-control { font-size: 0.9em; margin-top: 10px; }
     #trends-control h4 { margin-bottom: 10px; }
     #trends-control h5 {
-    margin-top: 30px; /* Pushes title down to make space for controls */
-    margin-bottom: 8px;
-    font-size: 1em;
-    font-weight: bold;
-    text-align: center;
-}
+        margin: 0 0 8px 0;
+        font-size: 1em;
+        font-weight: bold;
+        text-align: center;
+    }
 
-.school-list-collapsible-content {
-    /* overflow-y: auto; /* This was removed to prevent a nested scrollbar */
-    flex-grow: 1;
-}
+    .school-list-collapsible-content {
+        /* No own scrollbar so the panel scrolls as one */
+        flex-grow: 1;
+    }
     .chart-zoom-controls {
         position: absolute;
-        top: 8px;
+        top: 4px;
         right: 8px;
         z-index: 10;
         display: flex;
@@ -754,9 +755,10 @@ body:not(.panel-desktop-hidden) .hamburger {
 }
 
 .chart-container {
-    position: relative; /* This is correct */
-    height: 280px; /* This is the fix: Add a default height for desktop */
+    position: relative;
+    height: 280px;
     margin-bottom: 20px;
+    padding-top: 32px; /* space for zoom controls */
 }
 
 
@@ -1284,9 +1286,10 @@ body.dark-mode #tutorial-step-counter {
 
                         <div id="school-list-control" class="map-control">
                 <div id="list-controls-wrapper">
-                    <div class="list-header-container"> 
+                    <div class="list-header-container">
     <h4>College List & Seniors</h4>
-    <!-- The gallery view button is now here -->
+</div>
+                    <div class="list-action-row">
     <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
     <button id="toggleSchoolListBtn" title="Show/Hide List">Hide List</button>
     <div id="schoolSearchContainer">
@@ -4126,6 +4129,7 @@ let nestmMarker, distancePolyline, distanceLabel;
     const darkModeToggle = document.getElementById('darkModeToggle');
     const schoolSearchInput = document.getElementById('schoolSearchInput');
     const listHeaderContainer = document.querySelector('#school-list-control .list-header-container');
+    const listActionRow = document.querySelector('#school-list-control .list-action-row');
     const toggleSchoolListBtn = document.getElementById('toggleSchoolListBtn');
     const toggleSatelliteViewBtn = document.getElementById('toggleSatelliteViewBtn');
     const toggleTransitBtn = document.getElementById('toggleTransitBtn');
@@ -4201,7 +4205,8 @@ let nestmMarker, distancePolyline, distanceLabel;
 
         tipDiv.appendChild(tipTextContainer);
         tipDiv.appendChild(dismissBtn);
-        listHeaderContainer.insertAdjacentElement('afterend', tipDiv);
+        const insertTarget = listActionRow || listHeaderContainer;
+        insertTarget.insertAdjacentElement('afterend', tipDiv);
     }
 
     toggleSchoolListBtn.addEventListener('click', () => {
