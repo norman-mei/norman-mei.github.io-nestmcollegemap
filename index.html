@@ -1547,15 +1547,20 @@ function getNextChartColor() {
         let seniorCollegeChoices;
         let allData;
         window.isDataReadyForMap = false;
-        function getMarkerIcon(seniorChoice, isHighlighted = false, currentIsDarkMode) {
+        function createMarkerPin(seniorChoice, isHighlighted = false, currentIsDarkMode) {
             let displayColor = gradClassColors[seniorChoice.gradClass] || "#cccccc";
             if (seniorChoice.collegeName === "Undecided") displayColor = "#999999";
 
-            const currentBaseIcon = baseMarkerIcon || { path: google.maps.SymbolPath.CIRCLE, fillOpacity: 0.9, strokeWeight: 1.0, scale: 7 };
-            const currentHighlightedIcon = highlightedMarkerIcon || { ...currentBaseIcon, scale: 10, strokeWeight: 2.0 };
+            return new google.maps.marker.PinElement({
+                background: displayColor,
+                borderColor: currentIsDarkMode ? "#111111" : "#ffffff",
+                scale: isHighlighted ? 1.5 : 1,
+            });
+        }
 
-            const iconConfig = isHighlighted ? currentHighlightedIcon : currentBaseIcon;
-            return { ...iconConfig, fillColor: displayColor, strokeColor: currentIsDarkMode ? "#111111" : "#ffffff" };
+        function updateMarkerAppearance(marker, seniorChoice, isHighlighted = false, currentIsDarkMode) {
+            const pin = createMarkerPin(seniorChoice, isHighlighted, currentIsDarkMode);
+            marker.content = pin.element;
         }
 
 
@@ -2341,7 +2346,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                     if (activeHoverMarkerIndex === school.originalIndex) {
                         if (markerInfo && markerInfo.marker) {
-                            markerInfo.marker.setIcon(getMarkerIcon(school, false, isDarkMode));
+                            updateMarkerAppearance(markerInfo.marker, school, false, isDarkMode);
                             markerInfo.marker.zIndex = null;
                         }
                         activeHoverMarkerIndex = null;
@@ -2757,11 +2762,11 @@ function getVisibleListItemsDOM() {
 
             // This call handles updating the marker on the map
             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
             }
             if (allMarkers[newOriginalIndex]?.marker && allData[newOriginalIndex]) {
-                 allMarkers[newOriginalIndex].marker.setIcon(getMarkerIcon(allData[newOriginalIndex], true, isDarkMode));
+                 updateMarkerAppearance(allMarkers[newOriginalIndex].marker, allData[newOriginalIndex], true, isDarkMode);
                  allMarkers[newOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                  activeHoverMarkerIndex = newOriginalIndex;
             }
@@ -2879,7 +2884,7 @@ function getVisibleListItemsDOM() {
 
             const schoolData = allData[activeHoverMarkerIndex];
             if (schoolData) { 
-                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, schoolData, false, isDarkMode);
                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
             }
             activeHoverMarkerIndex = null; 
@@ -2941,11 +2946,11 @@ function getVisibleListItemsDOM() {
                             currentListSelectionIndex = visibleListItemsAfterSearch.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
 
                             if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                                allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                                 allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                             }
                             if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                                allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
+                                updateMarkerAppearance(allMarkers[clickedOriginalIndex].marker, allData[clickedOriginalIndex], true, isDarkMode);
                                 allMarkers[clickedOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                                 activeHoverMarkerIndex = clickedOriginalIndex;
                             }
@@ -3340,7 +3345,7 @@ function getVisibleListItemsDOM() {
                 const schoolData = allData[currentOriginalIndex];
                 const markerInfo = allMarkers[currentOriginalIndex];
                 if (markerInfo?.marker && schoolData?.isVisible) {
-                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
+                    updateMarkerAppearance(markerInfo.marker, schoolData, true, isDarkMode);
                     markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                     handleListItemInteraction(event, currentOriginalIndex, true);
                 }
@@ -3363,7 +3368,7 @@ function getVisibleListItemsDOM() {
                 }
 
                 if (!isKeyboardSelected && markerInfo?.marker && schoolData && activeHoverMarkerIndex !== currentOriginalIndex) {
-                    markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                    updateMarkerAppearance(markerInfo.marker, schoolData, false, isDarkMode);
                     markerInfo.marker.setZIndex(null);
                 }
                  if (!isKeyboardSelected) {
@@ -3381,11 +3386,11 @@ function getVisibleListItemsDOM() {
                 currentListSelectionIndex = visibleListItems.findIndex(li => li === studentLi);
 
                 if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                    updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                     allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
                 }
                 if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
-                     allMarkers[clickedOriginalIndex].marker.setIcon(getMarkerIcon(allData[clickedOriginalIndex], true, isDarkMode));
+                     updateMarkerAppearance(allMarkers[clickedOriginalIndex].marker, allData[clickedOriginalIndex], true, isDarkMode);
                      allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                      activeHoverMarkerIndex = clickedOriginalIndex;
                 }
@@ -3423,7 +3428,7 @@ function getVisibleListItemsDOM() {
 
             if (visibleListItems.length === 0) {
                 if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                    updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                     allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                 }
                 activeHoverMarkerIndex = null;
@@ -3452,7 +3457,7 @@ function getVisibleListItemsDOM() {
 
                     if (!isNaN(prevOriginalIndex) && allMarkers[prevOriginalIndex]?.marker && allData[prevOriginalIndex]) {
                          if(prevOriginalIndex !== newOriginalIndexIfKnown && prevOriginalIndex !== activeHoverMarkerIndex) {
-                            allMarkers[prevOriginalIndex].marker.setIcon(getMarkerIcon(allData[prevOriginalIndex], false, isDarkMode));
+                            updateMarkerAppearance(allMarkers[prevOriginalIndex].marker, allData[prevOriginalIndex], false, isDarkMode);
                             allMarkers[prevOriginalIndex].marker.zIndex = null;
                          }
                     }
@@ -3471,10 +3476,10 @@ function getVisibleListItemsDOM() {
                     selectedLi.focus();
 
                     if (allMarkers[originalIndexOfNewSelection]?.marker) {
-                        allMarkers[originalIndexOfNewSelection].marker.setIcon(getMarkerIcon(allData[originalIndexOfNewSelection], true, isDarkMode));
+                        updateMarkerAppearance(allMarkers[originalIndexOfNewSelection].marker, allData[originalIndexOfNewSelection], true, isDarkMode);
                         allMarkers[originalIndexOfNewSelection].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                         if(activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== originalIndexOfNewSelection && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                             allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                             updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                              allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                         }
                         activeHoverMarkerIndex = originalIndexOfNewSelection;
@@ -3502,33 +3507,26 @@ function getVisibleListItemsDOM() {
         }
 
        async function getNearbyTransitStopsHTML(lat, lng) {
-        return new Promise(resolve => {
             if (!google.maps.places || !map || !lat || !lng) {
-                resolve('');
-                return;
+                return '';
             }
-            const service = new google.maps.places.PlacesService(map);
-            const request = { location: { lat, lng }, radius: 1200, type: ['transit_station'] };
-
-            service.nearbySearch(request, (results, status) => {
-                // Check for successful statuses
-                if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-                    const topStops = results.slice(0, 3);
-                    let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
-                    topStops.forEach(stop => { html += `<li>${stop.name}</li>`; });
-                    html += '</ul>';
-                    resolve(html);
-                } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-                    // This is a valid response, just means nothing was found.
-                    resolve('');
-                } else {
-                    // This handles all error statuses (REQUEST_DENIED, OVER_QUERY_LIMIT, etc.)
-                    console.warn(`[Places API] Nearby search failed with status: ${status}. This might be an API key issue (Places API not enabled or billing not set up).`);
-                    resolve(''); // Resolve with empty string to prevent breaking the info window.
-                }
-            });
-        });
-    }
+            try {
+                const { places } = await google.maps.places.Place.searchNearby({
+                    fields: ['displayName'],
+                    locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
+                    includedPrimaryTypes: ['transit_station'],
+                    maxResultCount: 3,
+                });
+                if (!places || !places.length) return '';
+                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+                places.forEach(stop => { html += `<li>${stop.displayName}</li>`; });
+                html += '</ul>';
+                return html;
+            } catch (err) {
+                console.warn('[Places API] Nearby search failed', err);
+                return '';
+            }
+        }
 
             async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
         console.log(`[InfoWindow DEBUG] Opening for: ${collegeData.collegeName}, Sticky: ${isSticky}`);
@@ -3833,31 +3831,6 @@ let nestmMarker, distancePolyline, distanceLabel;
                 distanceLabel.setMap(map);
             }
 
-    async function getNearbyTransitStopsHTML(lat, lng) {
-        return new Promise(resolve => {
-            if (!google.maps.places || !map || !lat || !lng) {
-                resolve('');
-                return;
-            }
-            const service = new google.maps.places.PlacesService(map);
-            const request = { location: { lat, lng }, radius: 1200, type: ['transit_station'] };
-            service.nearbySearch(request, (results, status) => {
-                if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-                    resolve('');
-                    return;
-                }
-                const topStops = results.slice(0, 3);
-                if (topStops.length === 0) {
-                    resolve('');
-                    return;
-                }
-                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
-                topStops.forEach(stop => { html += `<li>${stop.name}</li>`; });
-                html += '</ul>';
-                resolve(html);
-            });
-        });
-    }
 
        async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
         if (!marker || !collegeData) return;
@@ -4270,7 +4243,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                     const schoolData = allData[activeHoverMarkerIndex];
                     const markerInfo = allMarkers[activeHoverMarkerIndex];
                     if (markerInfo && markerInfo.marker && schoolData) {
-                        markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                        updateMarkerAppearance(markerInfo.marker, schoolData, false, isDarkMode);
                         markerInfo.marker.setZIndex(null);
                     }
                     activeHoverMarkerIndex = null;
@@ -4279,31 +4252,6 @@ let nestmMarker, distancePolyline, distanceLabel;
                 if (distanceLabel) distanceLabel.setMap(null);
             });
 
-     async function getNearbyTransitStopsHTML(lat, lng) {
-        return new Promise(resolve => {
-            if (!google.maps.places || !map || !lat || !lng) {
-                resolve('');
-                return;
-            }
-            const service = new google.maps.places.PlacesService(map);
-            const request = { location: { lat, lng }, radius: 1200, type: ['transit_station'] };
-            service.nearbySearch(request, (results, status) => {
-                if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-                    resolve('');
-                    return;
-                }
-                const topStops = results.slice(0, 3);
-                if (topStops.length === 0) {
-                    resolve('');
-                    return;
-                }
-                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
-                topStops.forEach(stop => { html += `<li>${stop.name}</li>`; });
-                html += '</ul>';
-                resolve(html);
-            });
-        });
-    }
 
     // Add listeners to the map and infowindow to handle closing sticky windows
     map.addListener('click', () => {
@@ -4318,7 +4266,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             const schoolData = allData[activeHoverMarkerIndex];
             const markerInfo = allMarkers[activeHoverMarkerIndex];
             if (markerInfo && markerInfo.marker && schoolData) {
-                markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                updateMarkerAppearance(markerInfo.marker, schoolData, false, isDarkMode);
                 markerInfo.marker.zIndex = null;
             }
             activeHoverMarkerIndex = null;
@@ -4635,11 +4583,11 @@ let nestmMarker, distancePolyline, distanceLabel;
                     }
                  }
 
-                 const markerInitialIcon = getMarkerIcon(seniorChoice, false, isDarkMode);
-                 const marker = new google.maps.Marker({
+                 const pin = createMarkerPin(seniorChoice, false, isDarkMode);
+                 const marker = new google.maps.marker.AdvancedMarkerElement({
                      position: { lat: lat, lng: lng },
                      title: `${seniorChoice.seniorName} (${seniorChoice.gradClass}) → ${seniorChoice.collegeName} (${seniorChoice.major || 'Undecided Major'})`,
-                     icon: markerInitialIcon,
+                     content: pin.element,
                  });
                  allMarkers[index] = { marker: marker, school: seniorChoice };
 
@@ -4666,10 +4614,10 @@ let nestmMarker, distancePolyline, distanceLabel;
                     currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
 
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                        allMarkers[activeHoverMarkerIndex].marker.setIcon(getMarkerIcon(allData[activeHoverMarkerIndex], false, isDarkMode));
+                        updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
                         allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
                     }
-                    marker.setIcon(getMarkerIcon(clickedSchoolData, true, isDarkMode));
+                    updateMarkerAppearance(marker, clickedSchoolData, true, isDarkMode);
                     marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                     activeHoverMarkerIndex = clickedOriginalIndex;
 
@@ -4692,7 +4640,7 @@ let nestmMarker, distancePolyline, distanceLabel;
 
                         showSeniorPhotoPopup(listItem, schoolData);
                         openCollegeInfoWindow(marker, schoolData, index);
-                        marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
+                        updateMarkerAppearance(marker, schoolData, true, isDarkMode);
                         marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
                     }
                 });
@@ -4715,7 +4663,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                         }
                     }
                     if (activeHoverMarkerIndex !== index) {
-                        marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                        updateMarkerAppearance(marker, schoolData, false, isDarkMode);
                         marker.setZIndex(null);
                     }
                     // Only close the info window if it's not sticky (i.e., wasn't opened by a click)
@@ -4725,20 +4673,18 @@ let nestmMarker, distancePolyline, distanceLabel;
                 });
             });
 
-    const homeIconPath = 'M12 2L2 7v13h6v-7h8v7h6V7L12 2z';
-    nestmMarker = new google.maps.Marker({
+    const nestmPin = new google.maps.marker.PinElement({
+        background: "#8A2BE2",
+        borderColor: "#FFFFFF",
+        glyph: "🏠",
+        glyphColor: "#FFFFFF",
+        scale: 1.3,
+    });
+    nestmMarker = new google.maps.marker.AdvancedMarkerElement({
         position: NEST_M_INFO,
         map: map,
         title: "NEST+m High School",
-        icon: {
-            path: homeIconPath,
-            fillColor: "#8A2BE2",
-            fillOpacity: 1,
-            strokeWeight: 1,
-            strokeColor: "#FFFFFF",
-            scale: 1.2,
-            anchor: new google.maps.Point(12, 22)
-        },
+        content: nestmPin.element,
         zIndex: 999
     });
 
@@ -4812,19 +4758,27 @@ let nestmMarker, distancePolyline, distanceLabel;
             <circle cx="${diameter / 2}" cy="${diameter / 2}" r="${diameter / 2 * 0.9}" fill="${color}" stroke="rgba(0,0,0,0.3)" stroke-width="${Math.max(1, diameter * 0.04)}"/>
           </svg>`);
 
-            return new google.maps.Marker({
+            const div = document.createElement('div');
+            div.style.position = 'relative';
+            const img = document.createElement('img');
+            img.src = `data:image/svg+xml;base64,${svg}`;
+            img.style.width = `${diameter}px`;
+            img.style.height = `${diameter}px`;
+            const label = document.createElement('div');
+            label.textContent = String(count);
+            label.style.position = 'absolute';
+            label.style.top = '50%';
+            label.style.left = '50%';
+            label.style.transform = 'translate(-50%, -50%)';
+            label.style.color = labelColor;
+            label.style.fontSize = labelFontSize;
+            label.style.fontWeight = labelFontWeight;
+            div.appendChild(img);
+            div.appendChild(label);
+
+            return new google.maps.marker.AdvancedMarkerElement({
                 position,
-                icon: {
-                    url: `data:image/svg+xml;base64,${svg}`,
-                    scaledSize: new google.maps.Size(diameter, diameter),
-                    anchor: new google.maps.Point(diameter / 2, diameter / 2)
-                },
-                label: {
-                    text: String(count),
-                    color: labelColor,
-                    fontSize: labelFontSize,
-                    fontWeight: labelFontWeight,
-                },
+                content: div,
                 zIndex: 100 + count,
             });
         },
@@ -4874,7 +4828,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             if (mInfo && mInfo.marker && mInfo.school) {
                 const currentSchoolData = allData[idx];
                 const isHighlighted = activeHoverMarkerIndex === idx;
-                mInfo.marker.setIcon(getMarkerIcon(currentSchoolData, isHighlighted, isDarkMode));
+                updateMarkerAppearance(mInfo.marker, currentSchoolData, isHighlighted, isDarkMode);
             }
         });
         darkModeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
@@ -5848,8 +5802,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 
             <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly&libraries=geometry,places,marker"
-    defer
+    async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly&libraries=geometry,places,marker&loading=async"
 ></script>
 
  <div id="zoomed-info-panel" style="display: none;">
