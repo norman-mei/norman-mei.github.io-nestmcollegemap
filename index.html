@@ -670,7 +670,7 @@ body:not(.panel-desktop-hidden) .hamburger {
         background-color: #555;
     }
     body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
-    body.dark-mode .gm-style-iw-d { color: #e0e0e0 !important; overflow: visible !important; }
+    body.dark-mode .gm-style-iw-d { color: #e0e0e0 !important; overflow-y: auto !important; }
     body.dark-mode .info-window-content { color: #e0e0e0; }
     body.dark-mode .info-window-content b { color: #ffffff; }
     body.dark-mode .info-window-content a { color: #90caf9 !important; }
@@ -678,7 +678,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .info-window-type { color: #aaa; }
     body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] , body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
     body.dark-mode .gm-style .gm-style-iw-c button[title="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] img { display: block !important; width: 14px !important; height: 14px !important; filter: contrast(0) sepia(1) hue-rotate(0deg) saturate(0) brightness(1.5) invert(1) !important; opacity: 1 !important; transform: scale(1) !important; }
+    body.dark-mode .gm-style .gm-style-iw-c button[title="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label="Close"] img { display: block !important; width: 14px !important; height: 14px !important; filter: brightness(0) invert(1) !important; opacity: 1 !important; transform: scale(1) !important; }
     body.dark-mode .gm-style .gm-style-mtc , body.dark-mode .gmnoprint .gm-style-mtc { background-color: #303030 !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); border: 1px solid #444 !important; border-radius: 2px; }
     body.dark-mode .gm-style .gm-style-mtc button, body.dark-mode .gm-style .gm-style-mtc div { color: #ffffff !important; font-weight: 500 !important; background-color: transparent !important; text-shadow: none !important; }
     body.dark-mode .gm-style .gm-style-mtc button:hover, body.dark-mode .gm-style .gm-style-mtc div:hover { background-color: #444 !important; }
@@ -3347,7 +3347,7 @@ function getVisibleListItemsDOM() {
                 const markerInfo = allMarkers[currentOriginalIndex];
                 if (markerInfo?.marker && schoolData?.isVisible) {
                     updateMarkerAppearance(markerInfo.marker, schoolData, true, isDarkMode);
-                    markerInfo.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    markerInfo.marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                     handleListItemInteraction(event, currentOriginalIndex, true);
                 }
                 studentLi.classList.add('list-item-highlight');
@@ -3370,7 +3370,7 @@ function getVisibleListItemsDOM() {
 
                 if (!isKeyboardSelected && markerInfo?.marker && schoolData && activeHoverMarkerIndex !== currentOriginalIndex) {
                     updateMarkerAppearance(markerInfo.marker, schoolData, false, isDarkMode);
-                    markerInfo.marker.setZIndex(null);
+                    markerInfo.marker.zIndex = null;
                 }
                  if (!isKeyboardSelected) {
                     studentLi.classList.remove('list-item-highlight');
@@ -3388,11 +3388,11 @@ function getVisibleListItemsDOM() {
 
                 if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                     updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
-                    allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
+                    allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                 }
                 if (allMarkers[clickedOriginalIndex]?.marker && allData[clickedOriginalIndex]) {
                      updateMarkerAppearance(allMarkers[clickedOriginalIndex].marker, allData[clickedOriginalIndex], true, isDarkMode);
-                     allMarkers[clickedOriginalIndex].marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                     allMarkers[clickedOriginalIndex].marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                      activeHoverMarkerIndex = clickedOriginalIndex;
                 }
                 updateCurrentSelectionHighlight();
@@ -4138,7 +4138,6 @@ let nestmMarker, distancePolyline, distanceLabel;
             lng: -74.5
         },
         zoom: savedZoom ? parseInt(savedZoom, 10) : 7,
-        mapId: 'NEST_SENIOR_MAP_2024',
         mapTypeControlOptions: {
             position: google.maps.ControlPosition.TOP_RIGHT
         },
@@ -4524,10 +4523,10 @@ let nestmMarker, distancePolyline, distanceLabel;
 
                     if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== clickedOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
                         updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
-                        allMarkers[activeHoverMarkerIndex].marker.setZIndex(null);
+                        allMarkers[activeHoverMarkerIndex].marker.zIndex = null;
                     }
                     updateMarkerAppearance(marker, clickedSchoolData, true, isDarkMode);
-                    marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                    marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                     activeHoverMarkerIndex = clickedOriginalIndex;
 
                     updateCurrentSelectionHighlight();
@@ -4550,7 +4549,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                         showSeniorPhotoPopup(listItem, schoolData);
                         openCollegeInfoWindow(marker, schoolData, index);
                         updateMarkerAppearance(marker, schoolData, true, isDarkMode);
-                        marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
+                        marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                     }
                 });
                 marker.addListener('mouseout', () => {
@@ -4573,7 +4572,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                     }
                     if (activeHoverMarkerIndex !== index) {
                         updateMarkerAppearance(marker, schoolData, false, isDarkMode);
-                        marker.setZIndex(null);
+                        marker.zIndex = null;
                     }
                     // Only close the info window if it's not sticky (i.e., wasn't opened by a click)
                     if (infowindow && infowindow.getMap() && infowindow.anchor === marker && !infowindow.isSticky) {
