@@ -4643,7 +4643,10 @@ let nestmMarker, distancePolyline, distanceLabel;
                  });
                  allMarkers[index] = { marker: marker, school: seniorChoice };
 
-                marker.addListener("click", () => {
+                marker.addListener("click", (event) => {
+                    if (event && event.domEvent && typeof event.domEvent.stopPropagation === 'function') {
+                        event.domEvent.stopPropagation();
+                    }
                     const clickedOriginalIndex = index;
                     const clickedSchoolData = allData[clickedOriginalIndex];
                     if (!clickedSchoolData || !clickedSchoolData.isVisible) return;
