@@ -3530,9 +3530,14 @@ function getVisibleListItemsDOM() {
         });
     }
 
-       async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
-        if (!marker || !collegeData) return;
+            async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
+        console.log(`[InfoWindow DEBUG] Opening for: ${collegeData.collegeName}, Sticky: ${isSticky}`);
+        if (!marker || !collegeData) {
+            console.error("[InfoWindow DEBUG] Aborting: Invalid marker or collegeData provided.");
+            return;
+        }
         if (infowindow && infowindow.getMap()) {
+            console.log("[InfoWindow DEBUG] An info window is already open. Closing it first.");
             infowindow.close();
         }
         infowindow.isSticky = isSticky; // Set sticky state
@@ -3598,8 +3603,11 @@ function getVisibleListItemsDOM() {
             contentString += `<hr style="margin: 5px 0;">` + transitHtml;
         }
         contentString += `</div>`;
+
+        console.log("[InfoWindow DEBUG] Content generated. Setting content and opening on map.");
         infowindow.setContent(contentString);
         infowindow.open({ map: map, anchor: marker });
+        console.log("[InfoWindow DEBUG] open() method called. The info window should now be visible.");
     }
 
           async function initializeApp() {
