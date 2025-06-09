@@ -3832,6 +3832,33 @@ let nestmMarker, distancePolyline, distanceLabel;
             }
 
 
+=======
+    async function getNearbyTransitStopsHTML(lat, lng) {
+        return new Promise(resolve => {
+            if (!google.maps.places || !map || !lat || !lng) {
+                resolve('');
+                return;
+            }
+            try {
+                const { places } = await google.maps.places.Place.searchNearby({
+                    fields: ['displayName'],
+                    locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
+                    includedPrimaryTypes: ['transit_station'],
+                    maxResultCount: 3,
+                });
+                if (!places || !places.length) { resolve(''); return; }
+                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+                places.forEach(stop => { html += `<li>${stop.displayName}</li>`; });
+                html += '</ul>';
+                resolve(html);
+            } catch(err) {
+                console.warn('[Places API] Nearby search failed', err);
+                resolve('');
+            }
+        });
+    }
+
+
        async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
         if (!marker || !collegeData) return;
         if (infowindow && infowindow.getMap()) {
@@ -4252,6 +4279,31 @@ let nestmMarker, distancePolyline, distanceLabel;
                 if (distanceLabel) distanceLabel.setMap(null);
             });
 
+
+    async function getNearbyTransitStopsHTML(lat, lng) {
+        return new Promise(async resolve => {
+            if (!google.maps.places || !map || !lat || !lng) {
+                resolve('');
+                return;
+            }
+            try {
+                const { places } = await google.maps.places.Place.searchNearby({
+                    fields: ['displayName'],
+                    locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
+                    includedPrimaryTypes: ['transit_station'],
+                    maxResultCount: 3,
+                });
+                if (!places || !places.length) { resolve(''); return; }
+                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+                places.forEach(stop => { html += `<li>${stop.displayName}</li>`; });
+                html += '</ul>';
+                resolve(html);
+            } catch(err) {
+                console.warn('[Places API] Nearby search failed', err);
+                resolve('');
+            }
+        });
+    }
 
     // Add listeners to the map and infowindow to handle closing sticky windows
     map.addListener('click', () => {
