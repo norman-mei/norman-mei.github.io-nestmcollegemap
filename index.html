@@ -5362,7 +5362,7 @@ function startTutorial(startStep = 0) {
     // Dynamically find a senior for the photo zoom tutorial step
     const photoZoomStep = tutorialSteps.find(step => step.title === 'Zoom Senior Photos');
     if (photoZoomStep) {
-        if (window.allData && window.allData.length > 0) {
+        if (allData && allData.length > 0) {
             const candidates = allData.filter(senior => senior.linkedInUrl && senior.instagramUrl && senior.isVisible);
             const selectedSenior = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null;
             
