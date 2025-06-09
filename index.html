@@ -2699,64 +2699,9 @@ function getVisibleListItemsDOM() {
                     if (position && map) {
                         map.panTo(position);
                         map.setZoom(Math.max(map.getZoom(), 12));
-
-                        let contentString = `<div class="info-window-content">`;
-                        const targetUrl = schoolData.collegeHomepageUrl && schoolData.collegeHomepageUrl !== '#' ? schoolData.collegeHomepageUrl : '#';
-                        const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
-
-                        if (schoolData.collegeImageUrl && schoolData.collegeImageUrl !== 'x' && !schoolData.collegeImageUrl.startsWith('placeholder')) {
-                            contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${schoolData.collegeImageUrl}" alt="${schoolData.collegeName} logo/photo"></a>`;
-                        }
-
-                        if (targetUrl !== '#') {
-                            contentString += `<b><a href="${targetUrl}" ${openInNewTab}>${schoolData.collegeName}</a></b>`;
-                        } else {
-                            contentString += `<b>${schoolData.collegeName}</b>`;
-                        }
-                        contentString += `<br><span class="info-window-type">Type: ${schoolData.collegeType} (${schoolData.isCampusPublic ? 'Public' : 'Private'}, ${schoolData.locationFocus})</span>`;
-                        if (schoolData.lat !== 0 || schoolData.lng !== 0) {
-                            contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${schoolData.lat},${schoolData.lng}" target="_blank">Get Directions</a>`;
-                        }
-                        contentString += `<hr style="margin: 5px 0;">`;
-
-                        if (schoolData.collegeName === "Undecided") {
-                            const suffixHtml = getHonorarySuffixHTML(schoolData.collegeNameRaw);
-                            contentString += `<b>${schoolData.seniorName}</b>${suffixHtml}`;
-                            contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[schoolData.gradClass] || '#ccc'};">Class: ${schoolData.gradClass}</span>`;
-                            contentString += `<br>Major: ${schoolData.major || 'Undecided Major'} (${schoolData.majorArea || 'N/A'})`;
-                        } else {
-                            const studentsAtSameCollege = allData.filter(s =>
-                                s.isVisible &&
-                                s.collegeName === schoolData.collegeName &&
-                                s.collegeName !== "Undecided"
-                            ).sort((a, b) => {
-                                if (a.gradClass !== b.gradClass) return a.gradClass.localeCompare(b.gradClass);
-                                const lastNameA = getLastName(a.seniorName);
-                                const lastNameB = getLastName(b.seniorName);
-                                if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
-                                return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
-                            });
-
-                            if (studentsAtSameCollege.length > 0) {
-                                contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
-                                studentsAtSameCollege.forEach(student => {
-                                    const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
-                                    let studentEntry = `<li>`;
-                                    if (student.originalIndex === originalIndex) studentEntry += `<b>`; 
-                                    studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
-                                    if (student.originalIndex === originalIndex) studentEntry += `</b>`;
-                                    studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
-                                    studentEntry += `</li>`;
-                                    contentString += studentEntry;
-                                });
-                                contentString += `</ul>`;
-                            }
-                        }
-                        contentString += `</div>`;
-
-                        infowindow.setContent(contentString);
-                        infowindow.open({ map: map, anchor: markerInfo.marker });
                     }
+                    openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex);
+                    showDistanceToNestm(schoolData);
                 }
 
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
@@ -3760,6 +3705,104 @@ let nestmMarker, distancePolyline, distanceLabel;
         distanceLabel.setMap(map);
     }
 
+    async function getNearbyTransitStopsHTML(lat, lng) {
+        return new Promise(resolve => {
+            if (!google.maps.places || !map || !lat || !lng) {
+                resolve('');
+                return;
+            }
+            const service = new google.maps.places.PlacesService(map);
+            const request = { location: { lat, lng }, radius: 1200, type: ['transit_station'] };
+            service.nearbySearch(request, (results, status) => {
+                if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+                    resolve('');
+                    return;
+                }
+                const topStops = results.slice(0, 3);
+                if (topStops.length === 0) {
+                    resolve('');
+                    return;
+                }
+                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+                topStops.forEach(stop => { html += `<li>${stop.name}</li>`; });
+                html += '</ul>';
+                resolve(html);
+            });
+        });
+    }
+
+       async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
+        if (!marker || !collegeData) return;
+        if (infowindow && infowindow.getMap()) {
+            infowindow.close();
+        }
+        infowindow.isSticky = isSticky; // Set sticky state
+
+        let contentString = `<div class="info-window-content">`;
+        const targetUrl = collegeData.collegeHomepageUrl && collegeData.collegeHomepageUrl !== '#' ? collegeData.collegeHomepageUrl : '#';
+        const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
+        if (collegeData.collegeImageUrl && collegeData.collegeImageUrl !== 'x' && !collegeData.collegeImageUrl.startsWith('placeholder')) {
+            contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${collegeData.collegeImageUrl}" alt="${collegeData.collegeName} logo/photo"></a>`;
+        }
+        if (targetUrl !== '#') {
+            contentString += `<b><a href="${targetUrl}" ${openInNewTab}>${collegeData.collegeName}</a></b>`;
+        } else {
+            contentString += `<b>${collegeData.collegeName}</b>`;
+        }
+        contentString += `<br><span class="info-window-type">Type: ${collegeData.collegeType} (${collegeData.isCampusPublic ? 'Public' : 'Private'}, ${collegeData.locationFocus})</span>`;
+        if (collegeData.lat !== 0 || collegeData.lng !== 0) {
+            contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${collegeData.lat},${collegeData.lng}" target="_blank">Get Directions</a>`;
+        }
+        contentString += `<hr style="margin: 5px 0;">`;
+        if (collegeData.collegeName === "Undecided") {
+            const suffixHtml = getHonorarySuffixHTML(collegeData.collegeNameRaw);
+            contentString += `<b>${collegeData.seniorName}</b>${suffixHtml}`;
+            contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[collegeData.gradClass] || '#ccc'};">Class: ${collegeData.gradClass}</span>`;
+            contentString += `<br>Major: ${collegeData.major || 'Undecided Major'} (${collegeData.majorArea || 'N/A'})`;
+        } else {
+            const studentsAtSameCollege = allData.filter(s =>
+                s.isVisible &&
+                s.collegeName === collegeData.collegeName &&
+                s.collegeName !== "Undecided"
+            ).sort((a, b) => {
+                if (a.gradClass !== b.gradClass) return a.gradClass.localeCompare(b.gradClass);
+                const lastNameA = getLastName(a.seniorName);
+                const lastNameB = getLastName(b.seniorName);
+                if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
+                return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
+            });
+            if (studentsAtSameCollege.length > 0) {
+                contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
+                studentsAtSameCollege.forEach(student => {
+                    const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
+                    let studentEntry = `<li>`;
+                    if (student.originalIndex === originalIndex) studentEntry += `<b>`;
+                    studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
+                    if (student.linkedInUrl) {
+                        studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
+                    }
+                    if (student.instagramUrl) {
+                        studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
+                    }
+                    if (student.originalIndex === originalIndex) studentEntry += `</b>`;
+                    studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
+                    studentEntry += `</li>`;
+                    contentString += studentEntry;
+                });
+                contentString += `</ul>`;
+            } else {
+                contentString += `No other visible students found for this college with current filters.`;
+            }
+        }
+        const transitHtml = await getNearbyTransitStopsHTML(collegeData.lat, collegeData.lng);
+        if (transitHtml) {
+            contentString += `<hr style="margin: 5px 0;">` + transitHtml;
+        }
+        contentString += `</div>`;
+        infowindow.setContent(contentString);
+        infowindow.open({ map: map, anchor: marker });
+    }
+
     const savedStateCountryFilters = localStorage.getItem('stateCountryFilterState');
     stateCountryFilterState = savedStateCountryFilters ? JSON.parse(savedStateCountryFilters) : {};
 
@@ -4086,6 +4129,54 @@ let nestmMarker, distancePolyline, distanceLabel;
     infowindow = new google.maps.InfoWindow();
     schoolsSelectedForZoom = new Set();
     transitLayer = new google.maps.TransitLayer();
+
+     async function getNearbyTransitStopsHTML(lat, lng) {
+        return new Promise(resolve => {
+            if (!google.maps.places || !map || !lat || !lng) {
+                resolve('');
+                return;
+            }
+            const service = new google.maps.places.PlacesService(map);
+            const request = { location: { lat, lng }, radius: 1200, type: ['transit_station'] };
+            service.nearbySearch(request, (results, status) => {
+                if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+                    resolve('');
+                    return;
+                }
+                const topStops = results.slice(0, 3);
+                if (topStops.length === 0) {
+                    resolve('');
+                    return;
+                }
+                let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+                topStops.forEach(stop => { html += `<li>${stop.name}</li>`; });
+                html += '</ul>';
+                resolve(html);
+            });
+        });
+    }
+
+    // Add listeners to the map and infowindow to handle closing sticky windows
+    map.addListener('click', () => {
+        if (infowindow) {
+            infowindow.close(); // This will trigger the 'closeclick' listener.
+        }
+    });
+
+    infowindow.addListener('closeclick', () => {
+        infowindow.isSticky = false;
+        if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]) {
+            const schoolData = allData[activeHoverMarkerIndex];
+            const markerInfo = allMarkers[activeHoverMarkerIndex];
+            if (markerInfo && markerInfo.marker && schoolData) {
+                markerInfo.marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
+                markerInfo.marker.zIndex = null;
+            }
+            activeHoverMarkerIndex = null;
+        }
+        if (distancePolyline) distancePolyline.setMap(null);
+        if (distanceLabel) distanceLabel.setMap(null);
+    });
 
     const locationFocusCheckboxes = document.querySelectorAll('.location-focus-filter');
     locationFocusCheckboxes.forEach(checkbox => {
@@ -4414,79 +4505,7 @@ let nestmMarker, distancePolyline, distanceLabel;
             const clickedSchoolData = allData[clickedOriginalIndex];
             if (!clickedSchoolData || !clickedSchoolData.isVisible) return;
 
-            if (infowindow && infowindow.getMap()) {
-                infowindow.close();
-            }
-
-            let contentString = `<div class="info-window-content">`;
-            const targetUrl = clickedSchoolData.collegeHomepageUrl && clickedSchoolData.collegeHomepageUrl !== '#' ? clickedSchoolData.collegeHomepageUrl : '#';
-            const openInNewTab = targetUrl !== '#' ? 'target="_blank"' : '';
-
-            if (clickedSchoolData.collegeImageUrl && clickedSchoolData.collegeImageUrl !== 'x' && !clickedSchoolData.collegeImageUrl.startsWith('placeholder')) {
-                contentString += `<a href="${targetUrl}" ${openInNewTab}><img src="${clickedSchoolData.collegeImageUrl}" alt="${clickedSchoolData.collegeName} logo/photo"></a>`;
-            }
-
-            if (targetUrl !== '#') {
-                contentString += `<b><a href="${targetUrl}" ${openInNewTab}>${clickedSchoolData.collegeName}</a></b>`;
-            } else {
-                contentString += `<b>${clickedSchoolData.collegeName}</b>`;
-            }
-            contentString += `<br><span class="info-window-type">Type: ${clickedSchoolData.collegeType} (${clickedSchoolData.isCampusPublic ? 'Public' : 'Private'}, ${clickedSchoolData.locationFocus})</span>`;
-            if (clickedSchoolData.lat !== 0 || clickedSchoolData.lng !== 0) {
-                contentString += `<br><a href="https://www.google.com/maps/dir/?api=1&destination=${clickedSchoolData.lat},${clickedSchoolData.lng}" target="_blank">Get Directions</a>`;
-            }
-            contentString += `<hr style="margin: 5px 0;">`;
-
-            if (clickedSchoolData.collegeName === "Undecided") {
-                const suffixHtml = getHonorarySuffixHTML(clickedSchoolData.collegeNameRaw);
-                contentString += `<b>${clickedSchoolData.seniorName}</b>${suffixHtml}`;
-                contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[clickedSchoolData.gradClass] || '#ccc'};">Class: ${clickedSchoolData.gradClass}</span>`;
-                contentString += `<br>Major: ${clickedSchoolData.major || 'Undecided Major'} (${clickedSchoolData.majorArea || 'N/A'})`;
-            } else {
-                const studentsAtSameCollege = allData.filter(s =>
-                    s.isVisible &&
-                    s.collegeName === clickedSchoolData.collegeName &&
-                    s.collegeName !== "Undecided"
-                ).sort((a, b) => {
-                    if (a.gradClass !== b.gradClass) return a.gradClass.localeCompare(b.gradClass);
-                    const lastNameA = getLastName(a.seniorName);
-                    const lastNameB = getLastName(b.seniorName);
-                    if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
-                    return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
-                });
-
-                if (studentsAtSameCollege.length > 0) {
-                    contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
-                    studentsAtSameCollege.forEach(student => {
-                        const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
-                        let studentEntry = `<li>`;
-                        if (student.originalIndex === clickedOriginalIndex) studentEntry += `<b>`;
-                        studentEntry += `${student.seniorName}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
-
-                        if (student.linkedInUrl) {
-                            studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
-                        }
-                        if (student.instagramUrl) {
-                            studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
-                        }
-
-                        if (student.originalIndex === clickedOriginalIndex) studentEntry += `</b>`;
-                        studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
-                        studentEntry += `</li>`;
-                        contentString += studentEntry;
-                    });
-                    contentString += `</ul>`;
-                } else {
-                    contentString += `No other visible students found for this college with current filters.`;
-                }
-            }
-            contentString += `</div>`;
-
-            infowindow.setContent(contentString);
-            infowindow.open({
-                map: map,
-                anchor: marker
-            });
+            openCollegeInfoWindow(marker, clickedSchoolData, clickedOriginalIndex);
 
             const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${clickedOriginalIndex}"]`);
             if (listItem) {
@@ -4525,7 +4544,7 @@ let nestmMarker, distancePolyline, distanceLabel;
                 }
 
                 showSeniorPhotoPopup(listItem, schoolData);
-
+                openCollegeInfoWindow(marker, schoolData, index);
                 marker.setIcon(getMarkerIcon(schoolData, true, isDarkMode));
                 marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
             }
@@ -4551,6 +4570,9 @@ let nestmMarker, distancePolyline, distanceLabel;
             if (activeHoverMarkerIndex !== index) {
                 marker.setIcon(getMarkerIcon(schoolData, false, isDarkMode));
                 marker.zIndex = null;
+            }
+            if (infowindow && infowindow.getMap() && infowindow.anchor === marker) {
+                infowindow.close();
             }
         });
     });
@@ -5678,7 +5700,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 
       <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly&libraries=geometry,marker"
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVEZB2WjUpEhqnqGjY_zMCQSKUHTdjAWc&callback=initializeApp&onerror=gmLoadError&v=weekly&libraries=geometry,places,marker"
     defer
 ></script>
 
