@@ -3649,8 +3649,7 @@ function getVisibleListItemsDOM() {
 
             try {
                 const { places } = await google.maps.places.Place.searchNearby({
-                    location: new google.maps.LatLng(lat, lng),
-                    radius: 1200,
+                    locationBias: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
                     includedPrimaryTypes: ['transit_station'],
                     maxResultCount: 5,
                     fields: ['displayName', 'types', 'location', 'place_id'],
@@ -3946,13 +3945,66 @@ function getVisibleListItemsDOM() {
         let distancePolyline, distanceLabel, DistanceLabel;
         const NEST_M_INFO = {
             name: "NEST+m",
-            lat: 40.71956425410874, 
+            lat: 40.71956425410874,
             lng: -73.97923619240517,
             imageUrl: "photos/NEST+m_Logo.png",
             homepageUrl: "https://nestmk12.net/",
             type: "K-12 School",
             stateOrCountry: "NY"
         };
+
+        function showDistanceToNestm(collegeData) {
+            // First, always clear any existing line/label
+            if (distancePolyline) distancePolyline.setMap(null);
+            if (distanceLabel) distanceLabel.setMap(null);
+
+            if (!isDistanceLineEnabled) {
+                return;
+            }
+
+            console.log("[DistanceDebug] Called showDistanceToNestm for:", collegeData.collegeName);
+
+            const nestmMarker = allMarkers.find(m => m && m.school && m.school.collegeName === "NEST+m")?.marker;
+
+            if (!nestmMarker || !nestmMarker.map || !collegeData || collegeData.lat === 0) {
+                console.log("[DistanceDebug] Aborting: NEST+m marker not visible or college data invalid.");
+                return;
+            }
+
+            if (!google.maps.geometry || !google.maps.geometry.spherical) {
+                console.error("[DistanceDebug] CRITICAL: google.maps.geometry.spherical library not loaded. Please add '&libraries=geometry' to the Google Maps API script URL.");
+                return;
+            }
+
+            const collegePosition = new google.maps.LatLng(collegeData.lat, collegeData.lng);
+            const nestmPosition = nestmMarker.position;
+            const path = [nestmPosition, collegePosition];
+
+            distancePolyline = new google.maps.Polyline({
+                path: path,
+                geodesic: true,
+                strokeColor: '#8A2BE2',
+                strokeOpacity: 0.9,
+                strokeWeight: 2.5,
+                map: map
+            });
+
+            const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(nestmPosition, collegePosition);
+            const distanceInMiles = distanceInMeters * 0.000621371;
+            const distanceInKm = distanceInMeters / 1000;
+
+            console.log(`[DistanceDebug] Distance in meters: ${distanceInMeters}, miles: ${distanceInMiles}, km: ${distanceInKm}`);
+
+            const midPoint = google.maps.geometry.spherical.interpolate(nestmPosition, collegePosition, 0.5);
+            const labelText = `
+                ${distanceInMiles.toFixed(1)} mi / ${distanceInKm.toFixed(1)} km to NEST+m
+                <span id="close-distance-label" style="cursor: pointer; font-weight: bold; margin-left: 8px; color: #FF6347;" title="Dismiss">×</span>
+            `;
+
+            console.log("[DistanceDebug] Creating label with text:", labelText.trim());
+            distanceLabel = new DistanceLabel(midPoint, labelText);
+            distanceLabel.setMap(map);
+        }
 
 
        
@@ -4070,59 +4122,6 @@ function getVisibleListItemsDOM() {
                 }
             }
 
-            function showDistanceToNestm(collegeData) {
-                // First, always clear any existing line/label
-                if (distancePolyline) distancePolyline.setMap(null);
-                if (distanceLabel) distanceLabel.setMap(null);
-
-                // Exit if the feature is disabled by the user
-                if (!isDistanceLineEnabled) {
-                    return;
-                }
-
-                console.log("[DistanceDebug] Called showDistanceToNestm for:", collegeData.collegeName);
-
-                const nestmMarker = allMarkers.find(m => m && m.school && m.school.collegeName === "NEST+m")?.marker;
-
-                if (!nestmMarker || !nestmMarker.map || !collegeData || collegeData.lat === 0) {
-                    console.log("[DistanceDebug] Aborting: NEST+m marker not visible or college data invalid.");
-                    return;
-                }
-
-                if (!google.maps.geometry || !google.maps.geometry.spherical) {
-                    console.error("[DistanceDebug] CRITICAL: google.maps.geometry.spherical library not loaded. Please add '&libraries=geometry' to the Google Maps API script URL.");
-                    return;
-                }
-
-                const collegePosition = new google.maps.LatLng(collegeData.lat, collegeData.lng);
-                const nestmPosition = nestmMarker.position;
-                const path = [nestmPosition, collegePosition];
-
-                distancePolyline = new google.maps.Polyline({
-                    path: path,
-                    geodesic: true,
-                    strokeColor: '#8A2BE2', // Purple
-                    strokeOpacity: 0.9,
-                    strokeWeight: 2.5,
-                    map: map
-                });
-
-                const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(nestmPosition, collegePosition);
-                const distanceInMiles = distanceInMeters * 0.000621371;
-                const distanceInKm = distanceInMeters / 1000;
-
-                console.log(`[DistanceDebug] Distance in meters: ${distanceInMeters}, miles: ${distanceInMiles}, km: ${distanceInKm}`);
-
-                const midPoint = google.maps.geometry.spherical.interpolate(nestmPosition, collegePosition, 0.5);
-                const labelText = `
-                    ${distanceInMiles.toFixed(1)} mi / ${distanceInKm.toFixed(1)} km to NEST+m
-                    <span id="close-distance-label" style="cursor: pointer; font-weight: bold; margin-left: 8px; color: #FF6347;" title="Dismiss">×</span>
-                `;
-                
-                console.log("[DistanceDebug] Creating label with text:", labelText.trim());
-                distanceLabel = new DistanceLabel(midPoint, labelText);
-                distanceLabel.setMap(map);
-            }
 
     const savedStateCountryFilters = localStorage.getItem('stateCountryFilterState');
     stateCountryFilterState = savedStateCountryFilters ? JSON.parse(savedStateCountryFilters) : {};
@@ -4850,7 +4849,7 @@ function getVisibleListItemsDOM() {
                     updateCurrentSelectionHighlight();
                 });
 
-                marker.addListener('mouseover', () => {
+                marker.addListener('gmp-mouseover', () => {
                     if (panelJustToggledOpen) return;
 
                     const schoolData = allData[index];
@@ -4876,7 +4875,7 @@ function getVisibleListItemsDOM() {
                         marker.zIndex = google.maps.Marker.MAX_ZINDEX + 1;
                     }
                 });
-                marker.addListener('mouseout', () => {
+                marker.addListener('gmp-mouseout', () => {
                     const schoolData = allData[index];
                     const listItem = schoolListCollapsibleContentDiv.querySelector(`li[data-original-index="${index}"]`);
                     if (listItem) {
