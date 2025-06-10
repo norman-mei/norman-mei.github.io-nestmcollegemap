@@ -675,7 +675,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode .info-window-type { color: #aaa; }
         body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"], body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
     body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] img { 
+    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] svg, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] svg, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] img { 
     display: block !important; 
     width: 14px !important; 
     height: 14px !important; 
@@ -3730,7 +3730,7 @@ function getVisibleListItemsDOM() {
 
             initMap();
         }
-        let distancePolyline, distanceLabel;
+        let distancePolyline, distanceLabel, DistanceLabel;
         const NEST_M_INFO = {
             name: "NEST+m",
             lat: 40.71956425410874, 
@@ -3741,57 +3741,6 @@ function getVisibleListItemsDOM() {
             stateOrCountry: "NY"
         };
 
-        class DistanceLabel extends google.maps.OverlayView {
-            constructor(position, text) {
-                super();
-                this.position = position;
-                this.text = text;
-                this.div = null;
-            }
-            onAdd() {
-                this.div = document.createElement("div");
-                this.div.style.position = "absolute";
-                this.div.style.background = isDarkMode ? "rgba(40, 40, 40, 0.9)" : "rgba(255, 255, 255, 0.9)";
-                this.div.style.color = isDarkMode ? "#e0e0e0" : "#333";
-                this.div.style.padding = "4px 8px";
-                this.div.style.border = isDarkMode ? "1px solid #555" : "1px solid #777";
-                this.div.style.borderRadius = "4px";
-                this.div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
-                this.div.style.fontSize = "1.1em";
-                this.div.style.whiteSpace = "nowrap";
-                this.div.style.zIndex = "1000";
-                this.div.innerHTML = this.text;
-
-                this.div.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    if (distancePolyline) distancePolyline.setMap(null);
-                    this.setMap(null);
-                });
-
-                const panes = this.getPanes();
-                panes.floatPane.appendChild(this.div);
-            }
-            draw() {
-                const overlayProjection = this.getProjection();
-                const point = overlayProjection.fromLatLngToDivPixel(this.position);
-                if (point) {
-                    this.div.style.left = point.x + 10 + "px";
-                    this.div.style.top = point.y - 15 + "px";
-                }
-            }
-            onRemove() {
-                if (this.div) {
-                    this.div.parentNode.removeChild(this.div);
-                    this.div = null;
-                }
-            }
-            updateText(text) {
-                this.text = text;
-                if (this.div) {
-                    this.div.innerHTML = this.text;
-                }
-            }
-        }
 
         function showDistanceToNestm(collegeData) {
             if (distancePolyline) distancePolyline.setMap(null);
@@ -3853,7 +3802,7 @@ function getVisibleListItemsDOM() {
     }
     console.log(`[DEBUG] initMap: Data is ready. Proceeding with allData containing ${allData.length} items.`);
 
-                class DistanceLabel extends google.maps.OverlayView {
+                DistanceLabel = class DistanceLabel extends google.maps.OverlayView {
                 constructor(position, text) {
                     super();
                     this.position = position;
@@ -4725,7 +4674,7 @@ function getVisibleListItemsDOM() {
         toggleNestmBtn.textContent = '🦅 Show NEST+m';
     }
 
-    nestmMarker.addListener('click', () => {
+    nestmMarker.addListener('gmp-click', () => {
         if (infowindow) infowindow.close();
         let content = `
             <div class="info-window-content">
