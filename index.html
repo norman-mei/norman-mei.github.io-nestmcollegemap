@@ -185,6 +185,45 @@ body.dark-mode #zoomed-info-panel {
         border-color: rgba(255,255,255,0.2);
     }
 
+    .transit-label {
+        font-weight: bold;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 0.85em;
+        margin-right: 4px;
+        border: 1px solid;
+    }
+    .transit-label.bus {
+        background-color: #d9534f; color: #fff; border-color: #b52b27;
+    }
+    .transit-label.subway {
+        background-color: #6f42c1; color: #fff; border-color: #59359c;
+    }
+    .transit-label.rail {
+        background-color: #0275d8; color: #fff; border-color: #014c8c;
+    }
+    .transit-line {
+        font-weight: bold;
+        padding: 1px 4px;
+        border-radius: 3px;
+        margin-right: 4px;
+        background-color: #eee;
+        color: #222;
+        border: 1px solid #ccc;
+        font-size: 0.85em;
+    }
+    body.dark-mode .transit-line {
+        background-color: #555; color: #fff; border-color: #444;
+    }
+    .transit-departure {
+        margin-left: 4px;
+        font-size: 0.85em;
+        color: #555;
+    }
+    body.dark-mode .transit-departure {
+        color: #ddd;
+    }
+
     html, body {
     height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
     background-color: #f8f9fa; color: #212529;
@@ -1424,6 +1463,11 @@ body.dark-mode #tutorial-step-counter {
      <script>
 
         let map;
+        const GOOGLE_MAPS_API_KEY = (function(){
+            const scr = document.querySelector('script[src*="maps.googleapis.com"]');
+            const m = scr?.src.match(/key=([^&]+)/);
+            return m ? m[1] : "";
+        })();
         // Add this with your other global variables
 let renderChartCallCount = 0;
 const RENDER_CHART_CALL_LIMIT = 20; // A safe limit to detect runaway loops
@@ -3536,18 +3580,55 @@ function getVisibleListItemsDOM() {
             }
             try {
                 const { places } = await google.maps.places.Place.searchNearby({
-                    fields: ['displayName'],
+                    fields: ['displayName', 'types', 'location'],
                     locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
                     includedPrimaryTypes: ['transit_station'],
-                    maxResultCount: 3,
+                    maxResultCount: 5,
                 });
                 if (!places || !places.length) return '';
                 let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
-                places.forEach(stop => { html += `<li>${stop.displayName}</li>`; });
+                for (const stop of places) {
+                    const types = stop.types || [];
+                    const isBus = types.some(t => t.includes('bus'));
+                    const isSubway = types.some(t => t.includes('subway'));
+                    const labelClass = isBus ? 'bus' : (isSubway ? 'subway' : 'rail');
+                    const labelText = isBus ? 'Bus' : (isSubway ? 'Subway' : 'Rail');
+                    const label = `<span class="transit-label ${labelClass}">${labelText}</span>`;
+                    const lineMatch = stop.displayName && stop.displayName.match(/\(([^)]+)\)/);
+                    const line = lineMatch ? `<span class="transit-line">${lineMatch[1]}</span>` : '';
+                    let depStr = '';
+                    try {
+                        const dep = await fetchNextDepartureTime(stop);
+                        if (dep) {
+                            const dt = new Date(dep);
+                            depStr = `<span class="transit-departure">Next: ${dt.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>`;
+                        }
+                    } catch(e) {
+                        console.warn('[Departures]', e);
+                    }
+                    html += `<li>${line}${label} ${stop.displayName}${depStr}</li>`;
+                }
                 html += '</ul>';
                 return html;
             } catch (err) {
                 console.warn('[Places API] Nearby search failed', err);
+                return '';
+            }
+        }
+
+        async function fetchNextDepartureTime(stop) {
+            try {
+                if (!stop || !stop.location) return '';
+                const origin = `${stop.location.lat},${stop.location.lng}`;
+                const dest = `${stop.location.lat + 0.001},${stop.location.lng + 0.001}`;
+                const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${dest}&mode=transit&departure_time=now&key=${GOOGLE_MAPS_API_KEY}`;
+                const resp = await fetch(url);
+                if (!resp.ok) return '';
+                const data = await resp.json();
+                const epoch = data.routes?.[0]?.legs?.[0]?.departure_time?.value;
+                return epoch ? epoch * 1000 : '';
+            } catch (err) {
+                console.warn('[Directions API] failed', err);
                 return '';
             }
         }
