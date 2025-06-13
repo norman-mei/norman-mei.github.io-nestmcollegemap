@@ -196,7 +196,7 @@ body.dark-mode #zoomed-info-panel {
         border: 1px solid;
     }
 
-            .transit-label.streetcar {
+                       .transit-label.streetcar {
         background-color: #00AEEF; /* A nice, bright cyan */
         color: #fff;
         border-color: #008CBA; /* A darker shade for the border */
@@ -206,15 +206,20 @@ body.dark-mode #zoomed-info-panel {
     }
 
     .transit-label.subway {
-    background-color: #4CAF50; color: #fff; border-color: #388E3C;
-}
-
+        background-color: #4CAF50; color: #fff; border-color: #388E3C;
+    }
 
     .transit-label.rail {
         background-color: #0275d8; color: #fff; border-color: #014c8c;
     }
 
-        .transit-label.light-rail {
+    .transit-label.ferry {
+        background-color: #8a2be2; /* Purple */
+        color: #fff;
+        border-color: #7324bf; /* Darker purple for border */
+    }
+
+    .transit-label.light-rail {
         background-color: #f59e0b; /* Orange/Amber */
         color: #fff;
         border-color: #d97706;
@@ -818,23 +823,35 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #map-options-control button:hover {
         background-color: #555;
     }
-    body.dark-mode .gm-style-iw-c { background-color: #282828 !important; box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2); }
-    body.dark-mode .gm-style-iw-d { color: #e0e0e0 !important; overflow-y: auto !important; }
+        body.dark-mode .gm-style .gm-style-iw-c {
+        background-color: #282828 !important;
+        box-shadow: 0 2px 7px 1px rgba(255, 255, 255, 0.2) !important;
+        border-radius: 8px !important;
+    }
+    body.dark-mode .gm-style .gm-style-iw-d {
+        color: #e0e0e0 !important;
+        overflow: auto !important;
+    }
+    body.dark-mode .gm-style .gm-style-iw-t::after {
+        background: #282828 !important;
+    }
     body.dark-mode .info-window-content { color: #e0e0e0; }
     body.dark-mode .info-window-content b { color: #ffffff; }
     body.dark-mode .info-window-content a { color: #90caf9 !important; }
     body.dark-mode .info-window-content a:hover { color: #bbdefb !important; }
     body.dark-mode .info-window-type { color: #aaa; }
-        body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"], body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] { background: none !important; border: none !important; box-shadow: none !important; opacity: 1 !important; border-radius: 2px !important; padding: 4px !important; right: 6px !important; top: 6px !important; cursor: pointer; transition: background-color 0.2s ease; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"]:hover, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"]:hover { background-color: rgba(255, 255, 255, 0.2) !important; }
-    body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] img, body.dark-mode .gm-style .gm-style-iw-c button[title*="Close"] svg, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] svg, body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] img { 
-    display: block !important; 
-    width: 14px !important; 
-    height: 14px !important; 
-    filter: brightness(0) invert(1) !important; /* This makes the black 'X' icon white */
-    opacity: 1 !important; 
-    transform: scale(1) !important; 
-}
+
+    /* Close Button Styling */
+    body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] {
+        background-color: transparent !important;
+        transition: background-color 0.2s ease;
+    }
+    body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"]:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    body.dark-mode .gm-style .gm-style-iw-c button[aria-label*="Close"] img {
+        filter: brightness(0) invert(1) !important;
+    }
     body.dark-mode .gm-style .gm-style-mtc , body.dark-mode .gmnoprint .gm-style-mtc { background-color: #303030 !important; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); border: 1px solid #444 !important; border-radius: 2px; }
     body.dark-mode .gm-style .gm-style-mtc button, body.dark-mode .gm-style .gm-style-mtc div { color: #ffffff !important; font-weight: 500 !important; background-color: transparent !important; text-shadow: none !important; }
     body.dark-mode .gm-style .gm-style-mtc button:hover, body.dark-mode .gm-style .gm-style-mtc div:hover { background-color: #444 !important; }
@@ -1059,9 +1076,7 @@ body:not(.panel-desktop-hidden) .hamburger {
 
     @media (max-width: 480px) {
 
-        #controls-and-list-container {
-
-        }
+       
         .list-content.gallery-view li:not(.grad-class-separator) {
             min-width: 100px;
         }
@@ -1578,6 +1593,10 @@ body.dark-mode #tutorial-step-counter {
      <script>
 
         let map;
+
+                const DARK_MAP_ID = '27f65917b8e0eec9e9450357';
+        const LIGHT_MAP_ID = '27f65917b8e0eec92a95d812';
+
         const GOOGLE_MAPS_API_KEY = (function(){
             const scr = document.querySelector('script[src*="maps.googleapis.com"]');
             const m = scr?.src.match(/key=([^&]+)/);
@@ -3712,9 +3731,8 @@ function getVisibleListItemsDOM() {
                 }
             }
         }
-        
 
-       async function getNearbyTransitStopsHTML(lat, lng, currentIsDarkMode) {
+               async function getNearbyTransitStopsHTML(lat, lng, currentIsDarkMode) {
     if (!google || !google.maps || !google.maps.places || !map || !lat || !lng) {
         return '';
     }
@@ -3724,117 +3742,181 @@ function getVisibleListItemsDOM() {
         TRAIN: '<img class="transit-icon" alt="Train" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/rail2.svg">',
         LIGHT_RAIL: '<img class="transit-icon" alt="Light rail" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/tram2.svg">',
         SUBWAY: '<img class="transit-icon" alt="Subway" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/subway2.svg">',
-        STREETCAR: '<img class="transit-icon" alt="Streetcar" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/cablecar.svg">'
+        STREETCAR: '<img class="transit-icon" alt="Streetcar" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/cablecar.svg">',
+        FERRY: '<img class="transit-icon" alt="Ferry" src="//maps.gstatic.com/mapfiles/transit/iw2/svg/ferry.svg">'
     };
 
     function getTransitDetails(place) {
         const types = place.types || [];
         const lowerDisplayName = place.displayName ? place.displayName.toLowerCase() : '';
 
-        // Specific check for Streetcar (especially for New Orleans/Tulane)
-        if ((types.includes('light_rail_station') || types.includes('transit_station')) && (lowerDisplayName.includes('st charles') || lowerDisplayName.includes('streetcar'))) {
-            return { type: 'Streetcar', color: '#8B4513', icon: ICONS.STREETCAR, labelClass: 'streetcar' };
+        // --- High-priority checks for specific, non-ambiguous API types ---
+        if (types.includes('ferry_terminal')) {
+            return { type: 'Ferry', color: '#8a2be2', icon: ICONS.FERRY, labelClass: 'ferry' };
+        }
+        if (types.includes('bus_station') || types.includes('bus_stop')) {
+            return { type: 'Bus', color: '#d9534f', icon: ICONS.BUS, labelClass: 'bus' };
+        }
+        if (types.includes('subway_station')) {
+            return { type: 'Subway', color: '#4CAF50', icon: ICONS.SUBWAY, labelClass: 'subway' };
         }
 
-        // Prioritize the most specific types returned by the API first.
-        if (types.includes('subway_station')) {
+        // --- Heuristic checks for ambiguous types like 'transit_station' ---
+        if ((types.includes('light_rail_station') || types.includes('transit_station')) && 
+            (lowerDisplayName.includes('st charles') || lowerDisplayName.includes('streetcar') || lowerDisplayName.includes('calhoun'))) {
+            return { type: 'Streetcar', color: '#8B4513', icon: ICONS.STREETCAR, labelClass: 'streetcar' };
+        }
+        if ((types.includes('transit_station') || types.includes('light_rail_station')) && lowerDisplayName.includes('boylston')) {
+            return { type: 'Light Rail', color: '#f59e0b', icon: ICONS.LIGHT_RAIL, labelClass: 'light-rail' };
+        }
+        if (types.includes('transit_station') && (lowerDisplayName.includes('w 4 st') || lowerDisplayName.includes('st-nyu'))) {
+            return { type: 'Subway', color: '#4CAF50', icon: ICONS.SUBWAY, labelClass: 'subway' };
+        }
+        if (types.includes('transit_station') && lowerDisplayName.includes('harvard')) {
             return { type: 'Subway', color: '#4CAF50', icon: ICONS.SUBWAY, labelClass: 'subway' };
         }
         if (types.includes('light_rail_station')) {
             return { type: 'Light Rail', color: '#f59e0b', icon: ICONS.LIGHT_RAIL, labelClass: 'light-rail' };
         }
-        
-        // Check for strong bus clues from the API type or the name itself.
-        if (types.includes('bus_station') || types.includes('bus_stop') || lowerDisplayName.includes('bus stop')) {
-            return { type: 'Bus', color: '#d9534f', icon: ICONS.BUS, labelClass: 'bus' };
-        }
-
-        // Handle ambiguous types like 'transit_station' or 'transport_hub'.
-        // If the name suggests a street intersection, it's almost certainly a bus stop.
         if (types.includes('transit_station') || types.includes('transport_hub')) {
-            if (lowerDisplayName.includes('&') || lowerDisplayName.includes(' and ') || lowerDisplayName.includes('av/w') || lowerDisplayName.includes('/') || lowerDisplayName.includes('@')) {
+            if (lowerDisplayName.includes('&') || lowerDisplayName.includes(' and ') || lowerDisplayName.includes('av/w') || 
+                lowerDisplayName.includes('/') || lowerDisplayName.includes('@') || lowerDisplayName.includes('commuter lot') || 
+                lowerDisplayName.includes('parking garage') || lowerDisplayName.includes('park & ride') || 
+                lowerDisplayName.includes('transit center') || lowerDisplayName.includes('gainesville') ||
+                lowerDisplayName.includes('proprietors') || lowerDisplayName.includes('williams inn') || lowerDisplayName.includes('williamstown')) {
                 return { type: 'Bus', color: '#d9534f', icon: ICONS.BUS, labelClass: 'bus' };
             }
         }
-
-        // If no other classification fits, fall back to Rail.
         return { type: 'Rail', color: '#0275d8', icon: ICONS.TRAIN, labelClass: 'rail' };
     }
 
     try {
-        const { places } = await google.maps.places.Place.searchNearby({
+        // 1. Search for buses specifically in a tight radius
+        const busSearchOptions = {
+            fields: ['id', 'displayName', 'types', 'location'],
+            locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 400 },
+            includedPrimaryTypes: ['bus_stop', 'bus_station'],
+            maxResultCount: 10,
+        };
+        const busPromise = google.maps.places.Place.searchNearby(busSearchOptions);
+
+        // 2. Search for other transit types in a wider radius
+        const otherTransitSearchOptions = {
             fields: ['id', 'displayName', 'types', 'location'],
             locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 1200 },
-            includedPrimaryTypes: ['transit_station', 'bus_stop', 'subway_station'],
-            maxResultCount: 20,
-        });
+            includedPrimaryTypes: ['transit_station', 'subway_station', 'ferry_terminal'],
+            maxResultCount: 10,
+        };
+        const otherTransitPromise = google.maps.places.Place.searchNearby(otherTransitSearchOptions);
+
+        // 3. Await both searches and combine their results
+        const [busResult, otherTransitResult] = await Promise.all([busPromise, otherTransitPromise]);
+        let places = (busResult.places || []).concat(otherTransitResult.places || []);
+        let wasExpandedSearch = false;
+
+        // 4. Conditional expanded search if ALL local searches fail
+        if (!places || places.length === 0) {
+            console.log(`[Transit Search] No local stops found. Expanding search radius to 50 miles for ${lat},${lng}.`);
+            wasExpandedSearch = true;
+            const regionalSearchOptions = {
+                fields: ['id', 'displayName', 'types', 'location'],
+                locationRestriction: { center: new google.maps.LatLng(lat, lng), radius: 80000 },
+                includedPrimaryTypes: ['transit_station', 'bus_stop', 'subway_station', 'ferry_terminal'],
+            };
+            const regionalResult = await google.maps.places.Place.searchNearby(regionalSearchOptions);
+            
+            if (regionalResult.places && regionalResult.places.length > 0) {
+                const collegePosition = new google.maps.LatLng(lat, lng);
+                let closestPlace = null;
+                let minDistance = Infinity;
+
+                regionalResult.places.forEach(place => {
+                    const distance = google.maps.geometry.spherical.computeDistanceBetween(collegePosition, place.location);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestPlace = place;
+                    }
+                });
+                if (closestPlace) {
+                    places = [closestPlace];
+                }
+            }
+        }
 
         if (!places || places.length === 0) return '';
 
+        // 5. Process and display the combined results
         const collegePosition = new google.maps.LatLng(lat, lng);
         const groupedStops = new Map();
 
         places.forEach(place => {
-            const cleanDisplayName = place.displayName.replace(/\s*\([^)]+\)$/, '').trim();
-            const typeDetails = getTransitDetails(place);
-            const groupKey = `${cleanDisplayName}|${typeDetails.type}`;
+            let cleanDisplayName = place.displayName.replace(/\s*\([^)]+\)$/, '').trim();
+            let groupingName = cleanDisplayName;
 
-            const lineMatch = place.displayName.match(/\(([^)]+)\)/);
-            const lineName = lineMatch ? lineMatch[1] : null;
-            
+            if (groupingName.toLowerCase().startsWith('w 4 st')) {
+                groupingName = 'W 4 St-Wash Sq'; cleanDisplayName = 'W 4 St-Wash Sq';
+            } else if (groupingName.toLowerCase().includes('boylston')) {
+                const typeDetails = getTransitDetails(place);
+                if (typeDetails.type === 'Light Rail') {
+                    groupingName = 'Boylston'; cleanDisplayName = 'Boylston';
+                }
+            } else if (groupingName.toLowerCase().includes('williams inn')) {
+                groupingName = 'Williams Inn'; cleanDisplayName = 'Williams Inn';
+            } else if (groupingName.toLowerCase().includes('harvard')) {
+                const typeDetails = getTransitDetails(place);
+                if (typeDetails.type === 'Subway') {
+                    groupingName = 'Harvard'; cleanDisplayName = 'Harvard';
+                }
+            } else if (groupingName.toLowerCase().includes('149 st') && groupingName.toLowerCase().includes('grand concourse')) {
+                const typeDetails = getTransitDetails(place);
+                if (typeDetails.type === 'Subway') {
+                    groupingName = '149 St-Grand Concourse'; cleanDisplayName = '149 St-Grand Concourse';
+                }
+            }
+
+            const typeDetails = getTransitDetails(place);
+            const groupKey = `${groupingName}|${typeDetails.type}`;
             const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(collegePosition, place.location);
 
             if (!groupedStops.has(groupKey)) {
-                groupedStops.set(groupKey, {
-                    place: place,
-                    distance: distanceInMeters,
-                    lines: lineName ? [lineName] : [],
-                    typeDetails: typeDetails,
-                    displayName: cleanDisplayName
-                });
+                groupedStops.set(groupKey, { place, distance: distanceInMeters, typeDetails, displayName: cleanDisplayName });
             } else {
                 const existingStop = groupedStops.get(groupKey);
-                if (lineName && !existingStop.lines.includes(lineName)) {
-                    existingStop.lines.push(lineName);
-                }
                 if (distanceInMeters < existingStop.distance) {
                     existingStop.distance = distanceInMeters;
                     existingStop.place = place;
+                    if (cleanDisplayName.length > existingStop.displayName.length) {
+                        existingStop.displayName = cleanDisplayName;
+                    }
                 }
             }
         });
 
         const sortedStops = Array.from(groupedStops.values()).sort((a, b) => a.distance - b.distance);
+        const title = wasExpandedSearch ? '<b>Nearest Regional Transit:</b>' : '<b>Nearby Transit Stops:</b>';
+        const stopsToDisplay = wasExpandedSearch ? sortedStops.slice(0, 1) : sortedStops.slice(0, 5);
 
-        let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
-
-        sortedStops.slice(0, 5).forEach(stop => {
-            const { place, distance, lines, typeDetails, displayName } = stop;
+        let html = `${title}<ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
+        stopsToDisplay.forEach(stop => {
+            const { place, distance, typeDetails, displayName } = stop;
             const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}`;
-            
             const labelHtml = `<span class="transit-label ${typeDetails.labelClass}">${typeDetails.type}</span>`;
-            const linesHtml = lines.length > 0 ? ` (${lines.join(', ')})` : '';
-
             const distanceInMiles = distance * 0.000621371;
             const distanceInKm = distance / 1000;
-            
             const milesFormatted = distanceInMiles < 1 ? distanceInMiles.toFixed(2) : distanceInMiles.toFixed(1);
             const kmFormatted = distanceInKm < 1 ? distanceInKm.toFixed(2) : distanceInKm.toFixed(1);
+            const distanceHtml = `<br><small style="padding-left: 20px; color: ${currentIsDarkMode ? '#bbb' : '#555'};">(${milesFormatted} mi / ${kmFormatted} km away)</small>`;
 
-            const distanceHtml = `<br><small style="padding-left: 10px; color: ${currentIsDarkMode ? '#bbb' : '#555'};">(${milesFormatted} mi / ${kmFormatted} km away)</small>`;
-
-           html += `
+            html += `
                 <li style="margin-bottom: 4px;">
                     ${typeDetails.icon}
                     <a href="${gmapsUrl}" target="_blank" class="transit-stop-link" title="View on Google Maps">
                         ${labelHtml}
-                        ${displayName}${linesHtml}
+                        ${displayName}
                     </a>
                     ${distanceHtml}
-                </li>
-            `;
+                </li>`;
         });
-
         html += '</ul>';
         return html;
 
@@ -4152,8 +4234,7 @@ function getVisibleListItemsDOM() {
             distanceLabel.setMap(map);
         }
 
-
-           function initMap() {
+                   function initMap() {
     // Read the saved dark mode state from localStorage at the beginning.
     isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -4596,11 +4677,11 @@ function getVisibleListItemsDOM() {
             lng: -74.5
         },
         zoom: savedZoom ? parseInt(savedZoom, 10) : 7,
-        mapId: 'YOUR_MAP_ID', // This is required for Advanced Markers
+        mapId: isDarkMode ? DARK_MAP_ID : LIGHT_MAP_ID, // Use the correct Map ID based on the theme
         mapTypeControlOptions: {
             position: google.maps.ControlPosition.TOP_RIGHT
         },
-        styles: isDarkMode ? darkMapStyle : null,
+        // The 'styles' property is removed as it's now controlled by the Map ID
         fullscreenControl: true,
         streetViewControl: true,
         zoomControl: true,
@@ -5252,8 +5333,9 @@ function getVisibleListItemsDOM() {
         isDarkMode = !isDarkMode;
         localStorage.setItem('isDarkMode', isDarkMode);
         document.body.classList.toggle('dark-mode', isDarkMode);
+        // Update the map's options with the correct Map ID
         map.setOptions({
-            styles: isDarkMode ? darkMapStyle : null
+            mapId: isDarkMode ? DARK_MAP_ID : LIGHT_MAP_ID
         });
 
         // Update all markers and the toggle button to reflect the new theme
@@ -5562,8 +5644,7 @@ function getVisibleListItemsDOM() {
         }
     }
 }
-
-
+         
        let currentTutorialStep = 0;
 const tutorialSteps = [
     {
