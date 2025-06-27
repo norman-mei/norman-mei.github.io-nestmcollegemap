@@ -13,6 +13,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEST+m Senior College Destinations Map 🦅</title>
+
+
+    
     <style>
 
 body .panel-desktop-hidden ~ .hamburger {
@@ -67,10 +70,10 @@ body.dark-mode #zoomed-grad-class-info .grad-class-label {
 #zoomed-info-panel {
     position: fixed;
     right: 100px; 
-    top: 50%;
-    transform: translateY(-50%);
+    top: 10px; /* Moved up to give more room at the bottom */
+    transform: none; /* Remove vertical centering transform */
     width: 500px; 
-    max-height: 80vh;
+    max-height: calc(100vh - 100px); /* Adjusted for new top and to ensure bottom clearance */
     overflow-y: auto;
     background-color: rgba(255, 255, 255, 0.92);
     color: #333;
@@ -81,7 +84,8 @@ body.dark-mode #zoomed-grad-class-info .grad-class-label {
     font-size: 0.9em;
     line-height: 1.5;
     border: 1px solid #ccc;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s, right .25s ease, width .25s ease; 
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, right .25s ease, width .25s ease, top .25s ease; 
+    box-sizing: border-box; /* Ensures padding is included in height calculation */
 }
 #zoomed-bio-caption-content {
     margin-top: 0;
@@ -177,10 +181,11 @@ body.dark-mode #zoomed-info-panel {
         background-color: #444 !important;
     }
 
-    .honorary-suffix {
+        .honorary-suffix {
         font-weight: bold; font-style: normal; padding: 1px 4px; border-radius: 3px;
         background-color: rgba(0, 0, 0, 0.05); color: #333; margin-left: 4px;
         font-size: 0.9em; border: 1px solid rgba(0,0,0,0.1);
+        white-space: nowrap; /* Prevents the text from breaking onto a new line */
     }
     body.dark-mode .honorary-suffix {
         background-color: rgba(255, 255, 255, 0.1); color: #ddd;
@@ -545,7 +550,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     #major-summary-table td:last-child { text-align: center; }
     #major-summary-table td:nth-last-child(2) { text-align: center; }
 
-    #school-list-control { font-size: 0.9em; flex-grow: 1;  display: flex; flex-direction: column; overflow: hidden;  }
+    #school-list-control { font-size: 0.9em; flex-grow: 1;  display: flex; flex-direction: column;  }
     .list-header-container { overflow: visible;  margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; transition: border-color 0.3s; flex-shrink: 0;  }
    .list-header-container::after{
     content: "";
@@ -553,7 +558,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     clear: both;
 }
     .list-header-container h4 { float: left; margin-bottom: 0; border-bottom: none; padding-bottom: 0; line-height: 26px; }
-   #toggleSchoolListBtn, #toggleGalleryViewBtn, #toggleDistanceLineBtn {
+   #toggleSchoolListBtn, #toggleGalleryViewBtn, #toggleDistanceLineBtn, #checkAllSeniorsBtn, #uncheckAllSeniorsBtn, #resetPanelWidthBtn {
     font-size: 0.9em;
     padding: 7px 11px;
     border: 1px solid #bbb;
@@ -569,7 +574,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     justify-content: center;
     box-sizing: border-box;
 }
-#toggleSchoolListBtn:hover, #toggleGalleryViewBtn:hover, #toggleDistanceLineBtn:hover {
+#toggleSchoolListBtn:hover, #toggleGalleryViewBtn:hover, #toggleDistanceLineBtn:hover, #checkAllSeniorsBtn:hover, #uncheckAllSeniorsBtn:hover, #resetPanelWidthBtn:hover {
     background-color: rgba(230, 230, 230, 0.95);
 }
 
@@ -605,7 +610,7 @@ body:not(.panel-desktop-hidden) .hamburger {
 
     .school-list-collapsible-content { flex-grow: 1; }
     .school-list-collapsible-content.hidden { display: none; }
-    .list-content { overflow-y: auto; flex-grow: 1;  }
+    .list-content { flex-grow: 1;  }
     .list-content ul { list-style: none; padding: 0; margin: 0 0 10px 0; }
     .list-content li {
     padding: 6px 3px; 
@@ -618,8 +623,10 @@ body:not(.panel-desktop-hidden) .hamburger {
 
     line-height: 1.6; 
 }
-    .list-content li.list-item-highlight, .list-content li.current-selection-highlight { background-color: #d6eaff;  }
-    body.dark-mode .list-content li.list-item-highlight, body.dark-mode .list-content li.current-selection-highlight { background-color: #2a3950; }
+        .list-content li.list-item-highlight { background-color: #d6eaff; }
+    .list-content li.current-selection-highlight { background-color: #d4edda; } /* Light green for selection */
+    body.dark-mode .list-content li.list-item-highlight { background-color: #2a3950; }
+    body.dark-mode .list-content li.current-selection-highlight { background-color: #2e4b32; } /* Dark green for selection */
     .list-content li input[type="checkbox"] { margin-right: 6px; flex-shrink: 0; cursor: pointer; vertical-align: middle; }
     .list-content li span.school-name { flex-grow: 1; vertical-align: middle; line-height: 1.4;  }
     .list-content a { color: #007bff; text-decoration: none; }
@@ -629,15 +636,15 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #no-results-message { color: #aaa; }
 
     .list-content.gallery-view ul { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 10px; padding-top: 5px; }
-    .list-content.gallery-view li:not(.grad-class-separator) {
-        flex-direction: column; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 4px;
-        flex-grow: 0; flex-shrink: 1; flex-basis: calc((100% - 2 * 10px) / 3); min-width: 150px;
-        box-sizing: border-box; margin-bottom: 10px; position: relative; height: 180px; justify-content: flex-start;
-    }
-    body.dark-mode .list-content.gallery-view li:not(.grad-class-separator) { border-color: #444; }
-    .list-content.gallery-view li:not(.grad-class-separator) > input[type="checkbox"] {
-        position: absolute; top: 4px; right: 4px; z-index: 2; margin: 0;
-    }
+    .list-content.gallery-view li[data-original-index] {
+    flex-direction: column; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 4px;
+    flex-grow: 0; flex-shrink: 1; flex-basis: calc((100% - 2 * 10px) / 3); min-width: 150px;
+    box-sizing: border-box; margin-bottom: 10px; position: relative; height: 180px; justify-content: flex-start;
+}
+body.dark-mode .list-content.gallery-view li[data-original-index] { border-color: #444; }
+.list-content.gallery-view li[data-original-index] > input[type="checkbox"] {
+    position: absolute; top: 4px; right: 4px; z-index: 2; margin: 0;
+}
     .gallery-grad-class-overlay {
         position: absolute; top: 4px; left: 0; right: 0; text-align: center; font-size: 1.6em; font-weight: bold;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3), -1px -1px 2px rgba(0,0,0,0.3);
@@ -767,12 +774,12 @@ body:not(.panel-desktop-hidden) .hamburger {
     .student-sublist { list-style: none; padding-left: 15px; margin: 0; }
     .list-content li.college-group-header:hover { background-color: #e9ecef; }
     body.dark-mode .list-content li.college-group-header:hover { background-color: #2c2c2c; }
-    .list-content.gallery-view .college-group-header,
-    .list-content.gallery-view .student-sublist { display: none !important; }
-    .list-content.gallery-view ul > li:not(.grad-class-separator):not(.college-group-header) { display: flex !important; }
+    
     .student-sublist li { padding: 3px 0; }
-    .student-sublist li.list-item-highlight, .student-sublist li.current-selection-highlight { background-color: #d6eaff; }
-    body.dark-mode .student-sublist li.list-item-highlight, body.dark-mode .student-sublist li.current-selection-highlight { background-color: #2a3950; }
+      .student-sublist li.list-item-highlight { background-color: #d6eaff; }
+    .student-sublist li.current-selection-highlight { background-color: #d4edda; }
+    body.dark-mode .student-sublist li.list-item-highlight { background-color: #2a3950; }
+    body.dark-mode .student-sublist li.current-selection-highlight { background-color: #2e4b32; }
 
     body.dark-mode { background-color: #121212; color: #e0e0e0; }
     body.dark-mode #description-control { background-color: purple; color: white; }
@@ -790,7 +797,7 @@ body:not(.panel-desktop-hidden) .hamburger {
     body.dark-mode #major-summary-table th, body.dark-mode #major-summary-table td { border-color: #555; }
     body.dark-mode #major-summary-table th { background-color: #2a2a2a; }
     body.dark-mode .list-item-major { color: #bbb; }
-    body.dark-mode #toggleSchoolListBtn, body.dark-mode #toggleGalleryViewBtn, body.dark-mode #toggleDistanceLineBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
+    body.dark-mode #toggleSchoolListBtn, body.dark-mode #toggleGalleryViewBtn, body.dark-mode #toggleDistanceLineBtn, body.dark-mode #resetPanelWidthBtn { background-color: #444; border-color: #666; color: #e0e0e0; }
     body.dark-mode #senior-photo-popup { background-color: #282828; border-color: #555; color: #e0e0e0;}
     body.dark-mode #schoolSearchInput { background-color: #333; border-color: #555; color: #e0e0e0; }
     body.dark-mode #searchSuggestions { background-color: #333; border-color: #555; color: #e0e0e0; }
@@ -952,6 +959,108 @@ body:not(.panel-desktop-hidden) .hamburger {
         border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         padding: 20px; z-index: 3000; display: none; flex-direction: column;
     }
+
+        /* --- Update Log Styles --- */
+    #showUpdateLogBtn {
+        font-size: 0.9em;
+        padding: 7px 11px;
+        margin: 5px;
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        background-color: rgba(245, 245, 245, 0.9);
+        color: #222;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        line-height: 1.5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    body.dark-mode #map-options-control #showUpdateLogBtn {
+        background-color: #3e3e3e;
+        border-color: #666;
+        color: #e0e0e0;
+    }
+     body.dark-mode #map-options-control #showUpdateLogBtn:hover {
+        background-color: #555;
+    }
+
+    #update-log-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        z-index: 2999;
+    }
+    #update-log-popup {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 80%; max-width: 700px; max-height: 80vh; background-color: #ffffff;
+        border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        padding: 20px; z-index: 3000; display: flex; flex-direction: column;
+    }
+    #update-log-popup h2 { margin-top: 0; margin-bottom: 15px; text-align: center; font-size: 1.5em; color: #333; }
+    #close-update-log-popup { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+    #update-log-content { overflow-y: auto; flex-grow: 1; line-height: 1.6; padding-right: 10px; }
+    
+    #update-log-content .release {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    #update-log-content .release:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    #update-log-content .release-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+    #update-log-content .release-header h4 {
+        margin: 0;
+        font-size: 1.2em;
+        color: #333;
+    }
+    #update-log-content .release-header .release-date {
+        font-size: 0.9em;
+        color: #777;
+        font-style: italic;
+        white-space: nowrap;
+    }
+    #update-log-content .release-body {
+        font-size: 0.95em;
+        color: #444;
+    }
+    #update-log-content .release-body a {
+        color: #007bff;
+    }
+    
+    /* --- FIX: Styles for properly formatted list items --- */
+    #update-log-content .release-list-item {
+        padding-left: 20px; /* Indent the text */
+        position: relative;
+        margin-bottom: 5px; /* Space between items */
+    }
+    #update-log-content .release-list-item::before {
+        content: '•'; /* Add the bullet point using a pseudo-element */
+        position: absolute;
+        left: 5px; /* Position the bullet */
+        font-weight: bold;
+    }
+    /* --- End Fix --- */
+
+    body.dark-mode #update-log-popup { background-color: #282c34; border-color: #555; color: #e0e0e0; }
+    body.dark-mode #update-log-popup h2 { color: #e8e8e8; }
+    body.dark-mode #update-log-content .release { border-bottom-color: #444; }
+    body.dark-mode #update-log-content .release-header h4 { color: #bbbec3; }
+    body.dark-mode #update-log-content .release-header .release-date { color: #999; }
+    body.dark-mode #update-log-content .release-body { color: #afb3b8; }
+    body.dark-mode #update-log-content .release-body a { color: #90caf9; }
+
     #faq-popup h2 { margin-top: 0; margin-bottom: 15px; text-align: center; font-size: 1.5em; color: #333; }
     #close-faq-popup { position: absolute; top: 10px; right: 15px; font-size: 24px;  }
     #faq-content { overflow-y: auto; flex-grow: 1; line-height: 1.6; padding-right: 10px; }
@@ -1226,6 +1335,16 @@ body.dark-mode #tutorial-description-box.arrow-right::before { border-left-color
     flex-shrink: 0; /* Prevents the element from shrinking */
     white-space: nowrap; /* Ensures the text stays on one line */
 }
+    #checkAllGradClassesBtn, #uncheckAllGradClassesBtn {
+        font-size: 0.9em;
+        padding: 7px 11px;
+        border-radius: 4px;
+        line-height: 1.5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
 
 /* Dark Mode Tutorial */
 body.dark-mode #tutorial-description-box {
@@ -1277,12 +1396,17 @@ body.dark-mode #tutorial-step-counter {
                 <span><b>NEST+m Senior College Destinations Map</b> 🦅</span>
             </div>
 
-                 <div id="credits">
+                                               <div id="credits">
     <span>Created by: </span>
-    <a href="https://github.com/norman-mei" target="_blank" title="GitHub Profile">
+    <a id="creator-name-link" href="https://github.com/norman-mei" target="_blank" title="GitHub Profile">
         Norman Mei ('25) 
         <svg height="18" viewBox="0 0 16 16" version="1.1" width="18" aria-hidden="true" style="margin-left: 4px;"> 
             <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+        </svg>
+    </a>
+    <a href="https://www.linkedin.com/in/norman-mei-571346350/" target="_blank" title="LinkedIn Profile" style="vertical-align: middle;">
+        <svg height="18" width="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.776 13.019H3.561V9h3.552v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"></path>
         </svg>
     </a>
     <a href="https://www.instagram.com/normanmei_/" target="_blank" title="Instagram Profile" style="vertical-align: middle;"> 
@@ -1293,7 +1417,7 @@ body.dark-mode #tutorial-step-counter {
     <button id="show-tutorial-btn" title="Show Tutorial">💡 Show Tutorial</button>
 </div>
 
-            <div id="map-options-control" class="map-control">
+                        <div id="map-options-control" class="map-control">
                 <button id="darkModeToggle" class="dark-mode-toggle-control" title="Toggle Dark Mode">🌙 Dark Mode</button>
                 <button id="toggleTransitBtn" title="Show Transit Layer">🚇 Show Transit</button>
                 <button id="toggleSatelliteViewBtn" title="Switch to Satellite View">🛰️ Satellite View</button>
@@ -1301,14 +1425,15 @@ body.dark-mode #tutorial-step-counter {
                 <button id="zoomToNestmBtn" title="Zoom to NEST+m">🏠 Zoom Back to Home</button>
                 <button id="clearAllFiltersBtn" title="Clear all active filters and search">🧹 Clear All Filters</button>
                 <button id="showFaqBtn" title="Show Frequently Asked Questions">❓ FAQ</button>
+                <button id="showUpdateLogBtn" title="Show Update Log">📜 Update Log</button>
                 <button id="toggleNestmBtn" title="Show/Hide NEST+m Marker">🦅 Show NEST+m</button>
             </div>
             <div id="filter-control" class="map-control">
                  <h4 class="filter-header">Filter by Graduating Class</h4>
                  <div class="control-content">
-                     <div class="filter-control-buttons">
-                         <button id="checkAllGradClassesBtn" title="Check all graduating class filters">Check All</button>
-                         <button id="uncheckAllGradClassesBtn" title="Uncheck all graduating class filters">Uncheck All</button>
+                                         <div class="filter-control-buttons">
+                         <button id="checkAllGradClassesBtn" title="Check all graduating class filters">✅ Check All</button>
+                         <button id="uncheckAllGradClassesBtn" title="Uncheck all graduating class filters">⬜ Uncheck All</button>
                      </div>
                      <div id="instagram-links-control">
                         <a href="https://www.instagram.com/nestmdecisions2021/" target="_blank" class="instagram-link-button" title="Instagram '21 Decisions">
@@ -1463,8 +1588,10 @@ body.dark-mode #tutorial-step-counter {
 </div>
                    <div class="list-action-row">
     <button id="toggleGalleryViewBtn" title="Toggle Gallery View in List">🖼️ Toggle Gallery View</button>
-    <button id="toggleDistanceLineBtn" title="Show/Hide Distance to NEST+m">📏 Show Distance</button>
     <button id="toggleSchoolListBtn" title="Show/Hide List">🙈 Hide List</button>
+    <button id="resetPanelWidthBtn" title="Reset Panel Width to Default">↔️ Reset Width</button>
+    <button id="checkAllSeniorsBtn" title="Check all currently visible seniors">✅ Check All</button>
+    <button id="uncheckAllSeniorsBtn" title="Uncheck all currently visible seniors">⬜ Uncheck All</button>
     <div id="schoolSearchContainer">
         <input type="text" id="schoolSearchInput" placeholder="Search seniors or colleges..." autocomplete="off">
         <div id="searchSuggestions"></div>
@@ -1591,7 +1718,7 @@ body.dark-mode #tutorial-step-counter {
     </div>
 
                   <script>
-
+                
         let map;
         let PinElement, AdvancedMarkerElement;
 
@@ -1612,19 +1739,17 @@ body.dark-mode #tutorial-step-counter {
           // then attach your AdvancedMarkerElements…
         }
 
-        const GOOGLE_MAPS_API_KEY = (function(){
-            const scr = document.querySelector('script[src*="maps.googleapis.com"]');
-            const m = scr?.src.match(/key=([^&]+)/);
-            return m ? m[1] : "";
-        })();
+                let GOOGLE_MAPS_API_KEY;
         // Add this with your other global variables
         let renderChartCallCount = 0;
         const RENDER_CHART_CALL_LIMIT = 20; // A safe limit to detect runaway loops
         let tutorialVisibleElements = [];
-        let infowindow;
+              let infowindow;
+        let selectedStudentInInfoWindow = null;
         let isDarkMode = false;
         let allMarkers = []; 
         let gradClassFilterState = {};
+        let timeFormatPreference = '24h';
         let schoolsSelectedForZoom = new Set();
         let zoomedGradClassInfoDiv, zoomedGradClassValueSpan; 
      let panelJustToggledOpen = false;
@@ -1632,8 +1757,8 @@ body.dark-mode #tutorial-step-counter {
         let seniorPhotoPopup, seniorPopupImage, seniorPopupCaption, closeSeniorPhotoBtn, zoomExitNote, photoZoomOverlay;
         let prevSeniorPhotoBtn, nextSeniorPhotoBtn; 
         let faqPopup, faqOverlay;
-        let currentlyZoomedSeniorOriginalIndex = null; 
-
+                let currentlyZoomedSeniorOriginalIndex = null; 
+        let hiddenSeniorIndices = new Set();
 let panelToggleTimeout = null;
       let transitLayer;
            let currentPrimarySortTarget = 'students'; 
@@ -1641,7 +1766,6 @@ let currentCollegeSortValue = 'name_asc';
 let currentStudentSortValue = 'grad_first'; 
         let isSatelliteViewEnabled = false;
         let transitLayerEnabled = false;
-        let isDistanceLineEnabled = false;
         let locationFocusFilterState = {};
         let majorAreaFilterState = {}; 
          let stateCountryFilterState = {};
@@ -1652,22 +1776,62 @@ let currentStudentSortValue = 'grad_first';
 
         let majorAreaChartInstance, locationFocusChartInstance, popularCollegesChartInstance;
 
-       
+       function updateTimeFormat(newFormat) {
+            timeFormatPreference = newFormat;
 
+            // Check if an infowindow is open and find its anchor marker
+            if (infowindow && infowindow.getMap() && infowindow.anchor) {
+                const anchorMarker = infowindow.anchor;
+                const wasSticky = infowindow.isSticky;
+
+                // Find the data associated with the marker
+                let markerData;
+                let originalIndex = -1;
+
+                if (anchorMarker === nestmMarker) {
+                    markerData = NEST_M_INFO;
+                } else {
+                    const markerInfo = allMarkers.find(mInfo => mInfo && mInfo.marker === anchorMarker);
+                    if (markerInfo) {
+                        markerData = markerInfo.school;
+                        originalIndex = markerInfo.school.originalIndex;
+                    }
+                }
+
+                if (markerData) {
+                    // Re-open the infowindow to refresh its content with the new format
+                    setTimeout(() => {
+                        openCollegeInfoWindow(anchorMarker, markerData, originalIndex, wasSticky);
+                    }, 0);
+                }
+            }
+        }
+
+const GITHUB_SVG_PATH = "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z";
 const LINKEDIN_SVG_PATH = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.776 13.019H3.561V9h3.552v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z";
-        const INSTAGRAM_SVG_PATH = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z";
+const INSTAGRAM_SVG_PATH = "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4s1.791-4 4-4 4 1.79 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z";
 
-        function createSocialLinkSVG(type, size = 16, currentIsDarkMode, forZoomedPanel = false) {
-            const path = type === 'linkedin' ? LINKEDIN_SVG_PATH : INSTAGRAM_SVG_PATH;
+            function createSocialLinkSVG(type, size = 16, currentIsDarkMode, forZoomedPanel = false) {
+            let path;
             let fillColor;
+            const marginStyle = forZoomedPanel ? 'margin: 5px;' : 'margin-left: 4px; margin-right: 1px;';
+            
             if (type === 'linkedin') {
+                path = LINKEDIN_SVG_PATH;
                 fillColor = currentIsDarkMode ? (forZoomedPanel ? '#88C5F6' : '#70B4F0') : (forZoomedPanel ? '#0A66C2' : '#0077B5');
-            } else { 
+            } else if (type === 'github') {
+                path = GITHUB_SVG_PATH;
+                const viewBox = '0 0 16 16'; // GitHub's SVG has a different viewBox
+                fillColor = currentIsDarkMode ? '#e0e0e0' : '#333';
+                 return `<svg width="${size}" height="${size}" viewBox="${viewBox}" fill="${fillColor}" style="vertical-align: middle; ${marginStyle}"><path fill-rule="evenodd" d="${path}"></path></svg>`;
+            } else { // Default to Instagram
+                path = INSTAGRAM_SVG_PATH;
                 fillColor = currentIsDarkMode ? (forZoomedPanel ? '#F56040' :'#E1306C') : (forZoomedPanel ? '#E1306C' : '#C13584');
             }
-            const marginStyle = forZoomedPanel ? 'margin: 5px;' : 'margin-left: 4px; margin-right: 1px;'; 
+            
             return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fillColor}" style="vertical-align: middle; ${marginStyle}"><path d="${path}"></path></svg>`;
         }
+      
         const CHART_COLORS_LIST = [
     '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
     '#8A2BE2', '#5F9EA0', '#D2691E', '#FF7F50', '#6495ED', '#DC143C',
@@ -1835,30 +1999,23 @@ function getNextChartColor() {
             return { isCampusPublic, locationFocus };
         }
 
-        function normalizeForFilename(str) {
+                                  function normalizeForFilename(str) {
             if (!str) return '';
             return str
                 .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[èé]/g, 'e') // Specifically normalize e-accents for names like Salomé
                 .replace(/\s+/g, '_')
-                .replace(/[^a-z0-9_]/g, '');
+                .replace(/[()']/g, '');
         }
 
-        function getFirstName(seniorName) {
+                function getFirstName(seniorName) {
             if (!seniorName) return "";
-            return seniorName.split(' ')[0];
+            return seniorName.trim().split(/\s+/)[0];
         }
 
         function getLastName(seniorName) {
             if (!seniorName) return "";
-            const parts = seniorName.split(' ');
-            return parts.length > 1 ? parts[parts.length - 1] : parts[0];
-        }
-
-                function getLastName(seniorName) {
-            if (!seniorName) return "";
-            const parts = seniorName.split(' ');
+            const parts = seniorName.trim().split(/\s+/);
             return parts.length > 1 ? parts[parts.length - 1] : parts[0];
         }
 
@@ -2243,7 +2400,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
         
 
-       function parseRawData(jsonData) { 
+                  function parseRawData(jsonData) { 
             if (!Array.isArray(jsonData)) {
                 console.error("Error: Input to parseRawData is not a JSON array.", jsonData);
                 return [];
@@ -2264,9 +2421,10 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                 const linkedInUrl = (entry.linkedin && entry.linkedin.trim() !== "") ? entry.linkedin.trim() : null;
                 const instagramUrl = (entry.instagram && entry.instagram.trim() !== "") ? entry.instagram.trim() : null;
+                const githubUrl = (entry.github && entry.github.trim() !== "") ? entry.github.trim() : null;
                 const bioCaption = (entry.congratsCaption && entry.congratsCaption.trim() !== "") ? entry.congratsCaption.trim() : null;
 
-                const originalFirstName = seniorName.split(' ')[0];
+                const originalFirstName = seniorName.trim().split(/\s+/)[0];
 
                 rawEntries.push({
                     seniorName,
@@ -2276,6 +2434,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     originalFirstName,
                     linkedInUrl,
                     instagramUrl,
+                    githubUrl,
                     bioCaption
                 });
             }
@@ -2287,18 +2446,18 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     firstNameCountsByClass.set(entry.gradClass, new Map());
                 }
                 const classCounts = firstNameCountsByClass.get(entry.gradClass);
-                const normalizedFirstNameForCount = normalizeForFilename(entry.originalFirstName.split(' ')[0]);
+                const normalizedFirstNameForCount = normalizeForFilename(entry.originalFirstName);
                 classCounts.set(normalizedFirstNameForCount, (classCounts.get(normalizedFirstNameForCount) || 0) + 1);
             }
 
             const choices = [];
             for (const entry of rawEntries) {
-                const { seniorName, collegeNameRaw, major, gradClass, originalFirstName, linkedInUrl, instagramUrl, bioCaption } = entry;
+                const { seniorName, collegeNameRaw, major, gradClass, originalFirstName, linkedInUrl, instagramUrl, githubUrl, bioCaption } = entry;
 
                 const photoYear = gradClass.replace("'", ""); 
                 let photoFilename;
 
-                const normalizedFirstNameForLookup = normalizeForFilename(originalFirstName.split(' ')[0]);
+                const normalizedFirstNameForLookup = normalizeForFilename(originalFirstName);
 
                 const classCountsMap = firstNameCountsByClass.get(gradClass);
                 if (classCountsMap && classCountsMap.get(normalizedFirstNameForLookup) > 1) {
@@ -2343,11 +2502,13 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     seniorPhotoUrlPng: `${seniorPhotoUrlBase}.png`,
                     linkedInUrl: linkedInUrl,
                     instagramUrl: instagramUrl,
+                    githubUrl: githubUrl,
                     bioCaption: bioCaption,
                 });
             }
             return choices;
         }
+
 
         function updateStatsTable() {
             const stats = {
@@ -2482,7 +2643,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
         }
 
-     function updateMarkersVisibility() {
+         function updateMarkersVisibility() {
             if (!allMarkers || !allData) return;
 
             let visibleCount = 0; 
@@ -2536,6 +2697,7 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
                     meetsStateCountryCriteria = allStateCountryEffectivelyChecked || (stateCountryFilterState[schoolSCKey] === true);
                 }
 
+                let passesGlobalFilters;
                 if (school.collegeName === "Undecided") {
                     const undecidedMajorAreaKey = "Undecided/Other";
                     let passesUndecidedMajorAreaLogic;
@@ -2545,10 +2707,17 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
 
                         passesUndecidedMajorAreaLogic = allMajorAreasEffectivelyChecked || (majorAreaFilterState[undecidedMajorAreaKey] === true);
                     }
-                    school.isVisible = meetsGradClassCriteria && passesUndecidedMajorAreaLogic && meetsLocationFocusCriteria && meetsStateCountryCriteria;
+                    passesGlobalFilters = meetsGradClassCriteria && passesUndecidedMajorAreaLogic && meetsLocationFocusCriteria && meetsStateCountryCriteria;
                 } else {
-                    school.isVisible = meetsGradClassCriteria && meetsLocationFocusCriteria && meetsMajorAreaCriteria && meetsStateCountryCriteria;
+                    passesGlobalFilters = meetsGradClassCriteria && meetsLocationFocusCriteria && meetsMajorAreaCriteria && meetsStateCountryCriteria;
                 }
+
+                // *** FIX: Add a new property to store the global filter result ***
+                school.passesGlobalFilters = passesGlobalFilters;
+
+                // Combine global filters with the individual visibility state for the map marker
+                school.isVisible = school.isIndividuallyVisible && passesGlobalFilters;
+
 
                 if (school.isVisible) {
                     visibleCount++;
@@ -2600,6 +2769,8 @@ function renderPopularCollegesTrendChart(data, years, popularCollegesList, curre
             }
         }
 
+
+
 function getVisibleListItemsDOM() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
             if (!listUl) return [];
@@ -2627,7 +2798,7 @@ function getVisibleListItemsDOM() {
             }
         }
 
-                                         function filterSchoolList() {
+                                                 function filterSchoolList() {
             const searchTerm = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
             const listContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
             if (!listContentDiv || !listContentDiv.querySelector('ul')) return;
@@ -2646,7 +2817,7 @@ function getVisibleListItemsDOM() {
                     return;
                 }
 
-                const meetsGlobalFilters = schoolData.isVisible;
+                const meetsGlobalFilters = schoolData.passesGlobalFilters;
                 let matchesSearch = searchTerm === '';
                 if (!matchesSearch && meetsGlobalFilters) {
                     const itemTextContent = item.textContent.toLowerCase();
@@ -2657,7 +2828,18 @@ function getVisibleListItemsDOM() {
                 if (meetsGlobalFilters && matchesSearch) {
                     item.style.display = isGalleryViewEnabled ? 'flex' : 'flex';
                     hasVisibleItemsOverall = true;
-                    // If an item matches the search, ensure its parent group is expanded.
+                    
+                    // *** FIX: Apply a visual style instead of hiding the item ***
+                    if (!schoolData.isIndividuallyVisible) {
+                        item.style.opacity = '0.5';
+                        const galleryPhoto = item.querySelector('.gallery-photo');
+                        if (galleryPhoto) galleryPhoto.style.filter = 'grayscale(80%)';
+                    } else {
+                        item.style.opacity = '1';
+                        const galleryPhoto = item.querySelector('.gallery-photo');
+                        if (galleryPhoto) galleryPhoto.style.filter = '';
+                    }
+
                     if (searchTerm !== '') {
                         ensureListItemVisible(item);
                     }
@@ -2680,11 +2862,8 @@ function getVisibleListItemsDOM() {
             updateCurrentSelectionHighlight();
         }
 
-       
-
-                     function showSeniorPhotoPopup(listItem, schoolData) {
+                           function showSeniorPhotoPopup(listItem, schoolData) {
          if (!seniorPhotoPopup || !seniorPopupImage || !seniorPopupCaption) {
-             console.error("[DEBUG] Senior photo popup elements not initialized properly.");
              return;
          }
          currentlyZoomedSeniorOriginalIndex = schoolData.originalIndex;
@@ -2835,7 +3014,53 @@ function getVisibleListItemsDOM() {
               seniorPhotoPopup.style.top = `${popupTop}px`;
          }
          seniorPhotoPopup.classList.add('visible');
+
+        // *** FIX START: Add overlap detection and correction ***
+        // Use a small delay to allow the info window to render before checking its position.
+        setTimeout(() => {
+            // Ensure the popup is still meant to be visible for this specific senior.
+            if (!seniorPhotoPopup.classList.contains('visible') || currentlyZoomedSeniorOriginalIndex !== schoolData.originalIndex) {
+                return;
+            }
+
+            // Check if an info window is open on the map.
+            if (infowindow && infowindow.getMap()) {
+                const infoWindowElement = document.querySelector('.gm-style-iw-c');
+                
+                // Ensure the info window element is actually in the DOM and visible.
+                if (infoWindowElement && infoWindowElement.offsetParent) {
+                    const iwRect = infoWindowElement.getBoundingClientRect();
+                    const popupRect = seniorPhotoPopup.getBoundingClientRect();
+
+                    // Check for overlap.
+                    const overlap = !(popupRect.right < iwRect.left || 
+                                      popupRect.left > iwRect.right || 
+                                      popupRect.bottom < iwRect.top || 
+                                      popupRect.top > iwRect.bottom);
+
+                    if (overlap) {
+                        // Overlap detected. Attempt to reposition the photo popup vertically.
+                        const margin = 10; // 10px margin from the info window.
+                        let newTop;
+
+                        // Priority 1: Can we place it below the info window without going off-screen?
+                        if (iwRect.bottom + margin + popupRect.height < window.innerHeight) {
+                            newTop = iwRect.bottom + margin;
+                            seniorPhotoPopup.style.top = `${newTop}px`;
+                        } 
+                        // Priority 2: If not, can we place it above?
+                        else if (iwRect.top - margin - popupRect.height > 0) {
+                            newTop = iwRect.top - popupRect.height - margin;
+                            seniorPhotoPopup.style.top = `${newTop}px`;
+                        }
+                        // If neither works, the initial position is kept as a fallback.
+                    }
+                }
+            }
+        }, 100); // 100ms delay is usually sufficient for the info window to render.
+        // *** FIX END ***
      }
+
 
                                function exitZoomMode(hideSmallPopupAfter = true) {
             if (!seniorPhotoPopup || !seniorPopupImage) return;
@@ -2897,17 +3122,19 @@ function getVisibleListItemsDOM() {
             if (rawLower.includes("(macaulay)")) suffixHtml = ' <span class="honorary-suffix">Macaulay</span>';
             else if (rawLower.includes("(questbridge)")) suffixHtml = ' <span class="honorary-suffix">QuestBridge</span>';
             else if (rawLower.includes("(posse)")) suffixHtml = ' <span class="honorary-suffix">POSSE</span>';
+            else if (rawLower.includes("(dean scholars)")) suffixHtml = ' <span class="honorary-suffix">Dean Scholars</span>';
             return suffixHtml;
         }
 
-                          function handleListItemInteraction(event, originalIndex, isHover) {
+                       function handleListItemInteraction(event, originalIndex, isHover, skipInfoWindowLogic = false) {
              if (event && event.target && event.target.type === 'checkbox') return;
-             if (originalIndex === undefined || !allData[originalIndex]) {
-                console.warn("Invalid originalIndex or data for list item interaction:", originalIndex);
+
+             const schoolData = allData.find(s => s.originalIndex === originalIndex);
+
+             if (originalIndex === undefined || !schoolData) {
                 return;
              }
-
-             const schoolData = allData[originalIndex]; 
+             
              const markerInfo = allMarkers[originalIndex];
 
              if (!schoolData.isVisible) {
@@ -2928,23 +3155,23 @@ function getVisibleListItemsDOM() {
                     if (position && map) {
                         map.panTo(position);
                     }
-                    openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex);
-                    showDistanceToNestm(schoolData);
+                    openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex, false); // Hovers are not sticky
                 }
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
-             } else { 
-                if (infowindow && infowindow.getMap()) {
-                    infowindow.close();
-                }
-
-                if (markerInfo && markerInfo.marker && (schoolData.lat !== 0 || schoolData.lng !== 0)) {
-                    const position = markerInfo.marker.position;
-                    if (position && map) {
-                        map.panTo(position);
-                        map.setZoom(Math.max(map.getZoom(), 12));
+             } else { // This is a click
+                if (!skipInfoWindowLogic) {
+                    if (infowindow && infowindow.getMap()) {
+                        infowindow.close();
                     }
-                    openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex);
-                    showDistanceToNestm(schoolData);
+
+                    if (markerInfo && markerInfo.marker && (schoolData.lat !== 0 || schoolData.lng !== 0)) {
+                        const position = markerInfo.marker.position;
+                        if (position && map) {
+                            map.panTo(position);
+                            map.setZoom(Math.max(map.getZoom(), 12));
+                        }
+                        openCollegeInfoWindow(markerInfo.marker, schoolData, originalIndex, true); // Clicks are sticky
+                    }
                 }
 
                 showSeniorPhotoPopup(currentTargetListItem, schoolData);
@@ -2956,7 +3183,8 @@ function getVisibleListItemsDOM() {
              }
         }
 
-                          function navigateToSeniorPhoto(direction) {
+
+                              function navigateToSeniorPhoto(direction) {
     const visibleListItems = getVisibleListItemsDOM();
     if (visibleListItems.length === 0) {
         return;
@@ -2983,7 +3211,7 @@ function getVisibleListItemsDOM() {
     const newListItem = visibleListItems[newIndexInVisibleList];
     if (newListItem) {
         const newOriginalIndex = parseInt(newListItem.dataset.originalIndex);
-        const newSeniorData = allData[newOriginalIndex];
+        const newSeniorData = allData.find(s => s.originalIndex === newOriginalIndex);
 
         if (newSeniorData) {
             // This call handles updating the photo, caption, and info window
@@ -2997,11 +3225,14 @@ function getVisibleListItemsDOM() {
             newListItem.focus();
 
             // This call handles updating the marker on the map
-            if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
+            if (activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== newOriginalIndex && allMarkers[activeHoverMarkerIndex]?.marker) {
+                const oldSeniorData = allData.find(s => s.originalIndex === activeHoverMarkerIndex);
+                if (oldSeniorData) {
+                    updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, oldSeniorData, false, isDarkMode);
+                }
             }
-            if (allMarkers[newOriginalIndex]?.marker && allData[newOriginalIndex]) {
-                 updateMarkerAppearance(allMarkers[newOriginalIndex].marker, allData[newOriginalIndex], true, isDarkMode);
+            if (allMarkers[newOriginalIndex]?.marker) {
+                 updateMarkerAppearance(allMarkers[newOriginalIndex].marker, newSeniorData, true, isDarkMode);
                  activeHoverMarkerIndex = newOriginalIndex;
             }
         }
@@ -3132,7 +3363,7 @@ function getVisibleListItemsDOM() {
     }
 }
 
-                       function handleSearchInput() {
+                           function handleSearchInput() {
              const input = document.getElementById('schoolSearchInput');
              const suggestionsDiv = document.getElementById('searchSuggestions');
              const searchTerm = input.value.toLowerCase().trim();
@@ -3182,7 +3413,6 @@ function getVisibleListItemsDOM() {
                              }
                              openCollegeInfoWindow(markerInfo.marker, schoolData, clickedOriginalIndex, true); // Make it sticky
                              showSeniorPhotoPopup(listItem, schoolData); // Explicitly show photo popup
-                             showDistanceToNestm(schoolData);
 
                              // Scroll list into view
                              if (listItem) {
@@ -3267,206 +3497,201 @@ function getVisibleListItemsDOM() {
         updateCurrentSelectionHighlight();
     }
 
-           function rebuildSchoolListHTML() {
-        const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
-        if (!schoolListCollapsibleContentDiv) {
-            console.error("School list collapsible content div not found.");
-            return;
-        }
-        let schoolListUl = schoolListCollapsibleContentDiv.querySelector('ul');
-        const noResultsMessage = document.getElementById('no-results-message');
+       function rebuildSchoolListHTML() {
+    const schoolListCollapsibleContentDiv = document.querySelector('#school-list-control .school-list-collapsible-content');
+    if (!schoolListCollapsibleContentDiv) {
+        console.error("School list collapsible content div not found.");
+        return;
+    }
+    let schoolListUl = schoolListCollapsibleContentDiv.querySelector('ul');
+    const noResultsMessage = document.getElementById('no-results-message');
 
-        if (!schoolListUl) {
-            schoolListUl = document.createElement('ul');
-            schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage);
-        }
-        schoolListUl.innerHTML = '';
+    if (!schoolListUl) {
+        schoolListUl = document.createElement('ul');
+        schoolListCollapsibleContentDiv.insertBefore(schoolListUl, noResultsMessage);
+    }
+    schoolListUl.innerHTML = '';
 
-        if (!allData) {
-            schoolListUl.innerHTML = '<li>Data is not available.</li>';
-            if (noResultsMessage) noResultsMessage.style.display = 'none';
-            return;
-        }
+    if (!allData) {
+        schoolListUl.innerHTML = '<li>Data is not available.</li>';
+        if (noResultsMessage) noResultsMessage.style.display = 'none';
+        return;
+    }
 
-       if (localStorage.getItem('gradClassCollapseInitialized') !== 'true') {
-    // save *all* grad-classes as “collapsed” on the very first visit
-    const allGradClasses = Array.from(new Set(allData.map(s => s.gradClass)));
-    localStorage.setItem('collapsedGradClasses', JSON.stringify(allGradClasses));
-    localStorage.setItem('gradClassCollapseInitialized', 'true');
-}
-        const collapsedClasses = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+    if (localStorage.getItem('gradClassCollapseInitialized') !== 'true') {
+        const allGradClasses = Array.from(new Set(allData.map(s => s.gradClass)));
+        localStorage.setItem('collapsedGradClasses', JSON.stringify(allGradClasses));
+        localStorage.setItem('gradClassCollapseInitialized', 'true');
+    }
+    const collapsedClasses = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
 
-        const createToggleHandler = (headerDiv, studentContainer, gradClass) => {
-            headerDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isCurrentlyCollapsed = studentContainer.style.display === 'none';
-                studentContainer.style.display = isCurrentlyCollapsed ? '' : 'none';
-                const indicator = headerDiv.querySelector('.toggle-indicator');
-                if(indicator) indicator.textContent = isCurrentlyCollapsed ? '[-]' : '[+]';
+    const createToggleHandler = (headerDiv, studentContainer, gradClass) => {
+        headerDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isCurrentlyCollapsed = studentContainer.style.display === 'none';
+            studentContainer.style.display = isCurrentlyCollapsed ? '' : 'none';
+            const indicator = headerDiv.querySelector('.toggle-indicator');
+            if(indicator) indicator.textContent = isCurrentlyCollapsed ? '[-]' : '[+]';
 
-                let storedCollapsed = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
-                if (isCurrentlyCollapsed) { // Opening it
-                    storedCollapsed = storedCollapsed.filter(gc => gc !== gradClass);
-                } else { // Closing it
-                    if (!storedCollapsed.includes(gradClass)) {
-                        storedCollapsed.push(gradClass);
-                    }
+            let storedCollapsed = JSON.parse(localStorage.getItem('collapsedGradClasses')) || [];
+            if (isCurrentlyCollapsed) {
+                storedCollapsed = storedCollapsed.filter(gc => gc !== gradClass);
+            } else {
+                if (!storedCollapsed.includes(gradClass)) {
+                    storedCollapsed.push(gradClass);
                 }
-                localStorage.setItem('collapsedGradClasses', JSON.stringify(storedCollapsed));
-            });
-        };
-
-        const studentsByGradClass = new Map();
-        allData.forEach(seniorChoice => {
-            if (!studentsByGradClass.has(seniorChoice.gradClass)) {
-                studentsByGradClass.set(seniorChoice.gradClass, []);
             }
-            studentsByGradClass.get(seniorChoice.gradClass).push(seniorChoice);
+            localStorage.setItem('collapsedGradClasses', JSON.stringify(storedCollapsed));
         });
-        const sortedGradClasses = Array.from(studentsByGradClass.keys()).sort();
+    };
 
-        if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
-            sortedGradClasses.forEach(gradClass => {
-                const students = studentsByGradClass.get(gradClass);
+    const studentsByGradClass = new Map();
+    allData.forEach(seniorChoice => {
+        if (!studentsByGradClass.has(seniorChoice.gradClass)) {
+            studentsByGradClass.set(seniorChoice.gradClass, []);
+        }
+        studentsByGradClass.get(seniorChoice.gradClass).push(seniorChoice);
+    });
+    const sortedGradClasses = Array.from(studentsByGradClass.keys()).sort();
+
+    if (isGalleryViewEnabled || currentPrimarySortTarget === 'students') {
+        sortedGradClasses.forEach(gradClass => {
+            const students = studentsByGradClass.get(gradClass);
+            const isCollapsed = collapsedClasses.includes(gradClass);
+
+            const groupContainerLi = document.createElement('li');
+            groupContainerLi.className = 'grad-class-group-container';
+            groupContainerLi.style.display = 'block';
+            groupContainerLi.style.width = '100%';
+            groupContainerLi.style.padding = '0';
+            groupContainerLi.style.cursor = 'default';
+
+            if (isGalleryViewEnabled) {
+                groupContainerLi.style.flexBasis = '100%';
+            }
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'college-group-header';
+            headerDiv.style.cursor = 'pointer';
+            headerDiv.dataset.gradClass = gradClass;
+            headerDiv.innerHTML = `<span>${gradClass} Seniors</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
+            groupContainerLi.appendChild(headerDiv);
+
+            const studentGroupUl = document.createElement('ul');
+            if (isGalleryViewEnabled) {
+                studentGroupUl.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; width: 100%;';
+            } else {
+                studentGroupUl.className = 'student-sublist';
+                studentGroupUl.style.width = '100%';
+            }
+
+            if (isCollapsed) {
+                studentGroupUl.style.display = 'none';
+            }
+            groupContainerLi.appendChild(studentGroupUl);
+            schoolListUl.appendChild(groupContainerLi);
+
+            createToggleHandler(headerDiv, studentGroupUl, gradClass);
+
+            // Create list items for all students. The filtering function will handle visibility.
+            students.forEach(seniorChoice => {
+                studentGroupUl.appendChild(createStudentListItem(seniorChoice));
+            });
+        });
+    } else { // currentPrimarySortTarget === 'colleges'
+        const studentGroupsByCollege = new Map();
+        allData.forEach(seniorChoice => {
+            const groupKey = seniorChoice.collegeKey || seniorChoice.collegeName;
+            if (!studentGroupsByCollege.has(groupKey)) {
+                studentGroupsByCollege.set(groupKey, { students: [], collegeInfo: seniorChoice });
+            }
+            studentGroupsByCollege.get(groupKey).students.push(seniorChoice);
+        });
+
+        // Create entries for all colleges, we will hide empty ones later in filterSchoolList
+        let collegeEntries = Array.from(studentGroupsByCollege.values());
+
+        collegeEntries.sort((entryA, entryB) => {
+            const nameA = entryA.collegeInfo.collegeName.toLowerCase();
+            const nameB = entryB.collegeInfo.collegeName.toLowerCase();
+            const countA = entryA.students.length;
+            const countB = entryB.students.length;
+            switch (currentCollegeSortValue) {
+                case 'name_asc': return nameA.localeCompare(nameB);
+                case 'name_desc': return nameB.localeCompare(nameA);
+                case 'count_desc': return countB - countA || nameA.localeCompare(nameB);
+                case 'count_asc': return countA - countB || nameA.localeCompare(nameB);
+                default: return nameA.localeCompare(nameB);
+            }
+        });
+
+        collegeEntries.forEach(collegeEntry => {
+            const collegeGroupLi = document.createElement('li');
+            collegeGroupLi.className = 'college-group-container';
+            collegeGroupLi.style.display = 'block';
+            collegeGroupLi.style.width = '100%';
+            collegeGroupLi.style.padding = '0';
+            collegeGroupLi.style.cursor = 'default';
+
+            const collegeHeaderDiv = document.createElement('div');
+            collegeHeaderDiv.className = 'college-group-header';
+            collegeHeaderDiv.style.cursor = 'default';
+            collegeHeaderDiv.innerHTML = `${collegeEntry.collegeInfo.collegeName} <span style="font-weight:normal;">(Students: ${collegeEntry.students.length})</span>`;
+            collegeGroupLi.appendChild(collegeHeaderDiv);
+
+            const studentSublistContainer = document.createElement('div');
+            studentSublistContainer.className = 'student-sublist';
+            collegeGroupLi.appendChild(studentSublistContainer);
+
+            const studentsByGradClassInCollege = new Map();
+            collegeEntry.students.forEach(student => {
+                if (!studentsByGradClassInCollege.has(student.gradClass)) {
+                    studentsByGradClassInCollege.set(student.gradClass, []);
+                }
+                studentsByGradClassInCollege.get(student.gradClass).push(student);
+            });
+
+            const sortedGradClassesInCollege = Array.from(studentsByGradClassInCollege.keys()).sort();
+
+            sortedGradClassesInCollege.forEach(gradClass => {
+                const students = studentsByGradClassInCollege.get(gradClass);
                 const isCollapsed = collapsedClasses.includes(gradClass);
 
-                const groupContainerLi = document.createElement('li');
-                groupContainerLi.className = 'grad-class-group-container';
-                groupContainerLi.style.display = 'block';
-                groupContainerLi.style.width = '100%';
-                groupContainerLi.style.padding = '0';
-                groupContainerLi.style.cursor = 'default';
-
-                if (isGalleryViewEnabled) {
-                    groupContainerLi.style.flexBasis = '100%';
-                }
-
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'college-group-header';
-                headerDiv.style.cursor = 'pointer';
-                headerDiv.dataset.gradClass = gradClass;
-                headerDiv.innerHTML = `<span>${gradClass} Seniors</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
-                groupContainerLi.appendChild(headerDiv);
+                const subHeaderDiv = document.createElement('div');
+                subHeaderDiv.className = 'college-group-header';
+                subHeaderDiv.style.paddingLeft = '15px';
+                subHeaderDiv.style.backgroundColor = isDarkMode ? '#3a3a3a' : '#f0f0f0';
+                subHeaderDiv.style.cursor = 'pointer';
+                subHeaderDiv.dataset.gradClass = gradClass;
+                subHeaderDiv.innerHTML = `<span>${gradClass} (${students.length})</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
+                studentSublistContainer.appendChild(subHeaderDiv);
 
                 const studentGroupUl = document.createElement('ul');
-                if (isGalleryViewEnabled) {
-                    studentGroupUl.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; width: 100%;';
-                } else {
-                    studentGroupUl.className = 'student-sublist';
-                    studentGroupUl.style.width = '100%';
-                }
-
+                studentGroupUl.className = 'student-sublist';
+                studentGroupUl.style.paddingLeft = '15px';
                 if (isCollapsed) {
                     studentGroupUl.style.display = 'none';
                 }
-                groupContainerLi.appendChild(studentGroupUl);
-                schoolListUl.appendChild(groupContainerLi);
+                studentSublistContainer.appendChild(studentGroupUl);
 
-                createToggleHandler(headerDiv, studentGroupUl, gradClass);
+                createToggleHandler(subHeaderDiv, studentGroupUl, gradClass);
 
-                students.forEach(seniorChoice => {
-                    if (seniorChoice.isVisible) {
-                        studentGroupUl.appendChild(createStudentListItem(seniorChoice));
-                    }
+                // Create list items for all students in the group.
+                students.forEach(student => {
+                    studentGroupUl.appendChild(createStudentListItem(student));
                 });
             });
-        } else { // currentPrimarySortTarget === 'colleges'
-            const studentGroupsByCollege = new Map();
-            allData.forEach(seniorChoice => {
-                const groupKey = seniorChoice.collegeKey || seniorChoice.collegeName;
-                if (!studentGroupsByCollege.has(groupKey)) {
-                    studentGroupsByCollege.set(groupKey, { students: [], collegeInfo: seniorChoice });
-                }
-                studentGroupsByCollege.get(groupKey).students.push(seniorChoice);
-            });
 
-            let collegeEntries = Array.from(studentGroupsByCollege.values())
-                .map(data => ({
-                    ...data,
-                    visibleStudentCount: data.students.filter(s => s.isVisible).length
-                }))
-                .filter(entry => entry.visibleStudentCount > 0);
-
-            collegeEntries.sort((entryA, entryB) => {
-                const nameA = entryA.collegeInfo.collegeName.toLowerCase();
-                const nameB = entryB.collegeInfo.collegeName.toLowerCase();
-                const countA = entryA.visibleStudentCount;
-                const countB = entryB.visibleStudentCount;
-                switch (currentCollegeSortValue) {
-                    case 'name_asc': return nameA.localeCompare(nameB);
-                    case 'name_desc': return nameB.localeCompare(nameA);
-                    case 'count_desc': return countB - countA || nameA.localeCompare(nameB);
-                    case 'count_asc': return countA - countB || nameA.localeCompare(nameB);
-                    default: return nameA.localeCompare(nameB);
-                }
-            });
-
-            collegeEntries.forEach(collegeEntry => {
-                const collegeGroupLi = document.createElement('li');
-                collegeGroupLi.className = 'college-group-container';
-                collegeGroupLi.style.display = 'block';
-                collegeGroupLi.style.width = '100%';
-                collegeGroupLi.style.padding = '0';
-                collegeGroupLi.style.cursor = 'default';
-
-                const collegeHeaderDiv = document.createElement('div');
-                collegeHeaderDiv.className = 'college-group-header';
-                collegeHeaderDiv.style.cursor = 'default';
-                collegeHeaderDiv.innerHTML = `${collegeEntry.collegeInfo.collegeName} <span style="font-weight:normal;">(Students: ${collegeEntry.visibleStudentCount})</span>`;
-                collegeGroupLi.appendChild(collegeHeaderDiv);
-
-                const studentSublistContainer = document.createElement('div');
-                studentSublistContainer.className = 'student-sublist';
-                collegeGroupLi.appendChild(studentSublistContainer);
-
-                const studentsByGradClassInCollege = new Map();
-                collegeEntry.students.forEach(student => {
-                    if (!student.isVisible) return;
-                    if (!studentsByGradClassInCollege.has(student.gradClass)) {
-                        studentsByGradClassInCollege.set(student.gradClass, []);
-                    }
-                    studentsByGradClassInCollege.get(student.gradClass).push(student);
-                });
-
-                const sortedGradClassesInCollege = Array.from(studentsByGradClassInCollege.keys()).sort();
-
-                sortedGradClassesInCollege.forEach(gradClass => {
-                    const students = studentsByGradClassInCollege.get(gradClass);
-                    const isCollapsed = collapsedClasses.includes(gradClass);
-
-                    const subHeaderDiv = document.createElement('div');
-                    subHeaderDiv.className = 'college-group-header';
-                    subHeaderDiv.style.paddingLeft = '15px';
-                    subHeaderDiv.style.backgroundColor = isDarkMode ? '#3a3a3a' : '#f0f0f0';
-                    subHeaderDiv.style.cursor = 'pointer';
-                    subHeaderDiv.dataset.gradClass = gradClass;
-                    subHeaderDiv.innerHTML = `<span>${gradClass} (${students.length})</span> <span class="toggle-indicator" style="font-weight: normal;">${isCollapsed ? '[+]' : '[-]'}</span>`;
-                    studentSublistContainer.appendChild(subHeaderDiv);
-
-                    const studentGroupUl = document.createElement('ul');
-                    studentGroupUl.className = 'student-sublist';
-                    studentGroupUl.style.paddingLeft = '15px';
-                    if (isCollapsed) {
-                        studentGroupUl.style.display = 'none';
-                    }
-                    studentSublistContainer.appendChild(studentGroupUl);
-
-                    createToggleHandler(subHeaderDiv, studentGroupUl, gradClass);
-
-                    students.forEach(student => {
-                        studentGroupUl.appendChild(createStudentListItem(student));
-                    });
-                });
-
-                schoolListUl.appendChild(collegeGroupLi);
-            });
-        }
-        filterSchoolList();
-        updateCurrentSelectionHighlight();
+            schoolListUl.appendChild(collegeGroupLi);
+        });
     }
-
-       
-                function createStudentListItem(seniorChoice) {
+    // This function is called right after, and it will correctly
+    // show or hide the items we just created.
+    filterSchoolList();
+    updateCurrentSelectionHighlight();
+}
+              
+                                 function createStudentListItem(seniorChoice) {
             const studentLi = document.createElement('li');
             const originalIndex = seniorChoice.originalIndex;
             studentLi.setAttribute('data-original-index', originalIndex);
@@ -3512,6 +3737,33 @@ function getVisibleListItemsDOM() {
                 }
             });
 
+            // This is the new checkbox for individual visibility
+            const visibilityCheckbox = document.createElement('input');
+            visibilityCheckbox.type = 'checkbox';
+            visibilityCheckbox.id = `visibility-checkbox-${seniorChoice.originalIndex}`;
+            visibilityCheckbox.className = 'visibility-checkbox';
+            visibilityCheckbox.title = 'Toggle visibility for this senior';
+            visibilityCheckbox.checked = seniorChoice.isIndividuallyVisible;
+            visibilityCheckbox.style.marginRight = '6px';
+            visibilityCheckbox.style.flexShrink = '0';
+
+            visibilityCheckbox.addEventListener('change', (event) => {
+                const isVisible = event.target.checked;
+                const seniorIndex = seniorChoice.originalIndex;
+
+                allData[seniorIndex].isIndividuallyVisible = isVisible;
+
+                if (isVisible) {
+                    hiddenSeniorIndices.delete(seniorIndex);
+                } else {
+                    hiddenSeniorIndices.add(seniorIndex);
+                }
+
+                localStorage.setItem('hiddenSeniorIndices', JSON.stringify(Array.from(hiddenSeniorIndices)));
+                updateMarkersVisibility();
+            });
+
+
             const nameSpan = document.createElement('span');
             nameSpan.className = 'school-name';
 
@@ -3545,9 +3797,25 @@ function getVisibleListItemsDOM() {
                 instagramLink.innerHTML = createSocialLinkSVG('instagram', 16, isDarkMode);
                 nameSpan.appendChild(instagramLink);
             }
+            if (seniorChoice.githubUrl) {
+                const githubLink = document.createElement('a');
+                githubLink.href = seniorChoice.githubUrl;
+                githubLink.target = "_blank";
+                githubLink.title = "GitHub Profile";
+                githubLink.classList.add("social-icon-link");
+                githubLink.innerHTML = createSocialLinkSVG('github', 16, isDarkMode);
+                nameSpan.appendChild(githubLink);
+            }
 
             if (isGalleryViewEnabled) {
                 studentLi.style.backgroundColor = gradClassColors[seniorChoice.gradClass] || '#cccccc';
+                
+                // Position the visibility checkbox on the left in gallery view
+                visibilityCheckbox.style.position = 'absolute';
+                visibilityCheckbox.style.top = '4px';
+                visibilityCheckbox.style.left = '4px';
+                visibilityCheckbox.style.zIndex = '2';
+                studentLi.appendChild(visibilityCheckbox);
                 studentLi.appendChild(schoolCheckbox); 
 
                 const gradClassTextElement = document.createElement('div');
@@ -3582,7 +3850,7 @@ function getVisibleListItemsDOM() {
                 studentLi.appendChild(galleryPhotoDiv);
 
             } else { 
-
+                studentLi.appendChild(visibilityCheckbox);
                 studentLi.appendChild(nameSpan);
             }
 
@@ -3642,6 +3910,7 @@ function getVisibleListItemsDOM() {
             });
             return studentLi;
         }
+        
 
         function updateCurrentSelectionHighlight() {
             const listUl = document.querySelector('#school-list-control .list-content ul');
@@ -3664,15 +3933,18 @@ function getVisibleListItemsDOM() {
             }
         }
 
-                         function navigateList(direction) {
+                               function navigateList(direction) {
             const listUl = document.querySelector('#school-list-control .list-content ul');
             if (!listUl) return;
 
             const visibleListItems = getVisibleListItemsDOM();
 
             if (visibleListItems.length === 0) {
-                if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                    updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
+                if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]?.marker) {
+                    const oldSeniorData = allData.find(s => s.originalIndex === activeHoverMarkerIndex);
+                    if (oldSeniorData) {
+                        updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, oldSeniorData, false, isDarkMode);
+                    }
                 }
                 activeHoverMarkerIndex = null;
                 currentListSelectionIndex = -1;
@@ -3698,9 +3970,10 @@ function getVisibleListItemsDOM() {
                     const prevOriginalIndex = parseInt(previouslySelectedLi.dataset.originalIndex);
                     const newOriginalIndexIfKnown = visibleListItems[newVisibleIndex] ? parseInt(visibleListItems[newVisibleIndex].dataset.originalIndex) : -1;
 
-                    if (!isNaN(prevOriginalIndex) && allMarkers[prevOriginalIndex]?.marker && allData[prevOriginalIndex]) {
-                         if(prevOriginalIndex !== newOriginalIndexIfKnown && prevOriginalIndex !== activeHoverMarkerIndex) {
-                            updateMarkerAppearance(allMarkers[prevOriginalIndex].marker, allData[prevOriginalIndex], false, isDarkMode);
+                    if (!isNaN(prevOriginalIndex) && allMarkers[prevOriginalIndex]?.marker) {
+                         const oldSeniorData = allData.find(s => s.originalIndex === prevOriginalIndex);
+                         if(oldSeniorData && prevOriginalIndex !== newOriginalIndexIfKnown && prevOriginalIndex !== activeHoverMarkerIndex) {
+                            updateMarkerAppearance(allMarkers[prevOriginalIndex].marker, oldSeniorData, false, isDarkMode);
                          }
                     }
                 }
@@ -3711,16 +3984,21 @@ function getVisibleListItemsDOM() {
 
             if (selectedLi) {
                 const originalIndexOfNewSelection = parseInt(selectedLi.dataset.originalIndex);
-                if (!isNaN(originalIndexOfNewSelection) && allData[originalIndexOfNewSelection]) {
+                const newSeniorData = allData.find(s => s.originalIndex === originalIndexOfNewSelection);
+
+                if (!isNaN(originalIndexOfNewSelection) && newSeniorData) {
                     handleListItemInteraction({ currentTarget: selectedLi, target: selectedLi, ctrlKey: false, metaKey: false }, originalIndexOfNewSelection, false);
                     ensureListItemVisible(selectedLi);
                     selectedLi.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     selectedLi.focus();
 
                     if (allMarkers[originalIndexOfNewSelection]?.marker) {
-                        updateMarkerAppearance(allMarkers[originalIndexOfNewSelection].marker, allData[originalIndexOfNewSelection], true, isDarkMode);
-                        if(activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== originalIndexOfNewSelection && allMarkers[activeHoverMarkerIndex]?.marker && allData[activeHoverMarkerIndex]) {
-                             updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, allData[activeHoverMarkerIndex], false, isDarkMode);
+                        updateMarkerAppearance(allMarkers[originalIndexOfNewSelection].marker, newSeniorData, true, isDarkMode);
+                        if(activeHoverMarkerIndex !== null && activeHoverMarkerIndex !== originalIndexOfNewSelection && allMarkers[activeHoverMarkerIndex]?.marker) {
+                             const oldSeniorData = allData.find(s => s.originalIndex === activeHoverMarkerIndex);
+                             if (oldSeniorData) {
+                                updateMarkerAppearance(allMarkers[activeHoverMarkerIndex].marker, oldSeniorData, false, isDarkMode);
+                             }
                         }
                         activeHoverMarkerIndex = originalIndexOfNewSelection;
                     }
@@ -3747,7 +4025,7 @@ function getVisibleListItemsDOM() {
             }
         }
 
-       async function getNearbyTransitStopsHTML(lat, lng, currentIsDarkMode) {
+            async function getNearbyTransitStopsHTML(lat, lng, currentIsDarkMode) {
     if (!google || !google.maps || !google.maps.places || !map || !lat || !lng) {
         return '';
     }
@@ -3840,7 +4118,7 @@ function getVisibleListItemsDOM() {
         if (stopsToDisplay.length === 0) return '';
 
         // 4. Render the HTML
-        let html = '<b>Nearby Transit Stops:</b><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">';
+        let html = '<b>Nearby Transit Stops:</b><ol style="margin-top: 3px; margin-bottom: 3px; padding-left: 25px;">';
         stopsToDisplay.forEach(stop => {
             const { place, distance, typeDetails, displayName } = stop;
             const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.displayName)}&query_place_id=${place.id}`;
@@ -3861,7 +4139,7 @@ function getVisibleListItemsDOM() {
                     ${distanceHtml}
                 </li>`;
         });
-        html += '</ul>';
+        html += '</ol>';
         return html;
 
     } catch (err) {
@@ -3870,19 +4148,159 @@ function getVisibleListItemsDOM() {
     }
 }
 
+             async function getCollegeTimeDetailsHTML(collegeData) {
+            if (!collegeData || (collegeData.lat === 0 && collegeData.lng === 0)) {
+                return '';
+            }
 
-      async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
+            if (!GOOGLE_MAPS_API_KEY) {
+                console.warn("Google Maps API Key not found, cannot fetch timezone.");
+                return '';
+            }
+
+            const timestamp = Math.floor(Date.now() / 1000);
+            // FIX: Corrected the URL parameter from '×tamp=' to '×tamp='
+           const apiUrl =
+  `https://maps.googleapis.com/maps/api/timezone/json?location=${collegeData.lat},${collegeData.lng}&timestamp=${timestamp}&key=${GOOGLE_MAPS_API_KEY}`;
+
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.status !== 'OK') {
+                    console.warn(`Timezone API returned status: ${data.status}. Falling back to UTC.`);
+                    const now = new Date();
+                    const userTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false });
+                    const utcTime = now.toLocaleTimeString([], { timeZone: 'UTC', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', hour12: false });
+                    return `<div><b>Time Info (API Error):</b></div>
+                            <div>College (UTC): ${utcTime}</div>
+                            <div>Your Time: ${userTime}</div>`;
+                }
+
+                const timeZoneId = data.timeZoneId;
+                const now = new Date();
+                
+                const collegeTimeStr = now.toLocaleTimeString('en-US', {
+                    timeZone: timeZoneId,
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: false // Use 24-hour format
+                });
+
+                const collegeTimeZoneAbbr = now.toLocaleTimeString('en-US', {
+                    timeZone: timeZoneId,
+                    timeZoneName: 'short'
+                }).split(' ').pop();
+
+                const collegeHour = parseInt(now.toLocaleTimeString('en-US', {
+                    timeZone: timeZoneId,
+                    hour: 'numeric',
+                    hour12: false
+                }));
+
+                let timeOfDay = 'Daytime';
+                if (collegeHour >= 5 && collegeHour < 7) timeOfDay = 'Dawn / Early Morning';
+                else if (collegeHour >= 7 && collegeHour < 9) timeOfDay = 'Morning';
+                else if (collegeHour >= 9 && collegeHour < 12) timeOfDay = 'Late Morning';
+                else if (collegeHour >= 12 && collegeHour < 14) timeOfDay = 'Afternoon';
+                else if (collegeHour >= 14 && collegeHour < 17) timeOfDay = 'Late Afternoon';
+                else if (collegeHour >= 17 && collegeHour < 19) timeOfDay = 'Dusk / Evening';
+                else if (collegeHour >= 19 && collegeHour < 22) timeOfDay = 'Nighttime';
+                else timeOfDay = 'Late Night';
+
+                const userTimeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false });
+
+                return `<div><b>Time Info:</b></div>
+                        <div>${collegeTimeStr} (${collegeTimeZoneAbbr}) - ${timeOfDay}</div>
+                        <div>Your Time: ${userTimeStr}</div>`;
+
+            } catch (error) {
+                console.error('Error fetching timezone data:', error);
+                const now = new Date();
+                const userTime = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false });
+                const utcTime = now.toLocaleTimeString([], { timeZone: 'UTC', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', hour12: false });
+                return `<div><b>Time Info (Fetch Error):</b></div>
+                        <div>College (UTC): ${utcTime}</div>
+                        <div>Your Time: ${userTime}</div>`;
+            }
+        }
+
+
+        
+               async function getCollegeWeatherHTML(lat, lng, currentIsDarkMode) {
+            if (!lat || !lng || (lat === 0 && lng === 0)) {
+                return '';
+            }
+
+            const OWM_API_KEY = 'ba2c0bba257594f5f32cd53d2abc2be7';
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${OWM_API_KEY}&units=imperial`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    console.warn(`OpenWeatherMap API returned status: ${response.status}`);
+                    return '';
+                }
+                const data = await response.json();
+
+                if (data && data.weather && data.weather[0] && data.main) {
+                    const description = data.weather[0].description.replace(/\b\w/g, l => l.toUpperCase()); // Capitalize each word
+                    const iconCode = data.weather[0].icon;
+                    const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+                    // Temperatures in Fahrenheit from the API
+                    const tempF = Math.round(data.main.temp);
+                    const feelsLikeF = Math.round(data.main.feels_like);
+
+                    // Convert Fahrenheit to Celsius
+                    const tempC = Math.round((tempF - 32) * 5 / 9);
+                    const feelsLikeC = Math.round((feelsLikeF - 32) * 5 / 9);
+
+                    const weatherIconStyle = `
+                        width: 32px; 
+                        height: 32px; 
+                        vertical-align: middle; 
+                        margin-right: 5px; 
+                        background-color: ${currentIsDarkMode ? '#4a5c6e' : '#cde1f9'}; 
+                        border-radius: 50%;
+                    `;
+                    const tempStyle = `font-weight: bold; font-size: 1.1em;`;
+
+                    return `
+                        <div style="margin-top: 5px;">
+                            <b>Local Weather:</b>
+                            <div style="display: flex; align-items: center; margin-top: 3px;">
+                                <img src="${iconUrl}" alt="${description}" title="${description}" style="${weatherIconStyle}">
+                                <div>
+                                    <div style="${tempStyle}">${tempC}°C / ${tempF}°F</div>
+                                    <div style="font-size: 0.9em; color: ${currentIsDarkMode ? '#bbb' : '#555'};">
+                                        ${description} (Feels like ${feelsLikeC}°C / ${feelsLikeF}°F)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return '';
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                return '';
+            }
+        }
+
+                       async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
     if (!marker || !collegeData) {
         return;
     }
-    // If a window is already open for this marker and it's the same sticky state, do nothing to prevent flickering.
     if (infowindow && infowindow.getMap() && infowindow.anchor === marker && infowindow.isSticky === isSticky) {
         return;
     }
     if (infowindow && infowindow.getMap()) {
         infowindow.close();
     }
-    infowindow.isSticky = isSticky; // Set sticky state for later checks
+    infowindow.isSticky = isSticky;
+    selectedStudentInInfoWindow = null; // Reset selection on new window open
 
     let contentString = `<div class="info-window-content">`;
     const targetUrl = collegeData.collegeHomepageUrl && collegeData.collegeHomepageUrl !== '#' ? collegeData.collegeHomepageUrl : '#';
@@ -3896,29 +4314,26 @@ function getVisibleListItemsDOM() {
         contentString += `<b>${collegeData.collegeName}</b>`;
     }
 
-    // Details section for Type, Distance, and Directions
     contentString += `<div style="margin-top: 4px; line-height: 1.6;">`;
     contentString += `<div><span class="info-window-type">Type: ${collegeData.collegeType} (${collegeData.isCampusPublic ? 'Public' : 'Private'}, ${collegeData.locationFocus})</span></div>`;
-
-    if (isDistanceLineEnabled && collegeData.lat !== 0 && collegeData.collegeName !== "NEST+m" && collegeData.collegeName !== "Undecided") {
-        const nestmPosition = new google.maps.LatLng(NEST_M_INFO.lat, NEST_M_INFO.lng);
-        const collegePosition = new google.maps.LatLng(collegeData.lat, collegeData.lng);
-        const distanceInMeters = google.maps.geometry.spherical.computeDistanceBetween(nestmPosition, collegePosition);
-        const distanceInMiles = distanceInMeters * 0.000621371;
-        const distanceInKm = distanceInMeters / 1000;
-        const distanceColor = getDistanceColor(distanceInMiles);
-
-        // **FIX:** The distance string is now broken into multiple parts to color only the values.
-        contentString += `<div style="font-size: 1.1em; font-weight: bold; margin-top: 2px;">
-                            Distance: <span style="color: ${distanceColor};">${distanceInMiles.toFixed(1)} mi</span> / <span style="color: ${distanceColor};">${distanceInKm.toFixed(1)} km</span> to NEST+m
-                          </div>`;
-    }
 
     if (collegeData.lat !== 0 || collegeData.lng !== 0) {
         contentString += `<div><a href="https://www.google.com/maps/dir/?api=1&destination=${collegeData.lat},${collegeData.lng}" target="_blank">Get Directions</a></div>`;
     }
-    contentString += `</div>`; // End of details section
+    contentString += `</div>`;
 
+    // --- NEW ORDER: Time and Weather are now fetched and displayed first ---
+    const timeDetailsHtml = await getCollegeTimeDetailsHTML(collegeData);
+    if (timeDetailsHtml) {
+        contentString += `<hr style="margin: 5px 0;">` + timeDetailsHtml;
+    }
+
+    const weatherHtml = await getCollegeWeatherHTML(collegeData.lat, collegeData.lng, isDarkMode);
+    if (weatherHtml) {
+        contentString += `<hr style="margin: 5px 0;">` + weatherHtml;
+    }
+
+    // --- Student list now appears after weather/time ---
     contentString += `<hr style="margin: 5px 0;">`;
 
     if (collegeData.collegeName === "Undecided") {
@@ -3939,17 +4354,16 @@ function getVisibleListItemsDOM() {
             return getFirstName(a.seniorName).localeCompare(getFirstName(b.seniorName));
         });
         if (studentsAtSameCollege.length > 0) {
-            contentString += `<u>Students Attending (Visible):</u><ul style="margin-top: 3px; margin-bottom: 3px; padding-left: 18px;">`;
+            const studentWord = studentsAtSameCollege.length === 1 ? "Student" : "Students";
+            contentString += `<u>(${studentsAtSameCollege.length}) ${studentWord} Attending (Visible):</u><ol style="margin-top: 3px; margin-bottom: 3px; padding-left: 25px;">`;
             studentsAtSameCollege.forEach(student => {
                 const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
-                // Add onmouseover handler to call the new hover function
-                let studentEntry = `<li onclick="handleInfoWindowStudentClick(${student.originalIndex}, event)" style="cursor: pointer; padding: 4px 2px; border-radius: 3px;" onmouseover="handleInfoWindowStudentHover(${student.originalIndex}, this)" onmouseout="handleInfoWindowStudentMouseOut(${student.originalIndex}, this)" title="Click to jump to this senior in the list">`;
+                let studentEntry = `<li data-original-index="${student.originalIndex}" onclick="handleInfoWindowStudentClick(${student.originalIndex}, event)" style="cursor: pointer; padding: 4px 2px; border-radius: 3px;" onmouseover="handleInfoWindowStudentHover(${student.originalIndex}, this)" onmouseout="handleInfoWindowStudentMouseOut(${student.originalIndex}, this)" title="Click to jump to this senior in the list">`;
                 
                 const studentNameHTML = student.seniorName;
                 
                 studentEntry += `${studentNameHTML}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
                 
-                // Prevent click propagation on social links
                 if (student.linkedInUrl) {
                     studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link" onclick="event.stopPropagation()">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
                 }
@@ -3961,16 +4375,18 @@ function getVisibleListItemsDOM() {
                 studentEntry += `</li>`;
                 contentString += studentEntry;
             });
-            contentString += `</ul>`;
+            contentString += `</ol>`;
         } else {
             contentString += `No other visible students found for this college with current filters.`;
         }
     }
     
+    // --- Transit info remains at the end ---
     const transitHtml = await getNearbyTransitStopsHTML(collegeData.lat, collegeData.lng, isDarkMode);
     if (transitHtml) {
         contentString += `<hr style="margin: 5px 0;">` + transitHtml;
     }
+
     contentString += `</div>`;
 
     infowindow.setContent(contentString);
@@ -3978,37 +4394,73 @@ function getVisibleListItemsDOM() {
 }
 
 
-      function handleInfoWindowStudentHover(originalIndex, element) {
+
+                function handleInfoWindowStudentClick(originalIndex, event) {
+            if (event) event.stopPropagation(); // Prevent map click
+
+            // Update the selection state for the info window
+            selectedStudentInInfoWindow = originalIndex;
+
+            // Update styles for all items in the current info window
+            const infoWindowContent = document.querySelector('.info-window-content');
+            if (infoWindowContent) {
+                const allStudentItems = infoWindowContent.querySelectorAll('ol li[data-original-index]');
+                allStudentItems.forEach(item => {
+                    const itemIndex = parseInt(item.dataset.originalIndex, 10);
+                    if (itemIndex === selectedStudentInInfoWindow) {
+                        // Apply green "selected" style
+                        item.style.backgroundColor = isDarkMode ? '#2e4b32' : '#d4edda';
+                    } else {
+                        // Remove any background style
+                        item.style.backgroundColor = 'transparent';
+                    }
+                });
+            }
+
+            // Trigger the main list interaction to keep everything in sync, but skip reopening the info window
+            const mainListItem = document.querySelector(`.list-content li[data-original-index="${originalIndex}"]`);
+            if (mainListItem) {
+                handleListItemInteraction({ currentTarget: mainListItem, target: mainListItem, ctrlKey: false, metaKey: false }, originalIndex, false, true); // The 'true' is the fix
+                ensureListItemVisible(mainListItem);
+                mainListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    
+          function handleInfoWindowStudentHover(originalIndex, element) {
     const schoolData = allData[originalIndex];
     if (!schoolData || !schoolData.isVisible) return;
 
-    // Highlight the li in the info window itself
-    element.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+    // Highlight the li in the info window itself with blue, ONLY if it's not the selected one
+    if (originalIndex !== selectedStudentInInfoWindow) {
+        element.style.backgroundColor = isDarkMode ? '#2a3950' : '#d6eaff';
+    }
 
-    // Find and highlight the corresponding list item in the main panel.
     const mainListItem = document.querySelector(`.list-content li[data-original-index="${originalIndex}"]`);
     if (mainListItem) {
         mainListItem.classList.add('list-item-highlight');
+        
+        // Add these two lines to handle scrolling the list into view on hover
+        ensureListItemVisible(mainListItem);
+        mainListItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Highlight the marker on the map.
     const markerInfo = allMarkers[originalIndex];
     if (markerInfo?.marker) {
         updateMarkerAppearance(markerInfo.marker, schoolData, true, isDarkMode);
     }
 
-    // Show the photo popup, positioned relative to the info window element.
     showSeniorPhotoPopup(element, schoolData);
 }
 
-function handleInfoWindowStudentMouseOut(originalIndex, element) {
-    // Reset the info window li background
-    element.style.backgroundColor = 'transparent';
 
-    // Un-highlight the main list item
+function handleInfoWindowStudentMouseOut(originalIndex, element) {
+    // Reset the info window li background, ONLY if it's not the selected one
+    if (originalIndex !== selectedStudentInInfoWindow) {
+        element.style.backgroundColor = 'transparent';
+    }
+
     const mainListItem = document.querySelector(`.list-content li[data-original-index="${originalIndex}"]`);
     if (mainListItem) {
-        // Don't remove highlight if it's the currently selected item from keyboard/click nav
         let isKeyboardSelected = false;
         const visibleListItems = getVisibleListItemsDOM();
         if (currentListSelectionIndex !== -1 && currentListSelectionIndex < visibleListItems.length) {
@@ -4022,7 +4474,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         }
     }
 
-    // Un-highlight the marker on the map
     const markerInfo = allMarkers[originalIndex];
     const schoolData = allData[originalIndex];
     const isAnchorMarker = infowindow.anchor === markerInfo?.marker;
@@ -4031,14 +4482,12 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         updateMarkerAppearance(markerInfo.marker, schoolData, false, isDarkMode);
     }
 
-    // Hide the photo popup if it's for this student
-    if (currentlyZoomedSeniorOriginalIndex === originalIndex) {
-        hideSeniorPhotoPopup();
-    }
+    // The problematic line that called hideSeniorPhotoPopup() has been removed.
 }
 
 
-                  async function initializeApp() {
+
+                                async function initializeApp() {
             try {
                 const response = await fetch('jsonData.json');
                 if (!response.ok) {
@@ -4046,36 +4495,36 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                 }
                 const jsonDataFromFile = await response.json();
 
-                console.log("[DEBUG] Attempting to initialize seniorCollegeChoices and allData from jsonData.json...");
+                // Load hidden seniors state BEFORE creating allData
+                const savedHiddenSeniors = localStorage.getItem('hiddenSeniorIndices');
+                if (savedHiddenSeniors) {
+                    hiddenSeniorIndices = new Set(JSON.parse(savedHiddenSeniors));
+                }
 
                 seniorCollegeChoices = parseRawData(jsonDataFromFile);
 
                 if (!Array.isArray(seniorCollegeChoices)) {
-                    console.error("[DEBUG] parseRawData did not return an array. Value:", seniorCollegeChoices);
                     throw new Error("Data parsing failed: seniorCollegeChoices is not an array.");
                 }
-                console.log(`[DEBUG] seniorCollegeChoices initialized. Length: ${seniorCollegeChoices.length}`);
 
-                console.log("[DEBUG] Initializing allData by mapping seniorCollegeChoices...");
                 allData = seniorCollegeChoices.map((choice, index) => {
                     if (!choice || typeof choice !== 'object') {
-                        console.error(`[DEBUG] Malformed item in seniorCollegeChoices at index ${index}:`, choice);
-
                         return {
                             displayName: `Error - Malformed Data (Index ${index})`,
                             originalIndex: index,
                             isVisible: false,
+                            isIndividuallyVisible: false, // Add property even for malformed
                             majorArea: "Unknown"
                         };
                     }
 
                     if (typeof choice.seniorName !== 'string' || typeof choice.gradClass !== 'string' || typeof choice.collegeName !== 'string') {
-                        console.warn(`[DEBUG] Item with missing/invalid essential string properties in seniorCollegeChoices at index ${index}. Item:`, choice);
                         return {
                             ...choice,
                             displayName: `Error - Missing Properties (Index ${index})`,
                             originalIndex: index,
                             isVisible: false,
+                            isIndividuallyVisible: !hiddenSeniorIndices.has(index), // Add property
                             majorArea: getMajorArea(choice.major)
                         };
                     }
@@ -4085,22 +4534,18 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                         displayName: `${choice.seniorName} (${choice.gradClass}) → ${choice.collegeName}`,
                         originalIndex: index,
                         isVisible: true,
+                        isIndividuallyVisible: !hiddenSeniorIndices.has(index), // The new property
                         majorArea: majorArea
                     };
 
                 }).filter(item => item && item.displayName && !item.displayName.startsWith("Error -"));
 
-                console.log(`[DEBUG] allData initialized. Length: ${allData.length}`);
-
                 if (!allData || !Array.isArray(allData)) {
-                    console.error("[DEBUG] allData is not a valid array after mapping.");
                     throw new Error("allData initialization failed: result is not an array.");
                 }
-                console.log(`[DEBUG] Global: allData initialized successfully with ${allData.length} items.`);
                 window.isDataReadyForMap = true;
 
             } catch (error) {
-                console.error("CRITICAL ERROR during application data initialization:", error.message, error.stack);
                 const criticalErrorDiv = document.createElement('div');
                 criticalErrorDiv.id = "critical-initialization-error-message";
                 criticalErrorDiv.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background-color: #ffdddd; border-bottom: 2px solid red; padding: 15px; text-align: center; z-index: 10000; color: black; font-family: sans-serif;";
@@ -4131,6 +4576,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
 
             await initMap();
         }
+
         let distancePolyline, distanceLabel, DistanceLabel;
         const NEST_M_INFO = {
             name: "NEST+m",
@@ -4195,17 +4641,21 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
             distanceLabel.setMap(map);
         }
 
-                                   async function initMap() {
+               async function initMap() {
+    // Add this block at the very top to correctly capture the API key
+    GOOGLE_MAPS_API_KEY = (function(){
+        const scr = document.querySelector('script[src*="maps.googleapis.com"]');
+        const m = scr?.src.match(/key=([^&]+)/);
+        return m ? m[1] : "";
+    })();
+
     // Read the saved dark mode state from localStorage at the beginning.
     isDarkMode = localStorage.getItem('isDarkMode') === 'true';
-
-    console.log("[DEBUG] initMap function called.");
 
     // The marker library is no longer needed for google.maps.Marker
     // PinElement and AdvancedMarkerElement are also no longer used.
 
     if (!window.isDataReadyForMap || !allData || !Array.isArray(allData)) {
-        console.error("[DEBUG] initMap: Data is not ready or allData is invalid. Aborting map initialization.");
         const mapDiv = document.getElementById("map");
         if (mapDiv) {
             mapDiv.innerHTML = `<p style="padding: 20px; text-align: center; color: red; background-color: #ffebee;"><strong>Error: Map data is not available or is invalid.</strong><br>The map cannot be initialized. This usually indicates a problem during the initial data loading and processing phase.<br>Please check the browser's developer console for more detailed error messages that might have occurred before this point.</p>`;
@@ -4217,101 +4667,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         }
         return;
     }
-    console.log(`[DEBUG] initMap: Data is ready. Proceeding with allData containing ${allData.length} items.`);
-
-            DistanceLabel = class DistanceLabel extends google.maps.OverlayView {
-                constructor(position, text) {
-                    super();
-                    this.position = position;
-                    this.text = text;
-                    this.div = null;
-                }
-                onAdd() {
-                    this.div = document.createElement("div");
-                    this.div.style.position = "absolute";
-                    this.div.style.background = isDarkMode ? "rgba(40, 40, 40, 0.9)" : "rgba(255, 255, 255, 0.9)";
-                    this.div.style.color = isDarkMode ? "#e0e0e0" : "#333";
-                    this.div.style.padding = "4px 8px";
-                    this.div.style.border = isDarkMode ? "1px solid #555" : "1px solid #777";
-                    this.div.style.borderRadius = "4px";
-                    this.div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
-                    this.div.style.fontSize = "1.1em";
-                    this.div.style.whiteSpace = "nowrap";
-                    this.div.style.zIndex = "1001"; // Higher than infowindow
-                    this.div.style.transform = "translate(-50%, -50%)"; // Center on position
-                    this.div.innerHTML = this.text;
-
-                    const closeButton = this.div.querySelector("#close-distance-label");
-                    if (closeButton) {
-                        closeButton.addEventListener("click", (e) => {
-                            e.stopPropagation();
-                            if (distancePolyline) distancePolyline.setMap(null);
-                            this.setMap(null);
-                        });
-                    }
-
-                    const panes = this.getPanes();
-                    panes.floatPane.appendChild(this.div);
-                }
-                draw() {
-                    const overlayProjection = this.getProjection();
-                     if (!overlayProjection || !this.div) {
-                        return;
-                    }
-                    const point = overlayProjection.fromLatLngToDivPixel(this.position);
-                    if (point) {
-                        // Default position
-                        this.div.style.left = point.x + "px";
-                        this.div.style.top = point.y + "px";
-
-                        // Check for InfoWindow overlap
-                        const infoWindowElement = document.querySelector('.gm-style-iw-c');
-                        if (infowindow && infowindow.getMap() && infoWindowElement && infoWindowElement.offsetParent) {
-                            const iwRect = infoWindowElement.getBoundingClientRect();
-                            const labelRect = this.div.getBoundingClientRect();
-
-                            const overlap = !(labelRect.right < iwRect.left || 
-                                              labelRect.left > iwRect.right || 
-                                              labelRect.bottom < iwRect.top || 
-                                              labelRect.top > iwRect.bottom);
-
-                            if (overlap) {
-                                // It overlaps. Reposition the label.
-                                const margin = 10; // 10px margin
-                                let newTop;
-
-                                // Try placing it above the InfoWindow.
-                                if (iwRect.top > labelRect.height + margin) {
-                                    newTop = iwRect.top - (labelRect.height / 2) - margin;
-                                } else { // Not enough space above, place it below.
-                                    newTop = iwRect.bottom + (labelRect.height / 2) + margin;
-                                }
-                                
-                                const iwCenterPoint = {
-                                    x: iwRect.left + iwRect.width / 2,
-                                    y: newTop
-                                };
-
-                                this.div.style.left = iwCenterPoint.x + 'px';
-                                this.div.style.top = iwCenterPoint.y + 'px';
-                            }
-                        }
-                    }
-                }
-                onRemove() {
-                    if (this.div) {
-                        this.div.parentNode.removeChild(this.div);
-                        this.div = null;
-                    }
-                }
-                updateText(text) {
-                    this.text = text;
-                    if (this.div) {
-                        this.div.innerHTML = this.text;
-                    }
-                }
-            }
-
 
     const savedStateCountryFilters = localStorage.getItem('stateCountryFilterState');
     stateCountryFilterState = savedStateCountryFilters ? JSON.parse(savedStateCountryFilters) : {};
@@ -4403,58 +4758,76 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         stateCountryFiltersContainer.innerHTML = "<p style='font-style:italic; font-size:0.9em; padding:5px;'>No state/country data to filter.</p>";
     }
 
-        document.querySelectorAll('.map-control h4').forEach(header => {
+    const savedCollapseState = localStorage.getItem('panelCollapseState');
+    const panelCollapseState = savedCollapseState ? JSON.parse(savedCollapseState) : {};
 
+    document.querySelectorAll('.map-control h4').forEach(header => {
         if (header.closest('#description-control')) {
             header.style.cursor = 'default';
             return;
         }
 
-        if (header.closest('#school-list-control') && header.textContent.includes('College List & Seniors')) {
+        const panelId = header.closest('.map-control')?.id;
+        if (!panelId) return;
+
+        // Handle the special case for the school list
+        if (panelId === 'school-list-control') {
             const schoolListControlDiv = header.closest('#school-list-control');
             const sortControlsContainer = schoolListControlDiv.querySelector('#sort-controls-container');
             const listContentDiv = schoolListControlDiv.querySelector('.list-content');
 
             if (sortControlsContainer && listContentDiv) {
+                if (panelCollapseState[panelId] === true) {
+                    header.classList.add('collapsed');
+                    sortControlsContainer.classList.add('collapsed');
+                    listContentDiv.classList.add('collapsed');
+                }
+
                 header.style.cursor = 'pointer';
                 header.addEventListener('click', () => {
-                    sortControlsContainer.classList.toggle('collapsed');
-                    listContentDiv.classList.toggle('collapsed');
-                    header.classList.toggle('collapsed');
+                    const isNowCollapsed = listContentDiv.classList.toggle('collapsed');
+                    sortControlsContainer.classList.toggle('collapsed', isNowCollapsed);
+                    header.classList.toggle('collapsed', isNowCollapsed);
+
+                    panelCollapseState[panelId] = isNowCollapsed;
+                    localStorage.setItem('panelCollapseState', JSON.stringify(panelCollapseState));
 
                     const toggleSchoolListBtn = document.getElementById('toggleSchoolListBtn');
                     if (toggleSchoolListBtn) {
-                        const isNowCollapsed = listContentDiv.classList.contains('collapsed');
                         toggleSchoolListBtn.textContent = isNowCollapsed ? '🙉 Show List' : '🙈 Hide List';
                         toggleSchoolListBtn.title = isNowCollapsed ? 'Show college and senior list' : 'Hide college and senior list';
                     }
                 });
-
-                sortControlsContainer.classList.remove('collapsed');
-                listContentDiv.classList.remove('collapsed');
-                header.classList.remove('collapsed');
             }
             return;
         }
 
+        // Handle all other generic panels
         let contentToToggle = header.nextElementSibling;
-
         while (contentToToggle && !contentToToggle.classList.contains('control-content')) {
             contentToToggle = contentToToggle.nextElementSibling;
         }
 
         if (contentToToggle && contentToToggle.classList.contains('control-content')) {
+            if (panelCollapseState[panelId] === true) {
+                header.classList.add('collapsed');
+                contentToToggle.classList.add('collapsed');
+            }
+
             header.style.cursor = 'pointer';
             header.addEventListener('click', () => {
-                contentToToggle.classList.toggle('collapsed');
-                header.classList.toggle('collapsed');
+                const isNowCollapsed = contentToToggle.classList.toggle('collapsed');
+                header.classList.toggle('collapsed', isNowCollapsed);
+
+                panelCollapseState[panelId] = isNowCollapsed;
+                localStorage.setItem('panelCollapseState', JSON.stringify(panelCollapseState));
             });
         }
     });
 
+
     seniorPhotoPopup = document.getElementById('senior-photo-popup');
     if (!seniorPhotoPopup) {
-        console.error("[DEBUG] CRITICAL: senior-photo-popup element not found in the DOM!");
         document.getElementById('map').innerHTML = '<p style="color:red; text-align:center;">Error: UI element (senior-photo-popup) missing. Cannot initialize map features.</p>';
         return;
     }
@@ -4468,13 +4841,13 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
     zoomedGradClassInfoDiv = document.getElementById('zoomed-grad-class-info');
     zoomedGradClassValueSpan = document.getElementById('zoomed-grad-class-value');
 
-    if (!zoomedGradClassInfoDiv || !zoomedGradClassValueSpan) console.error("[DEBUG] CRITICAL: Zoomed grad class info elements not found!");
+    if (!zoomedGradClassInfoDiv || !zoomedGradClassValueSpan) {}
 
-    if (!seniorPopupImage) console.error("[DEBUG] CRITICAL: senior-photo-popup img element not found!");
-    if (!seniorPopupCaption) console.error("[DEBUG] CRITICAL: senior-photo-caption element not found!");
-    if (!closeSeniorPhotoBtn) console.error("[DEBUG] CRITICAL: close-senior-photo-popup element not found!");
-    if (!zoomExitNote) console.error("[DEBUG] CRITICAL: zoom-exit-note element not found!");
-    if (!prevSeniorPhotoBtn || !nextSeniorPhotoBtn) console.error("[DEBUG] CRITICAL: Photo navigation arrow buttons not found!");
+    if (!seniorPopupImage) {}
+    if (!seniorPopupCaption) {}
+    if (!closeSeniorPhotoBtn) {}
+    if (!zoomExitNote) {}
+    if (!prevSeniorPhotoBtn || !nextSeniorPhotoBtn) {}
 
     photoZoomOverlay = document.createElement('div');
     photoZoomOverlay.id = 'photo-zoom-overlay';
@@ -4496,7 +4869,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         }
     }
 
-   if (seniorPopupImage) {
+     if (seniorPopupImage) {
         seniorPopupImage.addEventListener('click', function(e) {
             if (e.target === seniorPopupImage && !this.classList.contains('zoomed')) {
                 const parentPopup = this.closest('#senior-photo-popup');
@@ -4543,7 +4916,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                 const zoomedBioCaptionEl = document.getElementById('zoomed-bio-caption-content');
                 const zoomedSocialLinksEl = document.getElementById('zoomed-social-links-container');
 
-                if (seniorData && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
+                                 if (seniorData && zoomedInfoPanel && zoomedBioCaptionEl && zoomedSocialLinksEl) {
 
                     if (zoomedGradClassInfoDiv && zoomedGradClassValueSpan) {
                         zoomedGradClassValueSpan.textContent = seniorData.gradClass;
@@ -4575,29 +4948,32 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                     if (seniorPopupCaption) seniorPopupCaption.style.display = 'none';
                     parentPopup.classList.add('with-side-panel');
                     
-                    // Position the exit note below the panel
+                    // Position the exit note at the bottom of the screen, centered under the info panel.
                     if (zoomExitNote) {
                         zoomExitNote.style.display = 'block';
                         // Use a timeout to ensure the panel has rendered and its dimensions are correct
                         setTimeout(() => {
                             const panelRect = zoomedInfoPanel.getBoundingClientRect();
-                            if (panelRect.height > 0) {
-                                zoomExitNote.style.bottom = 'auto'; // Unset conflicting property
-                                zoomExitNote.style.top = `${panelRect.bottom + 15}px`;
+                            if (panelRect.width > 0) { // Check if panel is actually visible
+                                // Position it at the bottom of the screen
+                                zoomExitNote.style.top = 'auto';
+                                zoomExitNote.style.bottom = '10px'; // 10px from the bottom
+
+                                // Horizontally center it under the info panel
                                 zoomExitNote.style.left = `${panelRect.left + (panelRect.width / 2)}px`;
                                 zoomExitNote.style.transform = 'translateX(-50%)';
                             }
-                        }, 50); // 50ms delay
+                        }, 50); // 50ms delay is still good practice to get the panel's position
                     }
 
                 } else {
                     // If side panel is not shown, use default position for the note
                     if (zoomExitNote) {
                         zoomExitNote.style.display = 'block';
-                        // Reset to default styles
-                        zoomExitNote.style.top = 'auto';
-                        zoomExitNote.style.bottom = '10px';
+                        // Reset to default styles (center of screen)
                         zoomExitNote.style.left = '50%';
+                        zoomExitNote.style.bottom = '10px';
+                        zoomExitNote.style.top = 'auto';
                         zoomExitNote.style.transform = 'translateX(-50%)';
                     }
                 }
@@ -4672,8 +5048,9 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         }
     });
 
-    infowindow.addListener('closeclick', () => {
+           infowindow.addListener('closeclick', () => {
         infowindow.isSticky = false;
+        selectedStudentInInfoWindow = null; // Clear selection state
         if (activeHoverMarkerIndex !== null && allMarkers[activeHoverMarkerIndex]) {
             const schoolData = allData[activeHoverMarkerIndex];
             const markerInfo = allMarkers[activeHoverMarkerIndex];
@@ -4682,10 +5059,10 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
             }
             activeHoverMarkerIndex = null;
         }
-        if (distancePolyline) distancePolyline.setMap(null);
-        if (distanceLabel) distanceLabel.setMap(null);
     });
 
+
+    
     const locationFocusCheckboxes = document.querySelectorAll('.location-focus-filter');
     locationFocusCheckboxes.forEach(checkbox => {
         const focusKey = checkbox.dataset.locationFocus;
@@ -4727,31 +5104,63 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
     const toggleGalleryViewBtn = document.getElementById('toggleGalleryViewBtn');
     const toggleNestmBtn = document.getElementById('toggleNestmBtn');
     const zoomToNestmBtn = document.getElementById('zoomToNestmBtn');
-    const toggleDistanceLineBtn = document.getElementById('toggleDistanceLineBtn');
+    const checkAllSeniorsBtn = document.getElementById('checkAllSeniorsBtn');
+    const uncheckAllSeniorsBtn = document.getElementById('uncheckAllSeniorsBtn');
+    const resetPanelWidthBtn = document.getElementById('resetPanelWidthBtn');
 
-    isDistanceLineEnabled = localStorage.getItem('isDistanceLineEnabled') === 'true';
+    if (checkAllSeniorsBtn) {
+        checkAllSeniorsBtn.addEventListener('click', () => {
+            allData.forEach(school => {
+                // Only affect seniors that are currently passing the main filters
+                if (school.passesGlobalFilters) {
+                    school.isIndividuallyVisible = true;
+                    hiddenSeniorIndices.delete(school.originalIndex);
+                    const checkbox = document.getElementById(`visibility-checkbox-${school.originalIndex}`);
+                    if (checkbox) checkbox.checked = true;
+                }
+            });
+            localStorage.setItem('hiddenSeniorIndices', JSON.stringify(Array.from(hiddenSeniorIndices)));
+            updateMarkersVisibility();
+        });
+    }
 
-    if (toggleDistanceLineBtn) {
-        if (isDistanceLineEnabled) {
-            toggleDistanceLineBtn.textContent = '📏 Hide Distance';
-            toggleDistanceLineBtn.title = 'Hide Distance to NEST+m';
-        } else {
-            toggleDistanceLineBtn.textContent = '📏 Show Distance';
-            toggleDistanceLineBtn.title = 'Show Distance to NEST+m';
-        }
+    if (uncheckAllSeniorsBtn) {
+        uncheckAllSeniorsBtn.addEventListener('click', () => {
+            allData.forEach(school => {
+                // Only affect seniors that are currently passing the main filters
+                if (school.passesGlobalFilters) {
+                    school.isIndividuallyVisible = false;
+                    hiddenSeniorIndices.add(school.originalIndex);
+                    const checkbox = document.getElementById(`visibility-checkbox-${school.originalIndex}`);
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+            localStorage.setItem('hiddenSeniorIndices', JSON.stringify(Array.from(hiddenSeniorIndices)));
+            updateMarkersVisibility();
+        });
+    }
 
-        toggleDistanceLineBtn.addEventListener('click', () => {
-            isDistanceLineEnabled = !isDistanceLineEnabled;
-            localStorage.setItem('isDistanceLineEnabled', isDistanceLineEnabled);
-            if (isDistanceLineEnabled) {
-                toggleDistanceLineBtn.textContent = '📏 Hide Distance';
-                toggleDistanceLineBtn.title = 'Hide Distance to NEST+m';
-            } else {
-                toggleDistanceLineBtn.textContent = '📏 Show Distance';
-                toggleDistanceLineBtn.title = 'Show Distance to NEST+m';
-                // Hide current line if it exists
-                if (distancePolyline) distancePolyline.setMap(null);
-                if (distanceLabel) distanceLabel.setMap(null);
+    if (resetPanelWidthBtn) {
+        resetPanelWidthBtn.addEventListener('click', () => {
+            const controlPanel = document.getElementById('controls-and-list-container');
+            const isMobileView = window.innerWidth <= 768;
+
+            if (controlPanel && !isMobileView) {
+                controlPanel.style.width = '30%';
+                localStorage.removeItem('controlPanelWidthDesktop');
+                
+                setTimeout(() => {
+                    if (window.map && google?.maps?.event) {
+                        google.maps.event.trigger(window.map, 'resize');
+                    }
+                    if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') && currentlyZoomedSeniorOriginalIndex !== null) {
+                        const schoolData = allData[currentlyZoomedSeniorOriginalIndex];
+                        if (schoolData) {
+                            let anchorElement = document.querySelector(`.list-content li[data-original-index="${currentlyZoomedSeniorOriginalIndex}"]`);
+                            showSeniorPhotoPopup(anchorElement, schoolData);
+                        }
+                    }
+                }, 50);
             }
         });
     }
@@ -4786,7 +5195,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
     });
     gradClassFiltersContainer.appendChild(fragmentGradClassFilters);
 
-    if (listHeaderContainer && !document.getElementById('schoolListTip')) {
+        if (listHeaderContainer && !document.getElementById('schoolListTip')) {
         const tipDiv = document.createElement('div');
         tipDiv.id = 'schoolListTip';
         tipDiv.className = 'tip-message';
@@ -4794,16 +5203,14 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         const tipContent = `
             <strong>Tips:</strong>
             <ul style="margin: 8px 0 0 0; padding: 0 0 0 25px; list-style-type: disc; line-height: 1.6;">
-                <li>Filters update Stats & Major tables.</li>
-                <li>Checkboxes toggle visibility.</li>
-                <li><b>Shift + Click checkbox</b>: Group Zoom.</li>
-                <li><b>CTRL/CMD + Click name</b>: College Homepage.</li>
-                <li>Hover list/marker to highlight & see photo.</li>
-                <li>Click senior photo to zoom (Esc to close).</li>
-                <li>Use ↑↓ keys to navigate list; ← → in zoomed photo.</li>
-                <li>Left panel is resizable.</li>
-                <li>Explore different sort options for colleges and students!</li>
-                <li>Dark mode can be easier on the eyes.</li>
+                <li>Filters update all stats, tables, and charts instantly.</li>
+                <li>Use the small checkbox (☑) next to a senior's name to hide/show them individually.</li>
+                <li>Use the "✅ Check All" / "⬜ Uncheck All" buttons to toggle visibility for all currently filtered seniors.</li>
+                <li><b>Hover</b> over a senior to see their photo and highlight them on the map.</li>
+                <li><b>Click</b> a senior's photo to zoom in. Use <b>←/→ arrow keys</b> to navigate between other visible seniors. Press <b>Esc</b> to exit.</li>
+                <li>The left panel is resizable by dragging its edge. Use the "↔️ Reset Width" button to snap it back.</li>
+                <li>Use the <b>Sort Target</b> dropdown to group the list by Students or by Colleges.</li>
+                <li>Find new features and data updates in the "📜 Update Log".</li>
             </ul>
         `;
 
@@ -4823,6 +5230,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         const insertTarget = listActionRow || listHeaderContainer;
         insertTarget.insertAdjacentElement('afterend', tipDiv);
     }
+
 
     toggleSchoolListBtn.addEventListener('click', () => {
         const schoolListControlDiv = document.getElementById('school-list-control');
@@ -4882,7 +5290,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         });
     }
 
-    clearAllFiltersBtn.addEventListener('click', () => {
+        clearAllFiltersBtn.addEventListener('click', () => {
 
         gradClassNames.forEach(gc => gradClassFilterState[gc] = true);
         gradClassFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
@@ -4903,6 +5311,15 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
             stateCountryFiltersContainer.querySelectorAll('.filter-item input[type="checkbox"]').forEach(cb => cb.checked = true);
         }
         localStorage.setItem('stateCountryFilterState', JSON.stringify(stateCountryFilterState));
+
+        // Reset individual senior visibility
+        hiddenSeniorIndices.clear();
+        localStorage.removeItem('hiddenSeniorIndices');
+        if (allData) {
+            allData.forEach(school => {
+                school.isIndividuallyVisible = true;
+            });
+        }
 
         schoolSearchInput.value = '';
         updateMarkersVisibility();
@@ -5057,7 +5474,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                         listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                     showSeniorPhotoPopup(listItem, clickedSchoolData);
-                    showDistanceToNestm(clickedSchoolData);
 
                     const visibleListItems = getVisibleListItemsDOM();
                     currentListSelectionIndex = visibleListItems.findIndex(li => parseInt(li.dataset.originalIndex) === clickedOriginalIndex);
@@ -5092,7 +5508,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
 
                         showSeniorPhotoPopup(listItem, schoolData);
                         openCollegeInfoWindow(marker, schoolData, index);
-                        showDistanceToNestm(schoolData);
                         updateMarkerAppearance(marker, schoolData, true, isDarkMode);
                     }
                 });
@@ -5143,7 +5558,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         toggleNestmBtn.textContent = '🦅 Show NEST+m';
     }
 
-    nestmMarker.addListener('click', async () => {
+              nestmMarker.addListener('click', async () => {
         if (infowindow) infowindow.close();
         let content = `
             <div class="info-window-content">
@@ -5156,9 +5571,19 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
                 <div><a href="https://www.google.com/maps/dir/?api=1&destination=${NEST_M_INFO.lat},${NEST_M_INFO.lng}" target="_blank">Get Directions</a></div>
             `;
         
+        const timeDetailsHtml = await getCollegeTimeDetailsHTML(NEST_M_INFO);
+        if (timeDetailsHtml) {
+            content += `<hr style="margin: 5px 0;">` + timeDetailsHtml;
+        }
+
         const transitHtml = await getNearbyTransitStopsHTML(NEST_M_INFO.lat, NEST_M_INFO.lng, isDarkMode);
         if (transitHtml) {
             content += `<hr style="margin: 5px 0;">` + transitHtml;
+        }
+
+        const weatherHtml = await getCollegeWeatherHTML(NEST_M_INFO.lat, NEST_M_INFO.lng, isDarkMode);
+        if (weatherHtml) {
+            content += `<hr style="margin: 5px 0;">` + weatherHtml;
         }
 
         content += `</div>`;
@@ -5166,14 +5591,13 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         infowindow.open({ map: map, anchor: nestmMarker });
     });
 
+
     toggleNestmBtn.addEventListener('click', () => {
         const isVisible = nestmMarker.getMap() === null;
         nestmMarker.setMap(isVisible ? map : null);
         toggleNestmBtn.textContent = isVisible ? '🦅 Hide NEST+m' : '🦅 Show NEST+m';
         localStorage.setItem('nestmMarkerHidden', !isVisible);
         if (!isVisible) {
-            if (distancePolyline) distancePolyline.setMap(null);
-            if (distanceLabel) distanceLabel.setMap(null);
         }
     });
 
@@ -5247,7 +5671,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
             maxZoom: 16
         });
     } else {
-        console.error("MarkerClusterer library is not loaded correctly! Markers will not be clustered.");
         allMarkers.forEach(mInfo => {
             if (mInfo && mInfo.marker && mInfo.school) {
                 const originalSchoolData = allData[mInfo.school.originalIndex];
@@ -5400,7 +5823,6 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
     });
 
     function doDrag(e) {
-
         const isMobileViewCurrent = window.innerWidth <= 768;
         if (isMobileViewCurrent) return;
 
@@ -5410,7 +5832,26 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         const maxWidthPercentage = 0.60;
         newWidth = Math.max(minWidth, newWidth);
         newWidth = Math.min(newWidth, containerWidth * maxWidthPercentage);
+        
         controlPanel.style.width = newWidth + 'px';
+
+        window.requestAnimationFrame(() => {
+            if (seniorPhotoPopup && seniorPhotoPopup.classList.contains('visible') && currentlyZoomedSeniorOriginalIndex !== null) {
+                const schoolData = allData[currentlyZoomedSeniorOriginalIndex];
+                if (schoolData) {
+                    let anchorElement = document.querySelector(`.list-content li[data-original-index="${currentlyZoomedSeniorOriginalIndex}"]`);
+                    const infoWindowElement = document.querySelector('.gm-style-iw-c');
+                    if (infowindow && infowindow.getMap() && infoWindowElement && infoWindowElement.offsetParent) {
+                        const activeStudentInInfoWindow = infoWindowElement.querySelector(`li[onmouseover*="handleInfoWindowStudentHover(${currentlyZoomedSeniorOriginalIndex},"]`);
+                        if (activeStudentInInfoWindow) {
+                            anchorElement = activeStudentInInfoWindow;
+                        }
+                    }
+                    
+                    showSeniorPhotoPopup(anchorElement, schoolData);
+                }
+            }
+        });
     }
 
     function stopDrag() {
@@ -5567,8 +6008,44 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
         }, 200));
 
     } else {
-        console.warn("FAQ popup elements not found. FAQ functionality will be disabled.");
     }
+
+    // --- NEW: Setup for Update Log ---
+    const showUpdateLogBtn = document.getElementById('showUpdateLogBtn');
+    const updateLogPopup = document.getElementById('update-log-popup');
+    const updateLogOverlay = document.getElementById('update-log-overlay');
+    const closeUpdateLogPopupBtn = document.getElementById('close-update-log-popup');
+
+    if (showUpdateLogBtn && updateLogPopup && updateLogOverlay && closeUpdateLogPopupBtn) {
+        showUpdateLogBtn.addEventListener('click', fetchAndDisplayUpdateLog);
+
+        const closeUpdateLog = () => {
+            updateLogPopup.style.display = 'none';
+            updateLogOverlay.style.display = 'none';
+        };
+
+        closeUpdateLogPopupBtn.addEventListener('click', closeUpdateLog);
+        updateLogOverlay.addEventListener('click', (event) => {
+            if (event.target === updateLogOverlay) {
+                closeUpdateLog();
+            }
+        });
+    }
+    // --- END: Setup for Update Log ---
+
+    // --- NEW: Add hover effect for creator's name ---
+    const creatorNameLink = document.getElementById('creator-name-link');
+    if (creatorNameLink && allData) {
+        creatorNameLink.addEventListener('mouseenter', (event) => {
+            const normanData = allData.find(s => s.seniorName === "Norman Mei");
+            if (normanData) {
+                showSeniorPhotoPopup(event.currentTarget, normanData);
+            }
+        });
+        // The popup will be hidden by other actions like Esc, clicking close, or hovering another item.
+        // This mimics the behavior of the main list items.
+    }
+    // --- END: Add hover effect for creator's name ---
 
     const lastZoomedIndex = localStorage.getItem('lastZoomedSeniorIndex');
     if (lastZoomedIndex !== null) {
@@ -5631,12 +6108,17 @@ const tutorialSteps = [
     {
         element: '#clearAllFiltersBtn',
         title: 'Clear All Filters',
-        text: 'Resets every filter, search term, and gallery selection so you can start fresh.'
+        text: 'Resets every filter, search term, and individual visibility choice so you can start fresh.'
     },
     {
         element: '#showFaqBtn',
         title: 'FAQ',
         text: 'Opens a window with answers to common questions about data sources, privacy, update schedule, and more.'
+    },
+    {
+        element: '#showUpdateLogBtn',
+        title: 'See What’s New',
+        text: 'Click here to view the update log, which lists all new features, data updates, and bug fixes, pulled directly from the project’s GitHub page.'
     },
     {
         element: '#toggleNestmBtn',
@@ -5655,13 +6137,8 @@ const tutorialSteps = [
     },
     {
         element: '#checkAllGradClassesBtn',
-        title: 'Check All',
-        text: 'Selects every graduating-class filter in one click.'
-    },
-    {
-        element: '#uncheckAllGradClassesBtn',
-        title: 'Uncheck All',
-        text: 'Clears every graduating-class filter so you can quickly start a new selection.'
+        title: 'Bulk Class Selection',
+        text: 'Use the "Check All" and "Uncheck All" buttons to quickly select or deselect all graduating classes.'
     },
     {
         element: '#stats-table-control',
@@ -5681,7 +6158,7 @@ const tutorialSteps = [
     {
         element: '#school-list-control .list-header-container',
         title: 'Search & Sort the List',
-        text: 'Use the search bar to find a student, college, or major. Change sort order (students vs. colleges) with the dropdowns.'
+        text: 'Use the search bar to find a student, college, or major. You can also change the sort order for students or colleges using the dropdowns.'
     },
     {
         element: '#school-list-control .list-content',
@@ -5689,24 +6166,44 @@ const tutorialSteps = [
         text: "Hover over an entry to highlight it on the map and preview the photo. Click to open its info window. Click the photo itself to zoom; use ←/→ keys to navigate between zoomed photos; press Esc to exit."
     },
     {
+        element: '.list-content li[data-original-index] .visibility-checkbox',
+        title: 'Individual Visibility',
+        text: 'This small checkbox lets you temporarily hide a specific senior from the map and list without affecting your main filters. Your choices are saved automatically.'
+    },
+    {
+        element: '#checkAllSeniorsBtn',
+        title: 'Bulk Visibility Toggle',
+        text: 'Use the "Check All" and "Uncheck All" buttons to quickly show or hide all seniors that are currently visible based on your filters.'
+    },
+    {
         element: '#toggleGalleryViewBtn',
         title: 'Toggle Gallery View',
         text: "Switch the list into a visual 'Gallery View'—perfect for browsing senior photos."
     },
     {
-        element: '#zoomed-info-panel', // Target the whole panel
-        title: 'Student Instagram & LinkedIn',
-        text: 'When you open a senior’s info panel, these icons give you one-click access to their personal Instagram and LinkedIn profiles.',
+        element: '#toggleSchoolListBtn',
+        title: 'Hide the List',
+        text: 'Need more space? This button collapses the entire college list, leaving only the filter and control panels visible.'
     },
     {
-        element: '#senior-photo-popup', // Target the whole popup
+        element: '#resetPanelWidthBtn',
+        title: 'Reset Panel Width',
+        text: 'If you have resized the side panel by dragging its edge, this button will snap it back to its default width.'
+    },
+    {
+        element: '#zoomed-info-panel',
+        title: 'Student Social Links',
+        text: 'When you zoom in on a senior\'s photo, this side panel appears, giving you one-click access to their personal Instagram and LinkedIn profiles if available.',
+    },
+    {
+        element: '#senior-photo-popup',
         title: 'Zoom Senior Photos',
         text: 'Try it with [senior name here] who has both Instagram and LinkedIn links. Click the list entry to open the photo popup, then click the image again— it automatically expands to full-screen. Use ←/→ to browse other seniors and Esc to exit.',
     },
     {
         element: '#map',
         title: 'The Interactive Map',
-        text: "Click coloured markers (or clusters) to see destinations. You can also click the purple NEST+m icon to measure distances."
+        text: "Click coloured markers (or clusters) to see destinations. You can also click the purple NEST+m icon to see more details about the school."
     },
     {
         element: '#menu-toggle',
@@ -5743,13 +6240,81 @@ function endTutorial() {
     tutorialVisibleElements = [];
 }
 
+async function fetchAndDisplayUpdateLog() {
+    const owner = 'norman-mei';
+    const repo = 'norman-mei.github.io-nestmcollegemap'; // This is your repository name
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/releases`;
+
+    const updateLogPopup = document.getElementById('update-log-popup');
+    const updateLogOverlay = document.getElementById('update-log-overlay');
+    const updateLogContent = document.getElementById('update-log-content');
+
+    if (!updateLogPopup || !updateLogOverlay || !updateLogContent) return;
+
+    // Show popup with loading message
+    updateLogContent.innerHTML = '<p>Loading updates from GitHub...</p>';
+    updateLogPopup.style.display = 'flex';
+    updateLogOverlay.style.display = 'block';
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`GitHub API request failed: ${response.status}`);
+        }
+        const releases = await response.json();
+
+        if (releases.length === 0) {
+            updateLogContent.innerHTML = '<p>No releases found on GitHub.</p>';
+            return;
+        }
+
+        let html = '';
+        releases.forEach(release => {
+            const releaseDate = new Date(release.published_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            // --- FIX: Improved Markdown to HTML for the body ---
+            let bodyHtml = release.body
+                .replace(/&/g, "&")
+                .replace(/</g, "<")
+                .replace(/>/g, ">")
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+                // Wrap each markdown list item in a div to make it a block element
+                .replace(/^\s*[-*+]\s+(.*)/gm, '<div class="release-list-item">$1</div>')
+                // Convert remaining newlines to <br> for paragraphs
+                .replace(/\r\n/g, '<br>')
+                .replace(/\n/g, '<br>')
+                // Clean up extra <br> tags that might appear after our new divs
+                .replace(/<\/div><br>/g, '</div>');
+
+            html += `
+                <div class="release">
+                    <div class="release-header">
+                        <h4><a href="${release.html_url}" target="_blank">${release.name || release.tag_name}</a></h4>
+                        <span class="release-date">${releaseDate}</span>
+                    </div>
+                    <div class="release-body">
+                        ${bodyHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        updateLogContent.innerHTML = html;
+
+    } catch (error) {
+        console.error("Failed to fetch update log:", error);
+        updateLogContent.innerHTML = `<p style="color: red;">Could not load update log. Please check the console for errors or try again later.</p><p style="font-size: 0.8em; color: #888;">Note: GitHub has a rate limit for requests. If you reload the page many times, you may need to wait a while.</p>`;
+    }
+}
+
+
 function positionTutorialElements() {
     showTutorialStep(currentTutorialStep, false);
 }
 
 function showTutorialStep(stepIndex, shouldScroll = true) {
-    console.log(`%c[TUTORIAL_DEBUG] showTutorialStep called for index: ${stepIndex}`, 'color: #007bff; font-weight: bold;');
-
     // --- CLEANUP LOGIC ---
     tutorialVisibleElements.forEach(el => {
         if (el.id === 'senior-photo-popup') {
@@ -5827,7 +6392,6 @@ function showTutorialStep(stepIndex, shouldScroll = true) {
         const isElementVisible = targetElement && (targetElement.offsetWidth > 0 || targetElement.offsetHeight > 0 || targetElement.getClientRects().length > 0);
 
         if (!isElementVisible) {
-            console.error(`[TUTORIAL_DEBUG] CRITICAL: Element not found or not visible for step ${stepIndex} with selector "${step.element}". Skipping.`);
             setTimeout(() => showTutorialStep(stepIndex + 1), 0);
             return;
         }
@@ -5855,7 +6419,6 @@ function showTutorialStep(stepIndex, shouldScroll = true) {
         setTimeout(() => {
             const targetRect = targetElement.getBoundingClientRect();
             if (targetRect.width === 0 || targetRect.height === 0) {
-                console.error(`[TUTORIAL_DEBUG] ERROR: Target element for step ${stepIndex} has zero width or height.`, targetElement);
                 setTimeout(() => showTutorialStep(stepIndex + 1), 0);
                 return;
             }
@@ -6228,8 +6791,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function gmLoadError() {
-            console.error("Google Maps failed to load.");
+    function gmLoadError() {
             document.getElementById('map').innerHTML = '<p style="padding: 20px; text-align: center; color: red; background-color: #ffebee;">Error: Could not load Google Maps. Please check your API key and ensure the Maps JavaScript API is enabled.</p>';
             const controlsContainer = document.getElementById('controls-and-list-container');
             if (controlsContainer) {
@@ -6238,6 +6800,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             window.isDataReadyForMap = false;
         }
+
 
         (function attachZoomDebugging () {
   const img = document.querySelector('#senior-photo-popup img');
@@ -6302,6 +6865,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button id="tutorial-next-btn">Next</button>
             </div>
         </div>
+    </div>
+</div>
+<div id="update-log-overlay" style="display: none;"></div>
+<div id="update-log-popup" style="display: none;">
+    <span id="close-update-log-popup" class="dismiss-button" title="Close Update Log">×</span>
+    <h2>Update Log / Releases</h2>
+    <div id="update-log-content">
+        <p>Loading updates...</p>
     </div>
 </div>
 </body>
