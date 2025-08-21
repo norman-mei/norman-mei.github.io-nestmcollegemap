@@ -181,11 +181,21 @@ body.dark-mode #zoomed-info-panel {
         background-color: #444 !important;
     }
 
-        .honorary-suffix {
+             .honorary-suffix {
         font-weight: bold; font-style: normal; padding: 1px 4px; border-radius: 3px;
         background-color: rgba(0, 0, 0, 0.05); color: #333; margin-left: 4px;
         font-size: 0.9em; border: 1px solid rgba(0,0,0,0.1);
         white-space: nowrap; /* Prevents the text from breaking onto a new line */
+    }
+    .honorary-logo {
+        height: 17px; /* Controls the size of the logo in the main list */
+        vertical-align: text-bottom; /* Aligns logo nicely with the text */
+        margin-left: 5px;
+    }
+    .info-window-content .honorary-logo {
+        height: 16px; /* Matches the social icon size */
+        width: auto;
+        vertical-align: middle;
     }
     body.dark-mode .honorary-suffix {
         background-color: rgba(255, 255, 255, 0.1); color: #ddd;
@@ -3123,16 +3133,25 @@ function getVisibleListItemsDOM() {
             }
         }
 
-        function getHonorarySuffixHTML(rawCollegeName) {
+                    function getHonorarySuffixHTML(rawCollegeName) {
             let suffixHtml = "";
             const rawLower = rawCollegeName.toLowerCase();
-            if (rawLower.includes("(macaulay)")) suffixHtml = ' <span class="honorary-suffix">Macaulay</span>';
-            else if (rawLower.includes("(questbridge)")) suffixHtml = ' <span class="honorary-suffix">QuestBridge</span>';
-            else if (rawLower.includes("(posse)")) suffixHtml = ' <span class="honorary-suffix">POSSE</span>';
-            else if (rawLower.includes("(dean scholars)")) suffixHtml = ' <span class="honorary-suffix">Dean Scholars</span>';
+            const questbridgeUrl = "https://www.questbridge.org/";
+            const posseUrl = "https://www.possefoundation.org/";
+            const macaulayUrl = "https://macaulay.cuny.edu/";
+            const deanScholarsUrl = "https://www.baruch.cuny.edu/advisement/deans-scholars/";
+
+            if (rawLower.includes("(questbridge)")) {
+                suffixHtml = ` <a href="${questbridgeUrl}" target="_blank" title="Visit QuestBridge Homepage" onclick="event.stopPropagation()"><img src="photos/logos/questbridge.png" alt="QuestBridge Scholar" class="honorary-logo"></a>`;
+            } else if (rawLower.includes("(posse)")) {
+                suffixHtml = ` <a href="${posseUrl}" target="_blank" title="Visit POSSE Foundation Homepage" onclick="event.stopPropagation()"><img src="photos/logos/posse.png" alt="POSSE Scholar" class="honorary-logo"></a>`;
+            } else if (rawLower.includes("(dean scholars)")) {
+                suffixHtml = ` <a href="${deanScholarsUrl}" target="_blank" title="Visit Dean Scholars Program Homepage" onclick="event.stopPropagation()"><img src="photos/logos/dean scholars.png" alt="Dean Scholar" class="honorary-logo"></a>`;
+            } else if (rawLower.includes("(macaulay)")) {
+                suffixHtml = ` <a href="${macaulayUrl}" target="_blank" title="Visit Macaulay Honors College Homepage" onclick="event.stopPropagation()"><img src="photos/logos/macaulay.png" alt="Macaulay Honors Scholar" class="honorary-logo"></a>`;
+            }
             return suffixHtml;
         }
-
                        function handleListItemInteraction(event, originalIndex, isHover, skipInfoWindowLogic = false) {
              if (event && event.target && event.target.type === 'checkbox') return;
 
@@ -4155,7 +4174,7 @@ function getVisibleListItemsDOM() {
     }
 }
 
-             async function getCollegeTimeDetailsHTML(collegeData) {
+                     async function getCollegeTimeDetailsHTML(collegeData) {
             if (!collegeData || (collegeData.lat === 0 && collegeData.lng === 0)) {
                 return '';
             }
@@ -4166,7 +4185,7 @@ function getVisibleListItemsDOM() {
             }
 
             const timestamp = Math.floor(Date.now() / 1000);
-            // FIX: Corrected the URL parameter from '×tamp=' to '×tamp='
+            // FIX: Corrected the URL parameter from '&times;tamp=' to '&timestamp='
            const apiUrl =
   `https://maps.googleapis.com/maps/api/timezone/json?location=${collegeData.lat},${collegeData.lng}&timestamp=${timestamp}&key=${GOOGLE_MAPS_API_KEY}`;
 
@@ -4233,7 +4252,6 @@ function getVisibleListItemsDOM() {
             }
         }
 
-
         
                async function getCollegeWeatherHTML(lat, lng, currentIsDarkMode) {
             if (!lat || !lng || (lat === 0 && lng === 0)) {
@@ -4296,7 +4314,7 @@ function getVisibleListItemsDOM() {
             }
         }
 
-                       async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
+                async function openCollegeInfoWindow(marker, collegeData, originalIndex, isSticky = false) {
     if (!marker || !collegeData) {
         return;
     }
@@ -4344,11 +4362,18 @@ function getVisibleListItemsDOM() {
     contentString += `<hr style="margin: 5px 0;">`;
 
     if (collegeData.collegeName === "Undecided") {
-        const suffixHtml = getHonorarySuffixHTML(collegeData.collegeNameRaw);
-        contentString += `<b>${collegeData.seniorName}</b>${suffixHtml}`;
-        contentString += `<br><span class="info-window-grad-class" style="color: ${gradClassColors[collegeData.gradClass] || '#ccc'};">Class: ${collegeData.gradClass}</span>`;
-        contentString += `<br>Major: ${collegeData.major || 'Undecided Major'} (${collegeData.majorArea || 'N/A'})`;
-    } else {
+  const suffixHtml = getHonorarySuffixHTML(collegeData.collegeNameRaw);
+
+  // Keep everything on the same top line and avoid the extra blank line
+  contentString += `<div style="line-height:1.5;">
+    <b style="display:inline; margin:0;">${collegeData.seniorName}</b>
+    <span class="info-window-grad-class" style="color: ${gradClassColors[collegeData.gradClass] || '#ccc'};">Class: ${collegeData.gradClass}</span>
+    ${suffixHtml}
+  </div>`;
+
+  // Major on its own small line
+  contentString += `<small style="padding-left:10px;">Major: ${collegeData.major || 'Undecided Major'} (${collegeData.majorArea || 'N/A'})</small>`;
+} else {
         const studentsAtSameCollege = allData.filter(s =>
             s.isVisible &&
             s.collegeName === collegeData.collegeName &&
@@ -4365,20 +4390,42 @@ function getVisibleListItemsDOM() {
             contentString += `<u>(${studentsAtSameCollege.length}) ${studentWord} Attending (Visible):</u><ol style="margin-top: 3px; margin-bottom: 3px; padding-left: 25px;">`;
             studentsAtSameCollege.forEach(student => {
                 const suffixHtml = getHonorarySuffixHTML(student.collegeNameRaw);
+
+                // --- DEBUGGING ---
+                if (suffixHtml) {
+                    console.log(`[InfoWindowDebug] Found honorary suffix for ${student.seniorName}:`, suffixHtml);
+                }
+                // --- END DEBUGGING ---
+
                 let studentEntry = `<li data-original-index="${student.originalIndex}" onclick="handleInfoWindowStudentClick(${student.originalIndex}, event)" style="cursor: pointer; padding: 4px 2px; border-radius: 3px;" onmouseover="handleInfoWindowStudentHover(${student.originalIndex}, this)" onmouseout="handleInfoWindowStudentMouseOut(${student.originalIndex}, this)" title="Click to jump to this senior in the list">`;
+                
+                // *** START OF FIX ***
+                // Wrap the top line of student info in a div to ensure it stays on one line and prevent wrapping issues.
+                studentEntry += `<div style="line-height: 1.5;">`;
                 
                 const studentNameHTML = student.seniorName;
                 
-                studentEntry += `${studentNameHTML}${suffixHtml} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
+                // Assemble the line in the correct order
+                studentEntry += `${studentNameHTML} <span class="info-window-grad-class" style="color: ${gradClassColors[student.gradClass] || '#ccc'};">(${student.gradClass})</span>`;
+                studentEntry += suffixHtml; // Add honorary logo
                 
+                // Add social icons
                 if (student.linkedInUrl) {
                     studentEntry += `<a href="${student.linkedInUrl}" target="_blank" title="LinkedIn Profile" class="social-icon-link" onclick="event.stopPropagation()">${createSocialLinkSVG('linkedin', 16, isDarkMode)}</a>`;
                 }
                 if (student.instagramUrl) {
                     studentEntry += `<a href="${student.instagramUrl}" target="_blank" title="Instagram Profile" class="social-icon-link" onclick="event.stopPropagation()">${createSocialLinkSVG('instagram', 16, isDarkMode)}</a>`;
                 }
+                if (student.githubUrl) {
+                    studentEntry += `<a href="${student.githubUrl}" target="_blank" title="GitHub Profile" class="social-icon-link" onclick="event.stopPropagation()">${createSocialLinkSVG('github', 16, isDarkMode)}</a>`;
+                }
                 
-                studentEntry += `<br><small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
+                studentEntry += `</div>`; // Close the container div
+
+                // The major info now follows the div, so it will appear on the next line without needing a <br>
+                studentEntry += `<small style="padding-left: 10px;">Major: ${student.major || 'Undecided'} (${student.majorArea || 'N/A'})</small>`;
+                // *** END OF FIX ***
+                
                 studentEntry += `</li>`;
                 contentString += studentEntry;
             });
@@ -4399,8 +4446,6 @@ function getVisibleListItemsDOM() {
     infowindow.setContent(contentString);
     infowindow.open({ map: map, anchor: marker });
 }
-
-
 
                 function handleInfoWindowStudentClick(originalIndex, event) {
             if (event) event.stopPropagation(); // Prevent map click
@@ -4589,7 +4634,7 @@ function handleInfoWindowStudentMouseOut(originalIndex, element) {
             name: "NEST+m",
             lat: 40.71956425410874,
             lng: -73.97923619240517,
-            imageUrl: "photos/NEST+m_Logo.png",
+            imageUrl: "photos/logos/NEST+m_Logo.png",
             homepageUrl: "https://nestmk12.net/",
             type: "Public K-12 School",
             stateOrCountry: "NY"
