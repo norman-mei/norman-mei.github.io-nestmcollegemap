@@ -35,6 +35,7 @@ const majorToAreaMapping = {
     "geoscience": "STEM",
     "geology": "STEM",
     "human biology": "STEM",
+    "human health & economics": "STEM",
     "information science": "STEM",
     "integrative biology": "STEM",
     "integrative neuroscience": "STEM",
